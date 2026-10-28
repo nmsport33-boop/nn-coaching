@@ -620,7 +620,9 @@ function suiteBlock(list, m){
     <label class="f">Consignes pour les prochaines séances (Claude en tient compte ; si tu ne mets rien, il continue la progression)
       <textarea id="su-c" data-d="${k}consignes" placeholder="Ex. genou mieux, on peut charger ; moins de gainage ; ajouter du haut du corps…">${esc(d(k+"consignes", m.consignes || ""))}</textarea></label>
     <div class="row"><button class="btn sm solid" data-a="save-consignes">Enregistrer les consignes</button></div>
-    <details><summary class="small">Coller des séances préparées par Claude</summary>
+    <details><summary class="small">Ajouter des séances préparées par Claude</summary>
+      <span class="small muted">Choisis le fichier .json envoyé par Claude, ou colle le bloc de texte.</span>
+      <input type="file" id="su-f" accept=".json,application/json,text/plain">
       <textarea id="su-p" data-d="${k}paste" placeholder="Colle ici le bloc de séances" style="min-height:90px;font-family:ui-monospace,monospace;font-size:12px">${esc(d(k+"paste",""))}</textarea>
       <div class="row"><button class="btn sm solid" data-a="paste-seances">Ajouter ces séances</button></div></details></div></section>`;
 }
@@ -974,7 +976,8 @@ async function saveBlocs(sid){
 /* bloc de séances préparé par Claude : {"seances":[{titre, lieu, semaine, date, blocs:[{code, nom, tours, exos:[{n, d, v, c}]}]}]} */
 async function pasteSeances(){
   let arr;
-  try { const raw = (S.drafts["su.paste"] || "").trim(); const j = JSON.parse(raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1)); arr = j.seances || []; if (!arr.length) throw 0; }
+  const f = $("su-f")?.files?.[0];
+  try { const raw = f ? (await f.text()).trim() : (S.drafts["su.paste"] || "").trim(); const j = JSON.parse(raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1)); arr = j.seances || []; if (!arr.length) throw 0; }
   catch (e) { toast("Bloc illisible : recopie-le en entier."); return; }
   const list = seancesSorted(); let num = (list[list.length-1]?.num || 0);
   const str = (x, n) => String(x ?? "").slice(0, n), b = S.db.batch();
