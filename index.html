@@ -326,6 +326,7 @@ function aboCard(m, coach){
       : `<b>Ton mois de coaching est terminé (le ${esc(finAbo(e.fin))})</b><span>Pour continuer, règle le mois suivant auprès de Nathanael. Tes séances et tes notes restent là.</span>`; }
   else { if (e.jours <= 7) cls = "warn";
     txt = coach ? `<b>Payé jusqu'au ${esc(finAbo(e.fin))}</b><span>Encore ${e.jours} jour${e.jours>1?"s":""}.${prix ? " " + esc(prix) : ""}</span>`
+      : e.jours <= 7 ? `<b>Plus que ${e.jours} jour${e.jours>1?"s":""} de coaching (jusqu'au ${esc(finAbo(e.fin))})</b><span>Pense à recharger tes séances si tu veux qu'on continue ensemble 💪 Vois ça avec Nathanael.</span>`
       : `<b>Coaching réglé jusqu'au ${esc(finAbo(e.fin))}</b><span>Encore ${e.jours} jour${e.jours>1?"s":""}. Pour continuer après, il faudra régler le mois suivant auprès de Nathanael.</span>`; }
   return `<div class="banner ${cls}" style="flex-direction:column;align-items:flex-start;gap:4px">
     <span class="eyebrow" style="color:inherit;opacity:.7">${coach ? "Abonnement" : "Ton abonnement"}${m.forfait ? " · " + esc(m.forfait) : ""}</span>${txt}
@@ -597,8 +598,19 @@ function cycleView(m, adh){
     ${gen.length ? gen.map(noteHtml).join("") : `<p class="small muted" style="margin:0">${adh ? "Une douleur, une contrainte d'agenda, un objectif qui change ? Écris-le ici, Nathanael adaptera ton cycle." : "Notes générales (objectifs, contraintes, ajustements du cycle)."}</p>`}
     ${noteForm("")}</section>`;
 }
+function suiteBlock(list, m){
+  const reste = list.filter(x => x.statut !== "faite").length, k = "su.";
+  return `<section class="sec"><div class="banner ${reste <= 1 ? "warn" : ""}" style="flex-direction:column;align-items:stretch;gap:8px">
+    <b>${reste === 0 ? "Toutes les séances programmées sont faites : prépare la suite." : reste === 1 ? "Plus qu'une séance programmée : prépare la suite." : `Encore ${reste} séances programmées.`}</b>
+    <label class="f">Consignes pour les prochaines séances (Claude en tient compte ; si tu ne mets rien, il continue la progression)
+      <textarea id="su-c" data-d="${k}consignes" placeholder="Ex. genou mieux, on peut charger ; moins de gainage ; ajouter du haut du corps…">${esc(d(k+"consignes", m.consignes || ""))}</textarea></label>
+    <div class="row"><button class="btn sm solid" data-a="save-consignes">Enregistrer les consignes</button></div>
+    <details><summary class="small">Coller des séances préparées par Claude</summary>
+      <textarea id="su-p" data-d="${k}paste" placeholder="Colle ici le bloc de séances" style="min-height:90px;font-family:ui-monospace,monospace;font-size:12px">${esc(d(k+"paste",""))}</textarea>
+      <div class="row"><button class="btn sm solid" data-a="paste-seances">Ajouter ces séances</button></div></details></div></section>`;
+}
 function seancesBlock(list, nx, m){
-  return `<section class="sec"><div class="sec-h"><h2>Séances</h2><button class="btn sm solid" data-a="new-seance">+ Nouvelle</button></div>
+  return suiteBlock(list, m) + `<section class="sec"><div class="sec-h"><h2>Séances</h2><button class="btn sm solid" data-a="new-seance">+ Nouvelle</button></div>
     ${list.length ? `<div class="list">${list.map(s => sline(s, nx, m)).join("")}</div>` : `<div class="empty">Aucune séance. « Nouvelle » crée la séance 1 au format A1 / A2 / B1 / B2 / FIN.</div>`}</section>`;
 }
 
@@ -846,6 +858,8 @@ async function act(a, ds){
       return; }
     case "del-note": await run(db.doc(`members/${memberId()}/notes/${v}`).delete(), "Note supprimée"); return;
     case "new-seance": return newSeance();
+    case "save-consignes": if (await run(db.doc("members/" + S.fiche).update({consignes: (S.drafts["su.consignes"] ?? "").trim().slice(0, 3000), consignesAt: Date.now()}), "Consignes enregistrées")) clearDrafts("su.consignes"); return;
+    case "paste-seances": return pasteSeances();
     case "edit-cycle": S.sheet = {type:"cycle"}; clearDrafts("cy."); return;
     case "save-cycle": return saveCycle();
     case "add-member": S.sheet = {type:"member"}; clearDrafts("mb."); return;
@@ -937,6 +951,21 @@ async function saveBlocs(sid){
   }).filter(b => b.code);
   const patch = {blocs, titre: (S.drafts[p+"titre"] ?? s.titre ?? "").trim(), lieu: S.drafts[p+"lieu"] ?? s.lieu ?? "Salle", date: (S.drafts[p+"date"] ?? s.date) || null};
   if (await run(S.db.doc(`members/${memberId()}/seances/${sid}`).update(patch), "Programme enregistré")) { S.edit = false; clearDrafts(p); }
+}
+/* bloc de séances préparé par Claude : {"seances":[{titre, lieu, semaine, date, blocs:[{code, nom, tours, exos:[{n, d, v, c}]}]}]} */
+async function pasteSeances(){
+  let arr;
+  try { const raw = (S.drafts["su.paste"] || "").trim(); const j = JSON.parse(raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1)); arr = j.seances || []; if (!arr.length) throw 0; }
+  catch (e) { toast("Bloc illisible : recopie-le en entier."); return; }
+  const list = seancesSorted(); let num = (list[list.length-1]?.num || 0);
+  const str = (x, n) => String(x ?? "").slice(0, n), b = S.db.batch();
+  for (const x of arr.slice(0, 30)) { num++;
+    const lieu = ["Salle","En autonomie","À distance"].includes(x.lieu) ? x.lieu : "Salle";
+    b.set(S.db.doc(`members/${S.fiche}/seances/s${pad(num)}`), {num, titre: str(x.titre || "Séance " + num, 120), lieu, visible: lieu !== "En autonomie", semaine: Number(x.semaine) || null,
+      date: /^\d{4}-\d{2}-\d{2}$/.test(x.date || "") ? x.date : null, heure: "", statut: "prevue",
+      blocs: (x.blocs || []).slice(0, 8).map(bl => ({code: str(bl.code, 8), nom: str(bl.nom, 60), tours: str(bl.tours, 80),
+        exos: (bl.exos || []).slice(0, 12).map(e => ({n: str(e.n, 120), d: str(e.d, 80), v: /^https:\/\//.test(e.v || "") ? str(e.v, 300) : "", c: str(e.c, 1500)}))}))}); }
+  if (await run(b.commit(), `${arr.length} séance${arr.length > 1 ? "s" : ""} ajoutée${arr.length > 1 ? "s" : ""}`)) clearDrafts("su.paste");
 }
 async function newSeance(){
   const list = seancesSorted(), last = list[list.length-1], num = (last?.num || 0) + 1, id = "s" + pad(num);
