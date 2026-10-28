@@ -985,8 +985,19 @@ async function pasteSeances(){
   const pris = new Set(list.map(y => y.num).concat(allSeances().map(y => y.num)));
   for (const x of arr.slice(0, 30)) {
     /* "num" décimal (ex. 1.5) : séance insérée entre deux séances existantes */
-    const n = Number(x.num), insere = n > 0 && !Number.isInteger(n) && !pris.has(n);
-    const cur = insere ? n : ++num, sid = insere ? "s" + String(n).replace(".", "_") : `s${pad(cur)}`;
+    /* "id" d'une séance existante (ex. "s05") : on remplace son contenu, en gardant coches, ressenti et statut */
+    if (/^s[0-9_]+$/.test(x.id || "") && S.cur.seances[x.id]) {
+      const lieu0 = ["Salle","En autonomie","À distance"].includes(x.lieu) ? x.lieu : S.cur.seances[x.id].lieu;
+      const maj = {titre: str(x.titre || S.cur.seances[x.id].titre, 120), lieu: lieu0,
+        blocs: (x.blocs || []).slice(0, 8).map(bl => ({code: str(bl.code, 8), nom: str(bl.nom, 60), tours: str(bl.tours, 80),
+          exos: (bl.exos || []).slice(0, 12).map(e => ({n: str(e.n, 120), d: str(e.d, 80), v: /^https:\/\//.test(e.v || "") ? str(e.v, 300) : "", c: str(e.c, 1500)}))}))};
+      if (/^\d{4}-\d{2}-\d{2}$/.test(x.date || "")) maj.date = x.date;
+      if (Number(x.semaine)) maj.semaine = Number(x.semaine);
+      b.set(S.db.doc(`members/${S.fiche}/seances/${x.id}`), maj, {merge: true}); continue; }
+    /* "num" libre (ex. 1.5 entre deux séances, ou 5 si la séance 5 a disparu) : on le garde */
+    const n = Number(x.num), insere = n > 0 && !pris.has(n);
+    const cur = insere ? n : (() => { do num++; while (pris.has(num)); return num; })(), sid = Number.isInteger(cur) ? `s${pad(cur)}` : "s" + String(cur).replace(".", "_");
+    pris.add(cur);
     const lieu = ["Salle","En autonomie","À distance"].includes(x.lieu) ? x.lieu : "Salle";
     b.set(S.db.doc(`members/${S.fiche}/seances/${sid}`), {num: cur, titre: str(x.titre || "Séance " + cur, 120), lieu, visible: lieu !== "En autonomie", semaine: Number(x.semaine) || null,
       date: /^\d{4}-\d{2}-\d{2}$/.test(x.date || "") ? x.date : null, heure: "", statut: "prevue",
