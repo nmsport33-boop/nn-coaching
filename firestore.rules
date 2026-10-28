@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Le coach : connecté avec Google, avec son adresse
+    function coach() {
+      return request.auth != null && request.auth.token.email == 'nmsport33@gmail.com' && request.auth.token.email_verified == true;
+    }
+    function linkDoc() { return get(/databases/$(database)/documents/links/$(request.auth.uid)).data; }
+    // Une adhérente : connectée par son lien perso, et ce lien est toujours valable
+    function linked() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/links/$(request.auth.uid))
+        && exists(/databases/$(database)/documents/codes/$(linkDoc().code));
+    }
+    function myCid() { return linkDoc().cid; }
+
+    match /codes/{code} {
+      allow get: if request.auth != null;
+      allow list, write: if coach();
+    }
+    match /links/{uid} {
+      allow get: if (request.auth != null && request.auth.uid == uid) || coach();
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && get(/databases/$(database)/documents/codes/$(request.resource.data.code)).data.cid == request.resource.data.cid;
+      allow delete, list: if coach();
+    }
+    // Créneaux : tout le monde voit s'ils sont pris (avec un identifiant anonyme), personne ne voit le suivi des autres
+    match /slots/{k} {
+      allow read: if coach() || linked();
+      allow create: if coach() || (linked() && request.resource.data.by == myCid() && request.resource.data.keys().hasOnly(['by', 'at']));
+      allow delete: if coach() || (linked() && resource.data.by == myCid());
+      allow update: if coach();
+    }
+    match /members/{cid} {
+      allow read, write: if coach();
+      allow get: if linked() && myCid() == cid;
+      // Ses séances (coches, ressenti, date) et ses notes
+      match /seances/{sid} {
+        allow read, write: if coach() || (linked() && myCid() == cid);
+      }
+      match /notes/{nid} {
+        allow read, write: if coach() || (linked() && myCid() == cid);
+      }
+    }
+  }
+}
