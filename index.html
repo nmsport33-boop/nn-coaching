@@ -1105,7 +1105,9 @@ function startData(isCoach, cid){
   try { S.db.enablePersistence({synchronizeTabs:true}).catch(() => {}); } catch (e) {}
   const url = new URL(location.href);
   let code = url.searchParams.get("c");
-  try { if (code) localStorage.setItem("nn.code", code); else code = localStorage.getItem("nn.code"); } catch (e) {}
+  /* ?coach : l'espace coach, même si un lien d'adhérente a déjà été ouvert sur cet appareil */
+  if (url.searchParams.has("coach")) { code = null; try { localStorage.removeItem("nn.code"); } catch (e) {} }
+  else try { if (code) localStorage.setItem("nn.code", code); else code = localStorage.getItem("nn.code"); } catch (e) {}
   try { await auth.getRedirectResult(); } catch (e) {}
   let started = false;
   auth.onAuthStateChanged(async u => {
