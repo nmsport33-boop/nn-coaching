@@ -578,7 +578,7 @@ function seancesView(){
 function sline(s, nx, m){
   const pi = phaseOf(m?.cycle, s.num);
   return `<button class="sline ${s.statut==="faite"?"done":""} ${nx&&nx.id===s.id?"next":""}" data-a="open-seance" data-v="${s.id}">
-    <span class="snum">${s.num}</span><span class="m"><b>${esc(s.titre || "Séance " + s.num)}</b>
+    <span class="snum">${Number.isInteger(s.num) ? s.num : "+"}</span><span class="m"><b>${esc(s.titre || "Séance " + s.num)}</b>
     <span>${esc(lieuLbl(s))}${s.date ? " · " + esc(fmtDay(parseIso(s.date)) + heureLbl(s.heure)) : s.semaine ? " · sem. " + s.semaine : ""}${pi>=0 ? " · " + esc(m.cycle.phases[pi].nom) : ""}</span></span>
     ${hasAlert(s) ? `<span class="chip warn">À adapter</span>` : s.statut==="faite" ? `<span class="chip ok">Faite</span>` : isCoachUI() && isAuto(s) ? (s.visible ? `<span class="chip mag">Débloquée</span>` : `<span class="chip">Cachée</span>`) : ""}</button>`;
 }
@@ -653,7 +653,7 @@ function renderSheet(){
   const el = $("sheet"), sh = S.sheet;
   if (!sh) { el.hidden = true; el.innerHTML = ""; document.body.style.overflow = ""; return; }
   let title = "", body = "";
-  if (sh.type === "seance") { const s = S.cur.seances[sh.sid]; title = s ? `Séance ${s.num}` : "Séance"; body = s ? seanceBody(sh.sid, s) : `<div class="empty">Séance introuvable.</div>`; }
+  if (sh.type === "seance") { const s = S.cur.seances[sh.sid]; title = s ? (Number.isInteger(s.num) ? `Séance ${s.num}` : "Séance") : "Séance"; body = s ? seanceBody(sh.sid, s) : `<div class="empty">Séance introuvable.</div>`; }
   if (sh.type === "bookfor") { title = "Placer un adhérent"; body = bookforBody(sh.k); }
   if (sh.type === "cycle") { title = "Macro-cycle"; body = cycleForm(); }
   if (sh.type === "member") { title = sh.mid ? "Modifier la fiche" : "Nouvel adhérent"; body = memberForm(sh.mid); }
@@ -980,11 +980,15 @@ async function pasteSeances(){
   const f = $("su-f")?.files?.[0];
   try { const raw = f ? (await f.text()).trim() : (S.drafts["su.paste"] || "").trim(); const j = JSON.parse(raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1)); arr = j.seances || []; if (!arr.length) throw 0; }
   catch (e) { toast("Bloc illisible : recopie-le en entier."); return; }
-  const list = seancesSorted(); let num = (list[list.length-1]?.num || 0);
+  const list = seancesSorted(); let num = Math.floor(Math.max(0, ...allSeances().map(y => y.num || 0)));
   const str = (x, n) => String(x ?? "").slice(0, n), b = S.db.batch();
-  for (const x of arr.slice(0, 30)) { num++;
+  const pris = new Set(list.map(y => y.num).concat(allSeances().map(y => y.num)));
+  for (const x of arr.slice(0, 30)) {
+    /* "num" décimal (ex. 1.5) : séance insérée entre deux séances existantes */
+    const n = Number(x.num), insere = n > 0 && !Number.isInteger(n) && !pris.has(n);
+    const cur = insere ? n : ++num, sid = insere ? "s" + String(n).replace(".", "_") : `s${pad(cur)}`;
     const lieu = ["Salle","En autonomie","À distance"].includes(x.lieu) ? x.lieu : "Salle";
-    b.set(S.db.doc(`members/${S.fiche}/seances/s${pad(num)}`), {num, titre: str(x.titre || "Séance " + num, 120), lieu, visible: lieu !== "En autonomie", semaine: Number(x.semaine) || null,
+    b.set(S.db.doc(`members/${S.fiche}/seances/${sid}`), {num: cur, titre: str(x.titre || "Séance " + cur, 120), lieu, visible: lieu !== "En autonomie", semaine: Number(x.semaine) || null,
       date: /^\d{4}-\d{2}-\d{2}$/.test(x.date || "") ? x.date : null, heure: "", statut: "prevue",
       blocs: (x.blocs || []).slice(0, 8).map(bl => ({code: str(bl.code, 8), nom: str(bl.nom, 60), tours: str(bl.tours, 80),
         exos: (bl.exos || []).slice(0, 12).map(e => ({n: str(e.n, 120), d: str(e.d, 80), v: /^https:\/\//.test(e.v || "") ? str(e.v, 300) : "", c: str(e.c, 1500)}))}))}); }
