@@ -391,7 +391,9 @@ document.addEventListener("focusout", () => { if (pending) setTimeout(() => { if
 function view(){
   if (S.mode === "loading") return `<div class="empty">Chargement du planning…</div>`;
   if (S.mode === "login") return `<section class="sec"><h2>Bienvenue</h2>
-    <div class="card"><b>Tu es adhérent·e ?</b><span class="small muted">Ouvre le lien perso que Nathanael t'a envoyé par texto. Il te connecte directement, sans mot de passe.</span></div>
+    <div class="card"><b>Tu es adhérent·e ?</b><span class="small muted">Ouvre le lien perso que Nathanael t'a envoyé par texto. Si tu es dans l'appli de l'écran d'accueil, copie ce lien depuis le texto et colle-le ici (une seule fois) :</span>
+      <input type="url" id="pl" data-d="pl.link" placeholder="Colle ton lien ici" value="${esc(d("pl.link",""))}" autocomplete="off">
+      <button class="btn solid" data-a="paste-link">Ouvrir mon espace</button></div>
     <div class="card"><b>Espace coach</b><button class="btn solid" data-a="coach-login">Se connecter avec Google</button>${S.loginErr ? `<span class="small" style="color:var(--warn)">${esc(S.loginErr)}</span>` : ""}</div></section>`;
   if (S.mode === "badlink") return `<div class="empty">Ce lien n'est plus valable. Demande un nouveau lien à Nathanael.</div>`;
   if (S.mode === "offline") return `<div class="empty">Impossible de se connecter pour l'instant. Vérifie ta connexion internet, puis rouvre l'appli.${S.err ? `<br><span class="small muted">(${esc(S.err)})</span>` : ""}</div>`;
@@ -833,6 +835,10 @@ async function act(a, ds){
       if (m?.code) b.delete(db.doc("codes/" + m.code));
       await run(b.commit(), "Nouveau lien créé"); return; }
     case "coach-login": return coachLogin();
+    case "paste-link": { const m = String(S.drafts["pl.link"] || "").match(/[?&]c=([A-Za-z0-9]+)/) || String(S.drafts["pl.link"] || "").trim().match(/^([A-Za-z0-9]{16,})$/);
+      if (!m) { toast("Ce n'est pas le bon lien : copie tout le lien du texto."); return; }
+      try { localStorage.setItem("nn.code", m[1]); } catch (e) {}
+      location.href = location.pathname + "?c=" + m[1]; return; }
     case "logout": await firebase.auth().signOut(); try { localStorage.removeItem("nn.code"); } catch (e) {} location.href = location.pathname; return;
     case "import": return importSeed();
     case "custom-open": S.sheet = {type:"custom"}; return;
