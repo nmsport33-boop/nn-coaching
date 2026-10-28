@@ -341,7 +341,7 @@ function aboCard(m, coach){
       : `<b>Coaching réglé jusqu'au ${esc(finAbo(e.fin))}</b><span>Encore ${e.jours} jour${e.jours>1?"s":""}. Pour continuer après, il faudra régler le mois suivant auprès de Nathanael.</span>`; }
   return `<div class="banner ${cls}" style="flex-direction:column;align-items:flex-start;gap:4px">
     <span class="eyebrow" style="color:inherit;opacity:.7">${coach ? "Abonnement" : "Ton abonnement"}${m.forfait ? " · " + esc(m.forfait) : ""}</span>${txt}
-    ${coach && e.fin ? `<button class="btn sm solid" data-a="renew">Renouveler : +1 mois</button>` : ""}</div>`;
+    ${coach && e.fin ? `<button class="btn sm ${S.confirmRenew ? "ink" : "solid"}" data-a="renew">${S.confirmRenew ? "Confirmer : +1 mois payé" : "Renouveler : +1 mois"}</button>` : ""}</div>`;
 }
 const isAuto = s => !!s && s.lieu !== "Salle";
 const lieuLbl = s => s?.lieu === "À distance" ? "À distance" : isAuto(s) ? "En autonomie" : "Salle";
@@ -817,7 +817,8 @@ async function act(a, ds){
     case "unblock": await run(db.doc("slots/" + k).delete(), "Créneau débloqué"); return;
     case "free": await run(db.doc("slots/" + ds.doc).delete(), "Place libérée"); return;
     case "bookfor": S.sheet = {type:"bookfor", k}; return;
-    case "renew": { const e = aboEtat(S.cur.member), fin = addMonth(e.fin && !e.expire ? e.a.fin : iso(new Date(Date.now() - 864e5)));
+    case "renew": { if (!S.confirmRenew) { S.confirmRenew = true; setTimeout(() => { S.confirmRenew = false; render(true); }, 5000); return; } S.confirmRenew = false;
+      const e = aboEtat(S.cur.member), fin = addMonth(e.fin && !e.expire ? e.a.fin : iso(new Date(Date.now() - 864e5)));
       await run(db.doc("members/" + S.fiche).update({"abo.fin": fin}), `Renouvelé jusqu'au ${finAbo(parseIso(fin))}`); return; }
     case "project": return project(v, k);
     case "proj-close": closeProj(); return;
