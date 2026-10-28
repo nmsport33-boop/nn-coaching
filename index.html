@@ -707,6 +707,7 @@ function memberForm(mid){
     <label class="f">Prénom<input type="text" id="mp" data-d="${k}prenom" value="${esc(d(k+"prenom", m.prenom||""))}"></label>
     <label class="f">Objectif (visible par l'adhérent)<textarea id="mo" data-d="${k}objectif">${esc(d(k+"objectif", m.objectif||""))}</textarea></label>
     <label class="f">Formule<input type="text" id="mf" data-d="${k}forfait" value="${esc(d(k+"forfait", m.forfait||""))}" placeholder="Ex. 1 séance coachée / semaine + autonomie"></label>
+    <label class="f">E-mail (facultatif, pour l'invitation Google Agenda)<input type="email" id="me" data-d="${k}email" value="${esc(d(k+"email", m.email||""))}" autocomplete="off" placeholder="prenom@gmail.com"></label>
     <p class="small muted" style="margin:0">Garde les détails médicaux dans ton bilan. Ici, reste simple (« genou touché », pas de diagnostic).</p>
     <div class="row"><button class="btn solid" data-a="save-member" data-v="${esc(mid||"")}">Enregistrer</button></div></div></section>`;
 }
@@ -864,9 +865,11 @@ async function saveMember(mid){
   if (!prenom) { toast("Indique un prénom."); return; }
   const objectif = (S.drafts[p+"objectif"] ?? (mid ? S.cur.member?.objectif : "") ?? "").trim();
   const forfait = (S.drafts[p+"forfait"] ?? (mid ? S.cur.member?.forfait : "") ?? "").trim();
-  if (mid) { if (await run(S.db.doc("members/" + mid).update({prenom, objectif, forfait}), "Fiche enregistrée")) { S.sheet = null; clearDrafts(p); } return; }
+  const email = (S.drafts[p+"email"] ?? (mid ? S.cur.member?.email : "") ?? "").trim().slice(0, 120);
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast("L'adresse e-mail n'est pas valide."); return; }
+  if (mid) { if (await run(S.db.doc("members/" + mid).update({prenom, objectif, forfait, email}), "Fiche enregistrée")) { S.sheet = null; clearDrafts(p); } return; }
   const id = "m-" + rid(10), code = rid(22), b = S.db.batch();
-  b.set(S.db.doc("members/" + id), {prenom, objectif, forfait, manual:true, code, createdAt:Date.now(), cycle: {...DEFAULT_CYCLE, debut: iso(new Date())}});
+  b.set(S.db.doc("members/" + id), {prenom, objectif, forfait, email, manual:true, code, createdAt:Date.now(), cycle: {...DEFAULT_CYCLE, debut: iso(new Date())}});
   b.set(S.db.doc("codes/" + code), {cid: id});
   if (await run(b.commit(), `${prenom} ajouté·e`)) {
     S.sheet = null; clearDrafts(p); S.fiche = id; watch(id); }
