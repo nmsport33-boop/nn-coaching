@@ -1106,7 +1106,7 @@ async function seedPerso(db){
     b.set(ref, {...sp.member, createdAt: Date.now()});
     for (const [id, v] of Object.entries(sp.seances)) b.set(db.doc(`members/${sp.id}/seances/${id}`), v);
     await b.commit(); toast("Tes séances haut des pecs sont ajoutées (fiche Nathanael)");
-  } catch (e) {}
+  } catch (e) { toast("Séances perso non ajoutées : " + (e && (e.code || e.message) || "erreur")); }
 }
 function startData(isCoach, cid){
   const db = S.db;
