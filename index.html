@@ -383,7 +383,8 @@ function view(){
     <div class="card"><b>Tu es adhérent·e ?</b><span class="small muted">Ouvre le lien perso que Nathanael t'a envoyé par texto. Il te connecte directement, sans mot de passe.</span></div>
     <div class="card"><b>Espace coach</b><button class="btn solid" data-a="coach-login">Se connecter avec Google</button>${S.loginErr ? `<span class="small" style="color:var(--warn)">${esc(S.loginErr)}</span>` : ""}</div></section>`;
   if (S.mode === "badlink") return `<div class="empty">Ce lien n'est plus valable. Demande un nouveau lien à Nathanael.</div>`;
-  if (S.mode === "offline") return `<div class="empty">Impossible de se connecter pour l'instant. Vérifie ta connexion internet, puis rouvre l'appli.</div>`;
+  if (S.mode === "offline") return `<div class="empty">Impossible de se connecter pour l'instant. Vérifie ta connexion internet, puis rouvre l'appli.${S.err ? `<br><span class="small muted">(${esc(S.err)})</span>` : ""}</div>`;
+  if (S.mode === "noanon") return `<div class="empty">L'accès par lien n'est pas encore activé. Préviens Nathanael (Firebase › Authentication › Connexion anonyme).</div>`;
   let pre = "";
   if (S.asMember) pre = `<div class="banner mag"><span>Tu vois l'appli comme <b>${esc(S.members[S.asMember]?.prenom || "l'adhérent")}</b>. Ce que tu écris ici est signé « Coach ».</span><button class="btn sm solid" data-a="exit-preview">Revenir en coach</button></div>`;
   if (isCoachUI()) {
@@ -1088,7 +1089,12 @@ function startData(isCoach, cid){
   auth.onAuthStateChanged(async u => {
     if (started) return;
     const isCoach = !!u && !u.isAnonymous && (u.email || "").toLowerCase() === String(window.COACH_EMAIL).toLowerCase();
-    if (isCoach) { started = true; startData(true); return; }
+    if (isCoach) { started = true; startData(true);
+      /* le coach qui ouvre le lien d'une adhérente : on lui montre l'appli de cette adhérente */
+      const cc = url.searchParams.get("c");
+      if (cc) { try { const c = await S.db.doc("codes/" + cc).get(); if (c.exists) { S.fiche = c.data().cid; watch(S.fiche); S.asMember = S.fiche; S.tab = "seances"; toast("Tu vois l'appli de ton adhérente (aperçu coach)"); render(true); } } catch (e) {} }
+      try { if (cc) localStorage.removeItem("nn.code"); } catch (e) {}
+      return; }
     if (u && !u.isAnonymous) { S.mode = "login"; S.loginErr = `${u.email} n'est pas l'adresse du coach.`; await auth.signOut(); render(true); return; }
     if (!code) { S.mode = "login"; render(true); return; }
     try {
@@ -1098,7 +1104,7 @@ function startData(isCoach, cid){
       const cid = c.data().cid;
       await S.db.doc("links/" + u.uid).set({code, cid, at: Date.now()});
       started = true; startData(false, cid);
-    } catch (e) { S.mode = e && e.code === "permission-denied" ? "badlink" : "offline"; render(true); }
+    } catch (e) { S.mode = e && e.code === "permission-denied" ? "badlink" : /admin-restricted|operation-not-allowed/.test(e && e.code || "") ? "noanon" : "offline"; S.err = e && (e.code || e.message); render(true); }
   });
 })();
 
