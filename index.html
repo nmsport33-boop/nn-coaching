@@ -475,7 +475,8 @@ function slotCard(k, coach){
     else if (!past) right = `<button class="btn sm" data-a="book" data-k="${k}" ${S.writeBlocked?"disabled":""}>+ Réserver</button>`;
   }
   if (past && !foot && !n) cls += " off";
-  return `<div class="slot ${cls}"><div class="slot-in">
+  const tap = !coach && right.includes('data-a="book"') ? ` data-a="book" data-k="${k}" role="button" style="cursor:pointer"` : "";
+  return `<div class="slot ${cls}"${tap}><div class="slot-in">
     <div><div class="t">${h}</div><div class="dur">60 min</div></div><div class="rail"></div>
     <div class="what"><b>${coach ? "Coaching privé" : "Coaching"}</b><span>${who}</span></div>${coach ? "" : right}</div>${coach && right ? `<div class="acts">${right}</div>` : ""}${foot}</div>`;
 }
@@ -877,7 +878,7 @@ async function act(a, ds){
 }
 
 async function claim(k, mid){
-  const s = S.slots[k];
+  const s = S.slots[k]; toast("Réservation en cours…");
   if (s?.blocked) { toast("Ce créneau est indisponible."); return false; }
   if (hasBy(s, mid)) { toast("Déjà inscrit·e sur ce créneau."); return false; }
   /* place 1 puis place 2 : les règles n'autorisent que la création, donc si quelqu'un prend la place entre-temps l'écriture est refusée */
