@@ -25,9 +25,18 @@ service cloud.firestore {
       allow delete, list: if coach();
     }
     // Créneaux : tout le monde voit s'ils sont pris (avec un identifiant anonyme), personne ne voit le suivi des autres
+    // Créneaux : 2 places maximum. Place 1 = slots/<clé>, place 2 = slots/<clé>~2.
+    // Tout le monde voit si les places sont prises (identifiant anonyme), personne ne voit le suivi des autres.
+    function seat(id) { return /databases/$(database)/documents/slots/$(id); }
     match /slots/{k} {
       allow read: if coach() || linked();
-      allow create: if coach() || (linked() && request.resource.data.by == myCid() && request.resource.data.keys().hasOnly(['by', 'at']));
+      allow create: if coach() || (linked()
+        && k.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}([0-9]{2})?(~2)?$')
+        && request.resource.data.by == myCid() && request.resource.data.keys().hasOnly(['by', 'at'])
+        && ((k.matches('.*~2$') && exists(seat(k.replace('~2$', '')))
+              && get(seat(k.replace('~2$', ''))).data.get('by', '') != myCid()
+              && get(seat(k.replace('~2$', ''))).data.get('blocked', false) == false)
+          || (!k.matches('.*~2$') && (!exists(seat(k + '~2')) || get(seat(k + '~2')).data.get('by', '') != myCid()))));
       allow delete: if coach() || (linked() && resource.data.by == myCid());
       allow update: if coach();
     }

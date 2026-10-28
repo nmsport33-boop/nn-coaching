@@ -92,7 +92,7 @@ main{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-lef
 .slot .rail{width:3px;align-self:stretch;border-radius:3px;background:var(--gold)}
 .slot .what{flex:1;min-width:0}
 .slot .what b{display:block;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.slot .what span{display:block;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slot .what > span{display:block;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .slot .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;padding:0 16px 12px}
 .slot.mine{border-color:var(--ok)}
 .slot .foot{background:var(--ok-soft);color:var(--ok);font-weight:600;font-size:14px;padding:8px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -225,6 +225,7 @@ textarea{min-height:84px;resize:vertical}
 const HOURS = {1:[14,15,16,17,18], 3:[14,15,16,17,18], 5:[14,15,16,17,18], 6:[9,10,11]}; // lun, mer, ven, sam
 const WEEKS_AHEAD = 6;
 const CANCEL_HOURS = 24;
+const CAPACITY = 2; // 2 personnes maximum par créneau dans la salle
 const DEFAULT_BLOCS = [
   {code:"A1", nom:"Échauffement", tours:"2 tours", exos:[]},
   {code:"A2", nom:"Activation", tours:"2 tours", exos:[]},
@@ -255,6 +256,9 @@ const keyOf = (d,h) => `${iso(d)}_${pad(h)}`;
 function slotDate(k){ const [ds,h] = k.split("_"); const [y,m,d] = ds.split("-").map(Number); return new Date(y,m-1,d,Number(h.slice(0,2)),Number(h.slice(2)||0)); }
 const hm = t => `${t.getHours()}h${t.getMinutes() ? pad(t.getMinutes()) : ""}`;
 const isCustom = k => k.split("_")[1].length === 4;
+/* un créneau a 2 places : document `slots/<clé>` (place 1) et `slots/<clé>~2` (place 2) */
+const seatsOf = s => (s && s.seats) || [];
+const hasBy = (s, mid) => seatsOf(s).some(x => x.by === mid);
 /* un rendez-vous à une heure libre (ex. 14h15) rend indisponibles les créneaux fixes qu'il chevauche */
 function overlapOf(k){ const t = slotDate(k), day = k.split("_")[0];
   return Object.keys(S.slots).find(c => isCustom(c) && c.startsWith(day + "_") && S.slots[c].by && Math.abs(slotDate(c) - t) < 36e5) || null; }
@@ -292,7 +296,7 @@ const memberId = () => S.asMember || (S.owner ? S.fiche : S.uid);
 const isCoachUI = () => S.owner && !S.asMember;
 function nextBooking(mid){
   const now = new Date();
-  return Object.keys(S.slots).filter(k => S.slots[k].by === mid && slotDate(k) > now).sort()[0] || null;
+  return Object.keys(S.slots).filter(k => hasBy(S.slots[k], mid) && slotDate(k) > now).sort()[0] || null;
 }
 const isAuto = s => !!s && s.lieu !== "Salle";
 const lieuLbl = s => s?.lieu === "À distance" ? "À distance" : isAuto(s) ? "En autonomie" : "Salle";
@@ -384,8 +388,8 @@ function planning(coach){
   const lbl = S.week === 0 ? "Cette semaine" : S.week === 1 ? "Semaine prochaine" : `Semaine du ${days[0].toLocaleDateString("fr-FR",{day:"numeric",month:"long"})}`;
   const dayBtns = days.map(x => {
     const ks = dayKeys(x);
-    const free = ks.filter(k => { const s = S.slots[k]; return !isCustom(k) && slotDate(k) > now && !(s && (s.by || s.blocked)) && !overlapOf(k); }).length;
-    const booked = ks.filter(k => S.slots[k]?.by).length;
+    const free = ks.filter(k => { const s = S.slots[k]; return !isCustom(k) && slotDate(k) > now && !(s && (s.blocked || seatsOf(s).length >= CAPACITY)) && !overlapOf(k); }).length;
+    const booked = ks.reduce((n, k) => n + seatsOf(S.slots[k]).length, 0);
     const info = iso(x) < today ? "" : coach ? (booked ? `${booked} rdv` : "") : (free ? `${free} libre${free>1?"s":""}` : "complet");
     return `<button class="day ${iso(x)===S.day?"on":""} ${iso(x)<today?"past":""}" data-a="day" data-v="${iso(x)}">
       <span class="dn">${x.toLocaleDateString("fr-FR",{weekday:"short"}).replace(".","")}</span>
@@ -408,24 +412,32 @@ function planning(coach){
 }
 
 function slotCard(k, coach){
-  const s = S.slots[k] || {}, t = slotDate(k), past = t < new Date(), me = memberId();
-  const h = `${pad(t.getHours())}:${pad(t.getMinutes())}`, ov = !s.by && !s.blocked ? overlapOf(k) : null;
+  const s = S.slots[k] || {}, seats = seatsOf(s), n = seats.length, full = n >= CAPACITY;
+  const t = slotDate(k), past = t < new Date(), me = memberId();
+  const h = `${pad(t.getHours())}:${pad(t.getMinutes())}`, ov = !n && !s.blocked ? overlapOf(k) : null;
+  const jauge = `<span class="chip ${full ? "" : n ? "gold" : "ok"}" style="padding:1px 8px;margin-right:6px;font-size:12px">${n}/${CAPACITY}</span>`;
   let cls = "", right = "", foot = "", who = "À la salle";
   if (ov) { cls = "blocked off"; who = coach ? `Pris par le rdv de ${hm(slotDate(ov))}` : "Indisponible"; }
   else if (coach) {
     if (s.blocked) { cls = "blocked"; who = "Créneau bloqué"; right = past ? "" : `<button class="btn sm ghost" data-a="unblock" data-k="${k}">Débloquer</button>`; }
-    else if (s.by) { cls = "taken"; const m = S.members[s.by];
-      who = m ? `<b style="display:inline;font-size:inherit;color:var(--ink)">${esc(m.prenom)}</b>` : "Adhérent";
-      right = `<div class="row">${m ? `<button class="btn sm" data-a="open-member" data-v="${esc(s.by)}">Fiche</button>` : ""}${past ? "" : `<button class="btn sm ghost" data-a="free" data-k="${k}">Libérer</button>`}</div>`; }
-    else if (!past) right = `<div class="row"><button class="btn sm solid" data-a="bookfor" data-k="${k}">+ Placer</button><button class="btn sm ghost" data-a="block" data-k="${k}">Bloquer</button></div>`;
-    else who = "Libre";
+    else {
+      if (full) cls = "taken";
+      who = n ? `${jauge} ` + seats.map(x => { const m = S.members[x.by]; return m ? `<b style="display:inline;font-size:inherit;color:var(--ink)">${esc(m.prenom)}</b>` : "Adhérent"; }).join(" + ")
+              : `${jauge} ${past ? "Libre" : "À la salle"}`;
+      right = seats.map(x => { const m = S.members[x.by];
+        return `${m ? `<button class="btn sm" data-a="open-member" data-v="${esc(x.by)}">Fiche ${esc(m.prenom)}</button>` : ""}${past ? "" : `<button class="btn sm ghost" data-a="free" data-doc="${esc(x.doc)}">Libérer${m ? " " + esc(m.prenom) : ""}</button>`}`; }).join("");
+      if (!past && !full) right += `<button class="btn sm solid" data-a="bookfor" data-k="${k}">+ Placer</button>` + (n ? "" : `<button class="btn sm ghost" data-a="block" data-k="${k}">Bloquer</button>`);
+      if (right) right = `<div class="row">${right}</div>`;
+    }
   } else {
-    if (s.by === me) { cls = "mine"; const canCancel = (t - new Date()) / 36e5 > CANCEL_HOURS;
+    if (!s.blocked) who = `${jauge} ${n === 0 ? "Personne pour l'instant" : n === 1 ? "1 personne inscrite" : "Complet"}`;
+    if (hasBy(s, me)) { cls = "mine"; const canCancel = (t - new Date()) / 36e5 > CANCEL_HOURS;
+      who = `${jauge} ${n === 1 ? "Personne d'autre pour l'instant" : "Une autre personne sera là"}`;
       foot = `<div class="foot"><span>✓ Réservé</span><a class="btn sm link" href="${esc(gcalSlot(k))}" target="_blank" rel="noopener">+ Google Agenda</a>${canCancel ? `<button class="btn sm link" data-a="cancel" data-k="${k}">Annuler</button>` : `<span class="small">${past ? "" : "moins de 24 h"}</span>`}</div>`; }
-    else if (s.by || s.blocked) { cls = "taken"; right = `<span class="chip">${s.blocked ? "Indisponible" : "Complet"}</span>`; }
+    else if (full || s.blocked) { cls = "taken"; right = `<span class="chip">${s.blocked ? "Indisponible" : "Complet"}</span>`; }
     else if (!past) right = `<button class="btn sm" data-a="book" data-k="${k}" ${S.writeBlocked?"disabled":""}>+ Réserver</button>`;
   }
-  if (past && !foot && !s.by) cls += " off";
+  if (past && !foot && !n) cls += " off";
   return `<div class="slot ${cls}"><div class="slot-in">
     <div><div class="t">${h}</div><div class="dur">60 min</div></div><div class="rail"></div>
     <div class="what"><b>${coach ? "Coaching privé" : "Coaching"}</b><span>${who}</span></div>${coach ? "" : right}</div>${coach && right ? `<div class="acts">${right}</div>` : ""}${foot}</div>`;
@@ -433,7 +445,7 @@ function slotCard(k, coach){
 
 function mesRdv(){
   const mid = memberId(), now = new Date();
-  const ks = Object.keys(S.slots).filter(k => S.slots[k].by === mid && slotDate(k) > now).sort();
+  const ks = Object.keys(S.slots).filter(k => hasBy(S.slots[k], mid) && slotDate(k) > now).sort();
   const today = iso(now);
   const auto = allSeances().filter(x => isAuto(x) && !hiddenFor(x) && x.statut !== "faite" && x.date && x.date >= today);
   if (!ks.length && !auto.length) return "";
@@ -724,11 +736,12 @@ async function act(a, ds){
     case "day": S.day = v; break;
     case "book": return book(k);
     case "cancel": {
-      const s = S.slots[k]; if (!s || s.by !== memberId()) return;
+      const seat = seatsOf(S.slots[k]).find(x => x.by === memberId()); if (!seat) return;
       if ((slotDate(k) - new Date())/36e5 <= CANCEL_HOURS && !S.owner) { toast("Moins de 24 h : préviens Nathanael directement."); return; }
-      await run(db.doc("slots/" + k).delete(), "Réservation annulée"); return; }
+      await run(db.doc("slots/" + seat.doc).delete(), "Réservation annulée"); return; }
     case "block": await run(db.doc("slots/" + k).set({blocked:true, at:Date.now()}), "Créneau bloqué"); return;
-    case "unblock": case "free": await run(db.doc("slots/" + k).delete(), a === "free" ? "Créneau libéré" : "Créneau débloqué"); return;
+    case "unblock": await run(db.doc("slots/" + k).delete(), "Créneau débloqué"); return;
+    case "free": await run(db.doc("slots/" + ds.doc).delete(), "Place libérée"); return;
     case "bookfor": S.sheet = {type:"bookfor", k}; return;
     case "pickfor": { const ok = await claim(k, v); if (ok) { S.sheet = null; toast(`${S.members[v]?.prenom || "Adhérent"} placé·e ${fmtSlot(k)}`); } return; }
     case "open-member": S.tab = "adherents"; S.fiche = v; S.sheet = null; watch(v); window.scrollTo(0,0); return;
@@ -800,10 +813,16 @@ async function act(a, ds){
 }
 
 async function claim(k, mid){
-  const ref = S.db.doc("slots/" + k);
-  /* les règles n'autorisent que la création : si quelqu'un a pris le créneau entre-temps, l'écriture est refusée */
-  try { const cur = await ref.get(); if (cur.exists) { toast("Ce créneau vient d'être pris."); return false; } } catch (e) {}
-  return run(ref.set({by: mid, at: Date.now()}));
+  const s = S.slots[k];
+  if (s?.blocked) { toast("Ce créneau est indisponible."); return false; }
+  if (hasBy(s, mid)) { toast("Déjà inscrit·e sur ce créneau."); return false; }
+  /* place 1 puis place 2 : les règles n'autorisent que la création, donc si quelqu'un prend la place entre-temps l'écriture est refusée */
+  for (const id of [k, k + "~2"]) {
+    const ref = S.db.doc("slots/" + id);
+    try { if ((await ref.get()).exists) continue; } catch (e) {}
+    return run(ref.set({by: mid, at: Date.now()}));
+  }
+  toast(`Ce créneau est complet (${CAPACITY} personnes maximum).`); return false;
 }
 async function book(k){
   if (slotDate(k) < new Date()) return;
@@ -862,7 +881,7 @@ async function linkTo(from){
       const q = await db.collection(`members/${from}/${col}`).get();
       for (const x of q.docs) { await db.doc(`members/${to}/${col}/${x.id}`).set(JSON.parse(JSON.stringify(x.data()))); await db.doc(`members/${from}/${col}/${x.id}`).delete(); }
     }
-    for (const [k,s] of Object.entries(S.slots)) if (s.by === from) await db.doc("slots/" + k).set({...s, by: to});
+    for (const s of Object.values(S.slots)) for (const x of seatsOf(s)) if (x.by === from) await db.doc("slots/" + x.doc).update({by: to});
     await db.doc("members/" + from).delete();
     S.sheet = null; toast("Fiches reliées");
   } catch (e) { toast("La liaison n'a pas pu se terminer. Réessaie : rien n'est perdu."); }
@@ -908,7 +927,11 @@ async function importSeed(){
 
 function startData(isCoach, cid){
   const db = S.db;
-  db.collection("slots").limit(1000).onSnapshot(q => { const o = {}; q.docs.forEach(x => o[x.id] = x.data()); S.slots = o; render(); }, () => {});
+  db.collection("slots").limit(2000).onSnapshot(q => { const o = {};
+    q.docs.forEach(x => { const v = x.data(), e = o[x.id.split("~")[0]] ??= {seats: []};
+      if (v.blocked) e.blocked = true; else if (v.by) { e.seats.push({doc: x.id, by: v.by, at: v.at || 0}); e.by = e.by || v.by; } });
+    for (const e of Object.values(o)) e.seats.sort((p, q2) => p.at - q2.at);
+    S.slots = o; render(); }, () => {});
   if (isCoach) {
     S.owner = true; S.tab = "planning";
     db.collection("members").limit(500).onSnapshot(q => { const o = {}; q.docs.forEach(x => o[x.id] = x.data()); S.members = o; S.membersLoaded = true; render(); }, () => {});
