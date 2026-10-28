@@ -10,6 +10,17 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="NN Coaching">
 <link rel="manifest" href="manifest.webmanifest">
+<script>
+/* l'icône de l'écran d'accueil doit rouvrir le lien perso de l'adhérente (avec ?c=…), sinon elle tombe sur l'accueil */
+(function(){ try {
+  var c = new URL(location.href).searchParams.get("c"); if (!c) return;
+  var base = location.origin + location.pathname, abs = function(f){ return new URL(f, location.href).href; };
+  var m = {name:"NN Coaching", short_name:"NN Coaching", start_url: base + "?c=" + encodeURIComponent(c), scope: base, display:"standalone",
+    background_color:"#16161d", theme_color:"#16161d", lang:"fr",
+    icons:[{src:abs("icon-192.png"), sizes:"192x192", type:"image/png"}, {src:abs("icon-512.png"), sizes:"512x512", type:"image/png"}]};
+  document.querySelector('link[rel=manifest]').href = "data:application/manifest+json," + encodeURIComponent(JSON.stringify(m));
+} catch (e) {} })();
+</script>
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
