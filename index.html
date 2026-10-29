@@ -354,6 +354,24 @@ function aboCard(m, coach){
     <span class="eyebrow" style="color:inherit;opacity:.7">${coach ? "Abonnement" : "Ton abonnement"}${m.forfait ? " · " + esc(m.forfait) : ""}</span>${txt}
     ${coach && e.fin ? `<button class="btn sm ${S.confirmRenew ? "ink" : "solid"}" data-a="renew">${S.confirmRenew ? "Confirmer : +1 mois payé" : "Renouveler : +1 mois"}</button>` : ""}</div>`;
 }
+/* formule : "coache" (séances en salle avec Nathanael + autonomie) ou "distance" (autonomie seule) ; sans choix, déduite des séances */
+function optionOf(m, seances){ if (m?.option === "coache" || m?.option === "distance") return m.option;
+  return seances && Object.values(seances).some(x => x.lieu === "Salle") ? "coache" : seances ? "distance" : ""; }
+function formuleCard(m){
+  if (optionOf(m, S.cur.seances) === "coache") return `<section class="sec"><div class="card" style="border:2px solid var(--gold)">
+    <span class="eyebrow" style="color:var(--gold)">Ta formule · Coaching en salle</span>
+    <b style="font-family:var(--display);font-size:22px">Tu as des séances coachées avec Nathanael</b>
+    <span class="small">En salle, à deux maximum : ta technique est corrigée en direct, tes charges ajustées sur place, et ton programme en autonomie est réglé après chaque séance, à partir de ce que vous vous êtes dit.</span>
+    ${S.tab !== "reserver" ? `<div class="row"><button class="btn sm solid" data-a="tab" data-v="reserver">Réserver ma séance coachée</button></div>` : ""}</div></section>`;
+  const deja = S.cur.notes.some(n => n.auteur === "adherent" && n.option);
+  return `<section class="sec"><div class="card">
+    <span class="eyebrow">Ta formule · Programme à distance</span>
+    <span class="small">Tes séances sont dans « Mes séances », avec une vidéo pour chaque exercice. Coche ce que tu as fait et note ton ressenti après chaque séance : Nathanael suit tout à distance et ajuste ton programme.</span>
+    <div class="banner" style="flex-direction:column;align-items:flex-start;gap:6px">
+      <b>Envie d'aller plus vite ? Ajoute des séances coachées</b>
+      <span>Une heure en salle avec Nathanael, à deux maximum : technique corrigée en direct, charges ajustées sur place, et un programme réglé au plus près de tes sensations.</span>
+      ${deja ? `<span class="chip ok">Demande envoyée à Nathanael</span>` : `<button class="btn sm solid" data-a="want-coach" ${S.writeBlocked?"disabled":""}>Ça m'intéresse</button>`}</div></div></section>`;
+}
 const isAuto = s => !!s && s.lieu !== "Salle";
 const lieuLbl = s => s?.lieu === "À distance" ? "À distance" : isAuto(s) ? "En autonomie" : "Salle";
 const SALLE = "Salle de coaching, Saint-Médard-en-Jalles";
@@ -420,8 +438,9 @@ function view(){
   if (S.cur.member === undefined) return pre + `<div class="empty">Chargement de ton espace…</div>`;
   if (S.cur.member === null) return pre + onboarding();
   const abo = `<section class="sec">${aboCard(S.cur.member, false)}</section>`;
-  if (S.tab === "reserver") return pre + abo + mesRdv() + planning(false);
-  if (S.tab === "seances") return pre + abo + seancesView();
+  const fo = formuleCard(S.cur.member);
+  if (S.tab === "reserver") return pre + abo + fo + mesRdv() + planning(false);
+  if (S.tab === "seances") return pre + abo + (optionOf(S.cur.member, S.cur.seances) === "coache" ? fo + seancesView() : seancesView() + fo);
   if (S.tab === "cycle") return pre + cycleView(S.cur.member, true);
   return pre;
 }
@@ -522,7 +541,7 @@ function adherents(){
   const cards = list.map(([id,m]) => { const nb = nextBooking(id);
     return `<button class="card tap" data-a="open-member" data-v="${esc(id)}"><div class="h">
       <div class="row" style="flex-wrap:nowrap;min-width:0"><span class="avatar">${esc(initials(m.prenom))}</span>
-      <div style="min-width:0"><b>${esc(m.prenom)}</b><div class="small muted">${esc(m.cycle?.nom || "Pas encore de cycle")}</div></div></div>
+      <div style="min-width:0"><b>${esc(m.prenom)}</b>${m.option ? ` <span class="chip ${m.option === "coache" ? "gold" : ""}" style="font-size:11px">${m.option === "coache" ? "Coaché" : "À distance"}</span>` : ""}<div class="small muted">${esc(m.cycle?.nom || "Pas encore de cycle")}</div></div></div>
       <span class="chip ${m.manual ? "" : "ok"}">${m.manual ? "Fiche coach" : "Compte relié"}</span></div>
       <div class="small">${nb ? `Prochain rdv : <b>${esc(fmtSlot(nb))}</b>` : `<span class="muted">Aucun rdv à venir</span>`}</div>
       ${(e => !e.fin ? `<span class="small muted">${e.prix ? `${e.prix} €/mois${e.offert ? " · offert pour l'instant" : ""}` : "Accès illimité"}</span>` : e.expire ? `<span class="chip" style="background:var(--mag-soft);color:var(--mag)">Abonnement terminé</span>` : `<span class="small ${e.jours<=7?"":"muted"}">Payé jusqu'au ${esc(finAbo(e.fin))}</span>`)(aboEtat(m))}</button>`; }).join("");
@@ -548,7 +567,8 @@ function fiche(){
   <section class="sec"><div class="h row" style="flex-wrap:nowrap"><span class="avatar">${esc(initials(m.prenom))}</span>
     <div style="min-width:0;flex:1"><h2 style="font-size:28px">${esc(m.prenom)}</h2><div class="small muted">${esc(m.objectif || "")}</div></div></div>
     <div class="row">${nb ? `<span class="chip ok">Prochain rdv : ${esc(fmtSlot(nb))}</span>` : `<span class="chip">Aucun rdv à venir</span>`}
-      <span class="chip ${m.manual ? "" : "ok"}">${m.manual ? "Fiche coach" : "Compte relié"}</span></div>
+      <span class="chip ${m.manual ? "" : "ok"}">${m.manual ? "Fiche coach" : "Compte relié"}</span>
+      ${(o => o ? `<span class="chip ${o === "coache" ? "gold" : ""}">${o === "coache" ? "Séances coachées" : "À distance"}</span>` : "")(optionOf(m, S.cur.seances))}</div>
     <div class="row"><button class="btn sm" data-a="preview">Voir son appli</button><button class="btn sm ghost" data-a="edit-member">Modifier la fiche</button>
 </div></section>
   <section class="sec"><div class="card"><b>Son lien d'accès</b>
@@ -647,7 +667,7 @@ function noteHtml(n){
   const coach = n.auteur === "coach", who = coach ? "Coach" : (S.cur.member?.prenom || "Adhérent");
   const mine = isCoachUI() || S.owner || n.auteur === "adherent";
   return `<div class="note ${coach?"coach":"adh"}"><div class="meta"><b style="color:var(--ink)">${esc(who)}</b><span>${esc(fmtWhen(n.at))}</span>
-    ${n.suivante ? `<span class="chip gold">pour la séance suivante</span>` : ""}
+    ${n.suivante ? `<span class="chip gold">pour la séance suivante</span>` : ""}${n.option ? `<span class="chip mag">veut des séances coachées</span>` : ""}
     ${mine ? `<button class="btn link sm" style="margin-left:auto;font-size:12px;color:var(--muted)" data-a="del-note" data-v="${esc(n.id)}">Supprimer</button>` : ""}</div>
     <div class="txt">${esc(n.texte)}</div></div>`;
 }
@@ -788,6 +808,7 @@ function memberForm(mid){
   return `<section class="sec"><div class="card">
     <label class="f">Prénom<input type="text" id="mp" data-d="${k}prenom" value="${esc(d(k+"prenom", m.prenom||""))}"></label>
     <label class="f">Objectif (visible par l'adhérent)<textarea id="mo" data-d="${k}objectif">${esc(d(k+"objectif", m.objectif||""))}</textarea></label>
+    <label class="f">Option<select id="mopt" data-d="${k}option">${[["coache","Séances coachées en salle + autonomie"],["distance","À distance (autonomie seule)"]].map(([v,l]) => `<option value="${v}" ${d(k+"option", optionOf(m, mid ? S.cur.seances : null) || "coache")===v?"selected":""}>${l}</option>`).join("")}</select></label>
     <label class="f">Formule<input type="text" id="mf" data-d="${k}forfait" value="${esc(d(k+"forfait", m.forfait||""))}" placeholder="Ex. 1 séance coachée / semaine + autonomie"></label>
     <div class="grid3"><label class="f">Prix €/mois<input type="number" min="0" step="1" id="mpx" data-d="${k}prix" value="${esc(d(k+"prix", m.abo?.prix ?? ""))}" placeholder="vide"></label>
       <label class="f" style="grid-column:span 2">Payé jusqu'au (vide = illimité)<input type="date" id="mfin" data-d="${k}fin" value="${esc(d(k+"fin", m.abo?.fin || ""))}"></label></div>
@@ -896,6 +917,8 @@ async function act(a, ds){
       const doc = {seance: v || null, auteur: S.owner ? "coach" : "adherent", texte: txt.slice(0, 4000), at: Date.now(), suivante: v ? (S.drafts[p + ".s"] ?? true) : false};
       if (await run(db.collection(`members/${memberId()}/notes`).add(doc), "Note envoyée")) clearDrafts(p);
       return; }
+    case "want-coach": await run(db.collection(`members/${memberId()}/notes`).add({seance: null, auteur: S.owner ? "coach" : "adherent", option: "coache", suivante: false, at: Date.now(),
+      texte: "Je suis intéressé·e par les séances coachées en salle. Tu peux me dire comment ça marche ?"}), "Demande envoyée à Nathanael"); return;
     case "del-note": await run(db.doc(`members/${memberId()}/notes/${v}`).delete(), "Note supprimée"); return;
     case "new-seance": return newSeance();
     case "save-consignes": if (await run(db.doc("members/" + S.fiche).update({consignes: (S.drafts["su.consignes"] ?? "").trim().slice(0, 3000), consignesAt: Date.now()}), "Consignes enregistrées")) clearDrafts("su.consignes"); return;
@@ -1145,12 +1168,13 @@ async function saveMember(mid){
   const objectif = (S.drafts[p+"objectif"] ?? (mid ? S.cur.member?.objectif : "") ?? "").trim();
   const forfait = (S.drafts[p+"forfait"] ?? (mid ? S.cur.member?.forfait : "") ?? "").trim();
   const email = (S.drafts[p+"email"] ?? (mid ? S.cur.member?.email : "") ?? "").trim().slice(0, 120);
+  const option = S.drafts[p+"option"] ?? (optionOf(mid ? S.cur.member : {}, mid ? S.cur.seances : null) || "coache");
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast("L'adresse e-mail n'est pas valide."); return; }
   const old = (mid ? S.cur.member?.abo : null) || {}, px = S.drafts[p+"prix"] ?? old.prix ?? "";
   const abo = {prix: px === "" || px === null ? null : Math.max(0, Number(px) || 0), fin: S.drafts[p+"fin"] ?? old.fin ?? "", offert: !!(S.drafts[p+"offert"] ?? old.offert)};
-  if (mid) { if (await run(S.db.doc("members/" + mid).update({prenom, objectif, forfait, email, abo}), "Fiche enregistrée")) { S.sheet = null; clearDrafts(p); } return; }
+  if (mid) { if (await run(S.db.doc("members/" + mid).update({prenom, objectif, forfait, email, abo, option}), "Fiche enregistrée")) { S.sheet = null; clearDrafts(p); } return; }
   const id = "m-" + rid(10), code = rid(22), b = S.db.batch();
-  b.set(S.db.doc("members/" + id), {prenom, objectif, forfait, email, abo, manual:true, code, createdAt:Date.now(), cycle: {...DEFAULT_CYCLE, debut: iso(new Date())}});
+  b.set(S.db.doc("members/" + id), {prenom, objectif, forfait, email, abo, option, manual:true, code, createdAt:Date.now(), cycle: {...DEFAULT_CYCLE, debut: iso(new Date())}});
   b.set(S.db.doc("codes/" + code), {cid: id});
   if (await run(b.commit(), `${prenom} ajouté·e`)) {
     S.sheet = null; clearDrafts(p); S.fiche = id; watch(id); }
