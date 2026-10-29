@@ -2389,6 +2389,149 @@
      "visible": true
     }
    ]
+  },
+  {
+   "id": "melanie-activation-fessiers-2026-10-29",
+   "prenom": "Mélanie",
+   "message": "Mélanie : activation fessiers ajoutée à la séance du 30/10",
+   "seances": [
+    {
+     "blocs": [
+      {
+       "code": "A1",
+       "exos": [
+        {
+         "c": "Exécution : assise sur le rouleau, roulez lentement l'arrière de la cuisse puis la fesse (cheville croisée sur le genou opposé pour la fesse). 30 secondes par zone, 5 à 6/10 maximum.",
+         "d": "1 min / jambe",
+         "n": "Auto-massage fessiers et ischios au rouleau",
+         "v": "https://youtu.be/nOZ3vfzt6l8"
+        },
+        {
+         "c": "Exécution : à quatre pattes, creusez le dos en inspirant puis arrondissez-le en expirant, vertèbre par vertèbre.",
+         "d": "x10",
+         "n": "Chat-vache",
+         "v": "https://youtu.be/Fa4ZMS5M7xA"
+        },
+        {
+         "c": "Exécution : assise, les deux jambes à 90°. Basculez les genoux de l'autre côté sans décoller les pieds, buste droit.",
+         "d": "x8 / côté",
+         "n": "90/90 hip switch",
+         "v": "https://youtu.be/qq_Z7sAmVrA"
+        }
+       ],
+       "nom": "Échauffement",
+       "tours": "2 tours"
+      },
+      {
+       "code": "A2",
+       "nom": "Activation fessiers",
+       "tours": "2 tours · lent, on serre 2-3 sec en haut",
+       "exos": [
+        {
+         "n": "Cook hip raise",
+         "d": "x10 / côté · 3 sec en haut",
+         "v": "https://youtu.be/O3dpgQmiah8",
+         "c": "But : réveiller les fessiers avant le gros travail, pour que ce soient eux qui poussent (et pas les ischios ni le bas du dos).\nPosition : sur le dos, un genou ramené et tenu contre la poitrine à deux mains (ça bloque le bas du dos), l'autre pied à plat près des fesses.\nExécution : poussez dans le talon, montez le bassin, serrez la fesse 2 à 3 secondes en haut, redescendez lentement.\nPoint clé : on doit sentir la fesse. Si l'arrière de la cuisse tire, rapprochez le pied des fesses."
+        },
+        {
+         "n": "Glute press, buste sur le canapé",
+         "d": "x10 / côté · 3 sec en haut",
+         "v": "https://youtu.be/1FW1nM7FLdA",
+         "c": "Position : buste allongé sur le canapé (ou un banc), hanches au bord, un pied au sol genou plié pour l'appui. L'autre genou plié à 90°.\nExécution : poussez le talon vers le plafond en serrant la fesse, sans cambrer, tenez 2 à 3 secondes, redescendez lentement.\nPoint clé : petit mouvement, le bassin reste collé au canapé."
+        },
+        {
+         "c": "Remplace les relevés de pointes de pied cette semaine (tibia gauche sensible après la séance du 28/10).\nExécution : à quatre pattes, élastique au-dessus des genoux, genou plié à 90°. Levez la jambe sur le côté jusqu'à la hauteur de la hanche, 1 seconde, redescendez. Le bassin ne bouge pas.",
+         "d": "x10 / côté · 2 sec en haut",
+         "n": "Fire hydrant avec élastique",
+         "v": "https://youtu.be/Gn7b4qVxFYA"
+        }
+       ]
+      },
+      {
+       "code": "B1",
+       "exos": [
+        {
+         "c": "Remplace le split squat bulgare. Placée juste avant le pont B-stance, sans pause : elle fatigue aussi les quadriceps, donc les fessiers prennent tout le travail sur le pont qui suit (pré-fatigue).\nPosition : grand pas, une kettlebell dans chaque main. Descendez jusqu'à ce que le genou arrière soit à 5 cm du sol, cuisse avant parallèle au sol.\nPour les fessiers au maximum : pas long, buste penché en avant (environ 30°), poids dans le talon avant, et poussez le sol comme pour vous relever sans bouger. Serrez la fesse avant pendant toute la tenue.\nGenou : genou avant au-dessus de la cheville, aligné avec le 2e orteil. Le travail statique renforce le genou sans frottement dans l'articulation.\nDurée : 1 min par côté en semaine 1, jusqu'à 2 min en semaine 3 (voir le plan). Si elle ne tient pas, posez une kettlebell et finissez sans.",
+         "d": "1 min 15 / côté",
+         "n": "Fente isométrique lestée, 2 kettlebells 10 kg",
+         "v": "https://youtu.be/sh3RO6QYvew"
+        },
+        {
+         "c": "Intégration : on enchaîne juste après l'activation et on cherche la même sensation de fesse qu'au cook hip raise. Si c'est le bas du dos ou l'ischio qui travaille : stop, 5 cook hip raise, on reprend.\nPremière fois à la barre : 30 kg, on monte à 35 kg la semaine prochaine si 2 répétitions en réserve.\nExécution : barre sur les hanches (tapis plié dessous), pied qui travaille à plat près des fesses, l'autre posé sur le talon plus loin, juste pour l'équilibre. 80 % du poids sur la jambe arrière. Pause 1 seconde en haut, bassin horizontal.",
+         "d": "3 × 8 / côté · 30 kg",
+         "n": "Pont fessier pied décalé (B-stance), barre",
+         "v": "https://youtu.be/C3qmAX1Uaww"
+        }
+       ],
+       "nom": "Fessiers au maximum",
+       "tours": "3 tours, enchaînés sans pause · repos 2 min"
+      },
+      {
+       "code": "B2",
+       "exos": [
+        {
+         "c": "Exécution : kettlebell contre la poitrine, grand pas sur le côté, fesses en arrière, jambe d'appui pliée, l'autre tendue. Revenez en poussant dans le talon.\nBut : adducteurs et fessiers, dans le plan latéral.",
+         "d": "x8 / côté",
+         "n": "Fente latérale, kettlebell 10 kg",
+         "v": "https://youtu.be/hD8yDBkMvrY"
+        },
+        {
+         "c": "Pour les genoux : Swiss ball dans le bas du dos contre le mur, cuisses parallèles au sol, genoux au-dessus des chevilles. Tenez en serrant les fessiers.",
+         "d": "40 sec",
+         "n": "Chaise isométrique Swiss ball",
+         "v": "https://youtu.be/px1KnY0CWHo"
+        }
+       ],
+       "nom": "Adducteurs et genoux",
+       "tours": "3 tours · repos 1 min 30"
+      },
+      {
+       "code": "B3",
+       "exos": [
+        {
+         "c": "Pour l'équilibre : un peu de poussée pour le haut du corps.\nExécution : mains sur le bord du canapé (ou d'une table stable), corps gainé en planche. Descendez la poitrine vers le bord, coudes à 45°, puis repoussez.\nPlus dur : mains plus bas (chaise), puis au sol.",
+         "d": "x8 à 10",
+         "n": "Pompes inclinées (mains sur le canapé)",
+         "v": "https://youtu.be/Z0bRiVhnO8Q"
+        },
+        {
+         "c": "Pour les rotateurs de l'épaule, sans point d'accroche.\nPosition : debout, élastique tenu dans les deux mains, coudes collés au corps et pliés à 90°, paumes vers le haut.\nExécution : écartez les avant-bras vers l'extérieur en gardant les coudes au corps et les épaules basses, 1 seconde, revenez lentement.",
+         "d": "x15",
+         "n": "Rotation externe élastique, coudes au corps",
+         "v": "https://youtu.be/sf5lfdkavtA"
+        }
+       ],
+       "nom": "Haut du corps",
+       "tours": "3 tours · repos 1 min"
+      },
+      {
+       "code": "FIN",
+       "exos": [
+        {
+         "c": "Pour les adducteurs (ils stabilisent le bassin et le genou).\nPosition : sur le côté, appui sur l'avant-bras, genou de la jambe du dessus posé sur le bord du canapé.\nExécution : en serrant l'intérieur de la cuisse, soulevez le bassin pour aligner le corps et tenez.",
+         "d": "15 sec / côté",
+         "n": "Copenhagen courte (genou sur le canapé)",
+         "v": "https://youtu.be/Ua7YHHOWRlA"
+        },
+        {
+         "c": "Exécution : sur le dos, bras vers le plafond, hanches et genoux à 90°. Bas du dos plaqué au sol, tendez un bras et la jambe opposée lentement, revenez, alternez.",
+         "d": "x8 / côté",
+         "n": "Dead bug",
+         "v": "https://youtu.be/g_BYB0R-4Ws"
+        }
+       ],
+       "nom": "Gainage et adducteurs",
+       "tours": "3 tours"
+      }
+     ],
+     "date": "2026-10-30",
+     "lieu": "Salle",
+     "num": 2.5,
+     "semaine": 1,
+     "titre": "Séance B, cuisses et fessiers (semaine 1)",
+     "id": "s2_5"
+    }
+   ]
   }
  ]
 }
