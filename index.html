@@ -1099,7 +1099,7 @@ function putSeances(b, mid, arr, exist, keepDone){
     const cur = insere ? n : (() => { do num++; while (pris.has(num)); return num; })(), sid = Number.isInteger(cur) ? `s${pad(cur)}` : "s" + String(cur).replace(".", "_");
     pris.add(cur);
     const lieu = ["Salle","En autonomie","À distance"].includes(x.lieu) ? x.lieu : "Salle";
-    b.set(S.db.doc(`members/${mid}/seances/${sid}`), {num: cur, titre: str(x.titre || "Séance " + cur, 120), lieu, visible: lieu !== "En autonomie", semaine: Number(x.semaine) || null,
+    b.set(S.db.doc(`members/${mid}/seances/${sid}`), {num: cur, titre: str(x.titre || "Séance " + cur, 120), lieu, visible: typeof x.visible === "boolean" ? x.visible : lieu !== "En autonomie", semaine: Number(x.semaine) || null,
       date: /^\d{4}-\d{2}-\d{2}$/.test(x.date || "") ? x.date : null, heure: "", statut: "prevue", blocs: blocs(x)}); }
 }
 /* mises à jour préparées par Claude (maj.json sur le site) : appliquées une seule fois, à l'ouverture coach */
