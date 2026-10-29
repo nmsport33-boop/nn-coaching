@@ -24,7 +24,7 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Manrope:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Manrope:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap">
 <style>
 /* Layout : appli mobile, bandeau noir + filet or en haut, barre d'onglets fixe en bas, colonne unique de 560px max */
 :root {
@@ -77,16 +77,25 @@ main{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-lef
 .muted{color:var(--muted)}
 .small{font-size:13px}
 
-/* projection fond noir (écran de la salle ou télé) */
-.proj{position:fixed;inset:0;z-index:60;background:#000;color:#fff;overflow:hidden;padding:2vh 1.5vw;display:flex;flex-direction:column;gap:1.5vh}
+/* projection fond noir, comme le tableau de la salle : cases « prénom » + séance */
+.proj{position:fixed;inset:0;z-index:60;background:#000;color:#fff;overflow:hidden;padding:2.2vh 1.6vw;display:flex;gap:1.4vw;font-family:"Montserrat",var(--sans)}
 .proj[hidden]{display:none}
-.proj .cols{flex:1;min-height:0;display:grid;gap:1.2vw;grid-template-columns:repeat(var(--c),minmax(0,1fr))}
-.proj .box{border:3px solid #f5f5f5;display:flex;flex-direction:column;min-height:0;overflow:hidden}
-.proj .box h3{margin:0;border:4px solid #ffd21f;text-align:center;font-family:var(--display);font-size:clamp(28px,4.6vh,64px);padding:.6vh 1vw;color:#fff;letter-spacing:.02em}
-.proj .lines{padding:1.6vh 1.4vw;display:flex;flex-direction:column;gap:1.6vh;font-weight:700;line-height:1.3;font-size:var(--fs)}
-.proj .lines b{color:#ffd21f}
+.proj .side{writing-mode:vertical-rl;transform:rotate(180deg);font-weight:800;font-size:clamp(20px,4.4vh,56px);letter-spacing:.04em;text-transform:uppercase;align-self:center;white-space:nowrap}
+.proj .wm{position:absolute;left:50%;top:50%;z-index:0;width:min(70vh,50vw);aspect-ratio:1;transform:translate(-50%,-50%);border:clamp(4px,.9vh,10px) solid #b8922a;border-radius:50%;display:grid;place-items:center;color:#b8922a;font-family:var(--display);font-weight:600;font-size:min(30vh,22vw);letter-spacing:-.02em;opacity:.32;pointer-events:none}
+.proj .cols{position:relative;flex:1;min-width:0;height:100%;display:grid;gap:2.2vh 1.6vw;grid-template-columns:repeat(var(--c),minmax(0,1fr));grid-template-rows:repeat(var(--r),minmax(0,1fr))}
+.proj .box{position:relative;z-index:1;border:3px solid #f2f2f2;display:flex;flex-direction:column;min-height:0;overflow:hidden;background:transparent}
+.proj .box h3{margin:0;border:3px solid #e8c547;border-width:4px 3px;text-align:center;font-family:"Montserrat",var(--sans);font-weight:800;font-size:clamp(18px,4.2vh,56px);min-height:1.5em;padding:.45vh 1vw;color:#fff;letter-spacing:.01em}
+.proj .lines{padding:1.6vh 1.2vw;display:flex;flex-direction:column;gap:1.5vh;font-weight:600;line-height:1.25;font-size:var(--fs)}
+.proj .lines b{color:#f2d23c;font-weight:800}
 .proj .sub{color:#bbb;font-weight:600;font-size:.8em}
-.proj .x{position:fixed;bottom:10px;right:12px;background:#222;color:#fff;border:1px solid #555;border-radius:999px;padding:8px 14px;font:inherit;font-size:14px;opacity:.75}
+/* minuteur de repos, par-dessus l'appli sans la bloquer */
+.repos{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:55;background:#111;color:#fff;border:2px solid var(--gold);border-radius:999px;padding:8px 10px 8px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);font-weight:700}
+.repos[hidden]{display:none}
+.repos .t{font-family:var(--display);font-size:30px;min-width:3.2ch;text-align:center;font-variant-numeric:tabular-nums}
+.repos .l{font-size:13px;color:#ccc;max-width:9em;line-height:1.2}
+.repos button{white-space:nowrap;background:#2a2a2a;color:#fff;border:1px solid #555;border-radius:999px;padding:6px 10px;font:inherit;font-size:13px}
+.repos.fini{background:var(--gold);color:#111}.repos.fini .l{color:#111}
+.proj .x{position:fixed;z-index:2;bottom:10px;right:12px;background:#222;color:#fff;border:1px solid #555;border-radius:999px;padding:8px 14px;font:inherit;font-size:14px;opacity:.75}
 .banner{background:var(--gold-soft);border-radius:14px;padding:12px 14px;font-size:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .banner.warn{background:var(--warn-soft)}
 .banner.mag{background:var(--mag-soft)}
@@ -237,6 +246,7 @@ textarea{min-height:84px;resize:vertical}
 <div class="sheet" id="sheet" hidden></div>
 <div class="toast" id="toast" hidden></div>
 <div class="proj" id="proj" hidden></div>
+<div class="repos" id="repos" hidden></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -516,7 +526,7 @@ function adherents(){
       <span class="chip ${m.manual ? "" : "ok"}">${m.manual ? "Fiche coach" : "Compte relié"}</span></div>
       <div class="small">${nb ? `Prochain rdv : <b>${esc(fmtSlot(nb))}</b>` : `<span class="muted">Aucun rdv à venir</span>`}</div>
       ${(e => !e.fin ? `<span class="small muted">${e.prix ? `${e.prix} €/mois${e.offert ? " · offert pour l'instant" : ""}` : "Accès illimité"}</span>` : e.expire ? `<span class="chip" style="background:var(--mag-soft);color:var(--mag)">Abonnement terminé</span>` : `<span class="small ${e.jours<=7?"":"muted"}">Payé jusqu'au ${esc(finAbo(e.fin))}</span>`)(aboEtat(m))}</button>`; }).join("");
-  return `<section class="sec"><div class="sec-h"><h2>Mes adhérents</h2><button class="btn sm solid" data-a="add-member">+ Ajouter</button></div>
+  return `<section class="sec"><div class="sec-h"><h2>Mes adhérents</h2><div class="row"><button class="btn sm ink" data-a="board-open">▶ Tableau</button><button class="btn sm solid" data-a="add-member">+ Ajouter</button></div></div>
     ${S.membersLoaded && !list.length ? `<div class="empty">Aucun adhérent pour l'instant. Ajoute une fiche avec « + Ajouter », puis envoie-lui son lien d'accès.</div>
       <div class="card"><b>Reprendre Flo, Mélanie et Audrey</b><span class="small muted">Choisis le fichier d'import que Claude t'a envoyé, puis colle le mot de passe.</span>
       <input type="file" id="impf" accept=".enc,application/octet-stream">
@@ -660,6 +670,7 @@ function renderSheet(){
   if (sh.type === "member") { title = sh.mid ? "Modifier la fiche" : "Nouvel adhérent"; body = memberForm(sh.mid); }
   if (sh.type === "custom") { title = "Autre heure"; body = customBody(); }
   if (sh.type === "link") { title = "Relier à une fiche"; body = linkBody(); }
+  if (sh.type === "board") { title = "Tableau de la salle"; body = boardBody(); }
   const keepScroll = !el.hidden && el.dataset.k === sh.type + (sh.sid||"") ? el.scrollTop : 0;
   el.dataset.k = sh.type + (sh.sid||"");
   el.innerHTML = `<div class="sheet-top"><div class="in"><h2>${esc(title)}</h2><button class="x" data-a="close">Fermer</button></div></div><main>${body}</main>`;
@@ -823,6 +834,10 @@ async function act(a, ds){
       await run(db.doc("members/" + S.fiche).update({"abo.fin": fin}), `Renouvelé jusqu'au ${finAbo(parseIso(fin))}`); return; }
     case "project": return project(v, k);
     case "proj-close": closeProj(); return;
+    case "board-open": await openBoard(); return;
+    case "board-go": boardGo(); return;
+    case "repos-plus": if (S.repos) { S.repos.fin += 15000; tickRepos(); } return;
+    case "repos-stop": stopRepos(); return;
     case "pickfor": { const ok = await claim(k, v); if (ok) { S.sheet = null; toast(`${S.members[v]?.prenom || "Adhérent"} placé·e ${fmtSlot(k)}`); } return; }
     case "open-member": S.tab = "adherents"; S.fiche = v; S.sheet = null; watch(v); window.scrollTo(0,0); return;
     case "back": S.fiche = null; watch(null); return;
@@ -859,7 +874,9 @@ async function act(a, ds){
     case "prep-auto": S.sheet = {type:"seance", sid:v}; S.edit = true; S.confirmDel = null; return;
     case "visible": await run(db.doc(`members/${memberId()}/seances/${v}`).update({visible: k === "1"}), k === "1" ? `Séance débloquée pour ${S.cur.member?.prenom || "l'adhérent"}` : "Séance cachée"); return;
     case "coche": { const on = !(S.cur.seances[v]?.coches || {})[k];
-      await run(db.doc(`members/${memberId()}/seances/${v}`).update({coches: {[k]: on}})); return; }
+      /* on ne touche que cette case : les autres coches restent */
+      if (!await run(db.doc(`members/${memberId()}/seances/${v}`).update(new firebase.firestore.FieldPath("coches", k), on))) return;
+      if (on) { const [bi] = k.split("-").map(Number), b = S.cur.seances[v]?.blocs?.[bi]; if (b) startRepos(b); } return; }
     case "cancel-edit": S.edit = false; clearDrafts("bl."); return;
     case "save-blocs": return saveBlocs(v);
     case "scale": S.drafts[ds.f] = Number(v); return;
@@ -919,37 +936,110 @@ async function book(k){
 }
 
 /* --- projection fond noir --- */
+/* repos d'un bloc en secondes : « repos 1 min 30 », « r1'45 », « récup 45 sec » */
+function reposSec(t){ t = String(t || "");
+  let m = t.match(/(?:repos|récup|\br)\s*:?\s*(\d+)\s*(?:min|')\s*(\d+)?/i); if (m) return Number(m[1]) * 60 + Number(m[2] || 0);
+  m = t.match(/(?:repos|récup|\br)\s*:?\s*(\d+)\s*(?:sec|s\b|")/i); return m ? Number(m[1]) : 0; }
+const reposCourt = r => r ? (r >= 60 ? `r${Math.floor(r/60)}'${r % 60 ? pad(r % 60) : ""}` : `r${r}"`) : "";
 function tCourt(t){ t = String(t || "");
-  const n = t.match(/^(\d+)\s*(tours?|séries?|fois)/i), r = t.match(/(?:repos|récup)\s*(\d+(?:[.,]\d+)?)(?:\s*(?:à|-)\s*(\d+))?\s*(min|sec|s)\b/i);
-  const rep = r ? ` r${r[1]}${r[2] ? "-" + r[2] : ""}${/min/i.test(r[3]) ? "'" : '"'}` : "";
-  if (n) return `(${n[1]}${/^t/i.test(n[2]) ? "T" : /^s/i.test(n[2]) ? "S" : "x"})${rep}`;
-  return t ? `(${t})` : ""; }
+  const n = t.match(/(\d+)(?:\s*(?:-|à)\s*(\d+))?\s*(tours?|séries?|T\b|S\b)/i), rep = reposCourt(reposSec(t));
+  if (n) return `(${n[1]}${n[2] ? "-" + n[2] : ""}${/^s/i.test(n[3]) ? "S" : "T"})${rep ? " " + rep : ""}`;
+  return rep; }
+/* dose au format du tableau : « @30kg 3x8/c », « 20"/c », « x8-10 » */
+function dCourt(d){ let t = String(d || "").trim(); if (!t) return "";
+  let kg = ""; t = t.replace(/[·,]?\s*(\+?\d+(?:[.,]\d+)?)\s*kg\b/i, (_, k) => { kg = "@" + k + "kg"; return ""; });
+  t = t.replace(/×/g, "x").replace(/\s*\/\s*(côté|jambe|bras|cuisse)(?![a-zà-ÿ])/gi, "/c").replace(/\bpar (côté|jambe|bras)(?![a-zà-ÿ])/gi, "/c")
+    .replace(/(\d+)\s*min\s*(\d+)/gi, "$1'$2").replace(/(\d+)\s*min\b/gi, "$1'").replace(/(\d+)\s*(?:sec|s)\b/gi, '$1"')
+    .replace(/(\d)\s*x\s*(\d)/g, "$1x$2").replace(/\bx\s+(\d)/g, "x$1").replace(/(\d)\s*à\s*(\d)/g, "$1-$2")
+    .replace(/\s*·\s*/g, " ").replace(/\s{2,}/g, " ").replace(/^[\s,]+|[\s,]+$/g, "").replace(/^(\d+(?:-\d+)?)\s*(reps?|répétitions?)?$/i, "x$1");
+  return [kg, t].filter(Boolean).join(" "); }
 function projLines(s){
   return (s.blocs||[]).filter(b => (b.exos||[]).length).map(b => {
-    const code = /^fin/i.test(b.code) ? "Fin" : b.code;
-    return `<div><b>${esc(code)} ${esc(tCourt(b.tours))} :</b> ${b.exos.map(e => esc(e.n) + (e.d ? " " + esc(e.d) : "")).join(" / ")}</div>`; }).join("");
+    const fin = /^fin/i.test(b.code), tc = tCourt(b.tours);
+    return `<div><b>${fin ? "Finisher" : esc(b.code)}${tc ? " " + esc(tc) : ""} :</b> ${b.exos.map(e => esc(e.n) + (e.d ? " " + esc(dCourt(e.d)) : "")).join(" / ")}</div>`; }).join("");
 }
-function choisirSeance(list, day){
-  const salle = list.filter(x => x.lieu === "Salle").sort((a,b) => a.num - b.num);
-  return salle.find(x => x.date === day) || salle.find(x => x.statut !== "faite") || salle[salle.length-1] || null;
+/* la séance à afficher pour ce jour : celle datée du jour, sinon la prochaine pas faite */
+function choisirSeance(list, day, salleSeule){
+  const all = list.filter(x => (x.blocs||[]).length).sort((a,b) => a.num - b.num), salle = all.filter(x => x.lieu === "Salle");
+  return salle.find(x => x.date === day) || all.find(x => x.date === day && x.lieu !== "En autonomie") || salle.find(x => x.statut !== "faite")
+    || (salleSeule ? salle[salle.length-1] : all.find(x => x.statut !== "faite" && x.lieu !== "En autonomie") || all.find(x => x.statut !== "faite")) || null;
 }
 async function project(kind, k){
-  let cols = [];
+  let cols = [], label = "";
   if (kind === "seance") { const s = S.cur.seances[k]; if (s) cols = [{prenom: S.cur.member?.prenom || "", s}]; }
-  else { const day = k.split("_")[0];
+  else { const day = k.split("_")[0]; label = creneauLbl(slotDate(k));
     for (const x of seatsOf(S.slots[k])) {
       try { const q = await S.db.collection(`members/${x.by}/seances`).get();
-        const s = choisirSeance(q.docs.map(d => ({id: d.id, ...d.data()})), day);
+        const s = choisirSeance(q.docs.map(d => ({id: d.id, ...d.data()})), day, true);
         cols.push({prenom: S.members[x.by]?.prenom || "Adhérent", s}); } catch (e) {} } }
-  if (!cols.length) { toast("Rien à projeter."); return; }
-  const el = $("proj");
-  el.style.setProperty("--c", cols.length);
-  el.innerHTML = `<button class="x" data-a="proj-close">Fermer ✕</button><div class="cols">${cols.map(c => `<div class="box"><h3>${esc(c.prenom)}</h3>
-    <div class="lines">${c.s ? `<div class="sub">${esc(c.s.titre || "Séance " + c.s.num)}</div>` + projLines(c.s) : `<div class="sub">Pas de séance en salle prévue.</div>`}</div></div>`).join("")}</div>`;
-  el.hidden = false; S.projOn = true; fitProj();
-  try { await (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el); } catch (e) {}
-  try { S.wake = await navigator.wakeLock?.request("screen"); } catch (e) {}
+  showProj(cols, label);
 }
+const creneauLbl = t => `Créneau de ${t.getHours()}H${pad(t.getMinutes())}`;
+function showProj(cols, label){
+  if (!cols.length) { toast("Rien à projeter."); return; }
+  const el = $("proj"), n = cols.length, c = Math.min(n, 3), r = n >= 3 ? 2 : 1;
+  /* à partir de 3 personnes : 6 cases comme au tableau de la salle, les cases vides restent */
+  const cases = n >= 3 ? cols.concat(Array(Math.max(0, 6 - n)).fill(null)) : cols;
+  el.style.setProperty("--c", c); el.style.setProperty("--r", r);
+  el.innerHTML = `<button class="x" data-a="proj-close">Fermer ✕</button>${label ? `<div class="side">${esc(label)}</div>` : ""}<div class="cols"><div class="wm">NN</div>${cases.map(x => x ? `<div class="box"><h3>${esc(x.prenom)}</h3>
+    <div class="lines">${x.s ? projLines(x.s) : `<div class="sub">Pas de séance prévue.</div>`}</div></div>` : `<div class="box"><h3></h3></div>`).join("")}</div>`;
+  el.hidden = false; S.projOn = true; fitProj();
+  try { (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el)?.catch?.(() => {}); } catch (e) {}
+  try { navigator.wakeLock?.request("screen").then(w => S.wake = w, () => {}); } catch (e) {}
+}
+/* tableau de plusieurs adhérents (coach) : chacun garde sa séance sur son téléphone */
+async function openBoard(){
+  S.sheet = {type: "board"}; S.board = null; render(true);
+  const out = {};
+  await Promise.all(Object.keys(S.members).map(async mid => { try {
+    const q = await S.db.collection(`members/${mid}/seances`).get(); out[mid] = q.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => a.num - b.num); } catch (e) { out[mid] = []; } }));
+  S.board = out;
+  const day = iso(new Date()), now = new Date();
+  for (const mid of Object.keys(out)) {
+    const def = choisirSeance(out[mid], day);
+    if (S.drafts["bd.s." + mid] === undefined) S.drafts["bd.s." + mid] = def?.id || "";
+    if (S.drafts["bd.on." + mid] === undefined) S.drafts["bd.on." + mid] = Object.keys(S.slots).some(k => k.startsWith(day) && hasBy(S.slots[k], mid) && Math.abs(slotDate(k) - now) < 2 * 36e5); }
+  if (S.drafts["bd.titre"] === undefined) { const k = Object.keys(S.slots).filter(k => k.startsWith(day) && seatsOf(S.slots[k]).length && Math.abs(slotDate(k) - now) < 36e5).sort()[0];
+    S.drafts["bd.titre"] = k ? creneauLbl(slotDate(k)) : ""; }
+}
+function boardBody(){
+  if (!S.board) return `<div class="empty">Chargement des séances…</div>`;
+  const list = Object.entries(S.members).sort((a,b) => (a[1].prenom||"").localeCompare(b[1].prenom||""));
+  return `<section class="sec"><p class="small muted" style="margin:0">Coche les personnes à afficher et choisis leur séance. Chacune garde sa séance sur son téléphone ; le tableau est pour ton écran.</p>
+    <label class="f">Titre sur le côté (laisse vide si tu n'en veux pas)<input id="bdt" data-d="bd.titre" value="${esc(d("bd.titre",""))}"></label>
+    ${list.map(([mid, m]) => { const ss = S.board[mid] || [];
+      return `<div class="card"><label class="check"><input type="checkbox" id="bdo-${esc(mid)}" data-d="bd.on.${esc(mid)}" ${d("bd.on." + mid, false) ? "checked" : ""}> <b>${esc(m.prenom)}</b></label>
+      ${ss.length ? `<select id="bds-${esc(mid)}" data-d="bd.s.${esc(mid)}">${ss.map(x => `<option value="${esc(x.id)}" ${d("bd.s." + mid, "") === x.id ? "selected" : ""}>${Number.isInteger(x.num) ? "S" + x.num : "+"} · ${esc(x.titre || "Séance")}${x.date ? " · " + esc(fmtDay(parseIso(x.date))) : ""}${x.statut === "faite" ? " · faite" : ""}</option>`).join("")}</select>` : `<span class="small muted">Pas encore de séance.</span>`}</div>`; }).join("")}
+    <button class="btn solid" data-a="board-go">▶ Projeter le tableau</button></section>`;
+}
+function boardGo(){
+  const cols = Object.entries(S.members).filter(([mid]) => d("bd.on." + mid, false)).sort((a,b) => (a[1].prenom||"").localeCompare(b[1].prenom||""))
+    .map(([mid, m]) => ({prenom: m.prenom, s: (S.board?.[mid] || []).find(x => x.id === d("bd.s." + mid, "")) || null}));
+  if (!cols.length) { toast("Coche au moins une personne."); return; }
+  if (cols.length > 6) { toast("6 personnes maximum sur le tableau."); return; }
+  showProj(cols, String(d("bd.titre", "")).trim());
+}
+/* --- minuteur de repos : démarre quand on coche un exercice --- */
+function startRepos(b){
+  const sec = reposSec(b.tours) || (/^a/i.test(b.code) ? 0 : 60); if (!sec) return;
+  S.repos = {fin: Date.now() + sec * 1000, lbl: `Repos ${/^fin/i.test(b.code) ? "finisher" : b.code}`};
+  try { localStorage.setItem("nn.repos", JSON.stringify(S.repos)); } catch (e) {}
+  try { S.ac = S.ac || new (window.AudioContext || window.webkitAudioContext)(); S.ac.resume?.(); } catch (e) {}
+  tickRepos();
+}
+function stopRepos(){ S.repos = null; try { localStorage.removeItem("nn.repos"); } catch (e) {} clearInterval(S.reposH); S.reposH = null; const el = $("repos"); el.hidden = true; el.className = "repos"; }
+function bip(){ try { const ac = S.ac; if (!ac) return; [0, .35, .7].forEach(t => { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = 880; g.gain.value = .25; o.connect(g); g.connect(ac.destination); o.start(ac.currentTime + t); o.stop(ac.currentTime + t + .2); }); } catch (e) {} }
+function tickRepos(){
+  const el = $("repos"), r = S.repos; if (!r) return stopRepos();
+  const left = Math.ceil((r.fin - Date.now()) / 1000);
+  if (left <= 0) {
+    if (!el.classList.contains("fini")) { el.className = "repos fini"; el.innerHTML = `<span class="l">Repos terminé : c'est reparti</span><button data-a="repos-stop">OK</button>`; bip(); try { navigator.vibrate?.([300, 150, 300]); } catch (e) {} }
+    if (left < -8) stopRepos(); }
+  else { el.className = "repos"; el.innerHTML = `<span class="l">${esc(r.lbl)}</span><span class="t">${Math.floor(left / 60)}:${pad(left % 60)}</span><button data-a="repos-plus">+15 s</button><button data-a="repos-stop">Stop</button>`; }
+  el.hidden = false;
+  if (!S.reposH) S.reposH = setInterval(tickRepos, 250);
+}
+try { const r = JSON.parse(localStorage.getItem("nn.repos") || "null"); if (r && r.fin > Date.now()) { S.repos = r; setTimeout(tickRepos, 0); } } catch (e) {}
 /* la police la plus grande possible sans dépasser l'écran */
 function fitProj(){ const el = $("proj"); if (el.hidden) return;
   let lo = 12, hi = 72;
