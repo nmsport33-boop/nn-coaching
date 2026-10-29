@@ -421,14 +421,30 @@ async function assignSeance(mid, obj, m, day, heure, coachee, slotKey, asCoach){
   const maj = {date: day, heure: heure || ""};
   if (slotKey) maj.slot = slotKey;
   if (!coachee && !isAuto(s)) { maj.lieu = "En autonomie"; maj.visible = true; }
-  /* planning libre : les séances à venir sont renumérotées dans l'ordre des dates (les séances faites gardent leur numéro) */
+  const dates = {[s.id]: {date: day, heure: heure || ""}}, extra = {};
   if (m?.planLibre) {
-    const rest = seqOf(obj).filter(x => x.statut !== "faite").map(x => x.id === s.id ? {...x, date: day, heure: heure || ""} : x);
+    const all = seqOf(obj);
+    /* une renfo programmée entraîne un stretching le lendemain (créé à partir d'un stretching existant s'il n'en reste plus) */
+    if (kindOf(s) === "renfo") {
+      const lend = parseIso(day); lend.setDate(lend.getDate() + 1); const j1 = iso(lend);
+      if (!all.some(x => x.id !== s.id && x.date === j1)) {
+        const st = all.find(x => kindOf(x) === "stretch" && x.statut !== "faite" && !x.date);
+        if (st) dates[st.id] = {date: j1, heure: ""};
+        else { const prev = all.filter(x => kindOf(x) === "stretch"), last = prev[prev.length-1];
+          const modele = prev.slice().reverse().find(x => x.titre !== last?.titre) || last;
+          if (modele) { const nid = "s" + String(Date.now()).slice(-7);
+            extra[nid] = {titre: modele.titre, lieu: "En autonomie", visible: true, blocs: modele.blocs || [], num: Math.max(0, ...all.map(x => x.num || 0)) + 1, semaine: null, date: j1, heure: "", statut: "prevue"}; } }
+      }
+    }
+    /* les séances à venir sont renumérotées dans l'ordre des dates (les séances faites gardent leur numéro) */
+    const rest = [...all.filter(x => x.statut !== "faite").map(x => dates[x.id] ? {...x, ...dates[x.id]} : x), ...Object.entries(extra).map(([id, v]) => ({id, ...v}))];
     const nums = rest.map(x => x.num).sort((p, q) => p - q);
     rest.sort((p, q) => ((p.date || "9999") + (p.heure || "")).localeCompare((q.date || "9999") + (q.heure || "")) || p.num - q.num)
-      .forEach((x, i) => { if (x.num !== nums[i]) { if (x.id === s.id) maj.num = nums[i]; else b.update(ref(x.id), {num: nums[i]}); } });
+      .forEach((x, i) => { if (x.num !== nums[i]) { if (extra[x.id]) extra[x.id].num = nums[i]; else (dates[x.id] ??= {}).num = nums[i]; } });
   }
-  b.update(ref(s.id), maj);
+  b.update(ref(s.id), {...maj, ...dates[s.id]});
+  for (const [id, v] of Object.entries(dates)) if (id !== s.id) b.update(ref(id), v);
+  for (const [id, v] of Object.entries(extra)) b.set(ref(id), v);
   if (await run(b.commit())) { toast(`${s.titre || "Séance"} : ${fmtDay(parseIso(day))}${heureLbl(heure)}${!coachee && !isAuto(s) ? " (en autonomie)" : ""}`); if (r.why) setTimeout(() => toast(r.why), 2800); }
   return s;
 }
