@@ -1,0 +1,1019 @@
+{
+ "majs": [
+  {
+   "id": "flo-autonomie-2026-10-29",
+   "prenom": "Flo",
+   "message": "Flo : 12 séances en autonomie (30 min) mises à jour",
+   "seances": [
+    {
+     "id": "s02",
+     "num": 2,
+     "titre": "Autonomie · semaine 1 · séance 1/2 : Jambes et genou",
+     "lieu": "En autonomie",
+     "semaine": 1,
+     "blocs": [
+      {
+       "code": "A1",
+       "nom": "Échauffement",
+       "tours": "1 tour, 4 min",
+       "exos": [
+        {
+         "n": "Montées de genoux sur place, en marchant",
+         "d": "1 min",
+         "v": "https://youtu.be/-aQbL65YHR0",
+         "c": "Exécution : Marche sur place en montant les genoux à hauteur confortable, bras qui accompagnent. Jamais de saut."
+        },
+        {
+         "n": "Rotation du buste assise",
+         "d": "x10 / côté",
+         "v": "https://youtu.be/CoJucPAoMwA",
+         "c": "Position : Assise sur une chaise ou le banc, pieds à plat, bras croisés sur la poitrine (ou petit ballon tenu devant soi).\nExécution : Tourne le buste d'un côté en suivant des yeux, reviens au centre, puis de l'autre côté. Le bassin et les genoux restent face à l'avant.\nBut : Mobiliser le haut du dos, enroulé vers l'avant."
+        }
+       ]
+      },
+      {
+       "code": "B1",
+       "nom": "Circuit",
+       "tours": "3 tours, récup 45 sec",
+       "exos": [
+        {
+         "n": "Pont fessier",
+         "d": "x12, pause 2 sec",
+         "v": "https://youtu.be/91uayvdKAQY",
+         "c": "Position : Sur le dos, pieds à plat largeur de bassin. Pieds un peu plus loin des fesses si le genou tire. À la salle : élastique au-dessus des genoux.\nExécution : Monte le bassin en serrant les fessiers, tiens 2 à 3 secondes en haut, redescends lentement.\nPoint clé : On pousse dans les talons, sans cambrer en haut."
+        },
+        {
+         "n": "Contraction du quadriceps, serviette sous le genou",
+         "d": "5 sec x10 / jambe",
+         "v": "https://youtu.be/IaSSfEiyPWc",
+         "c": "Position : Assise ou allongée, jambe tendue, serviette roulée sous le genou.\nExécution : Écrase la serviette avec l'arrière du genou en contractant le devant de la cuisse, pointe de pied vers toi. Tiens 5 secondes, relâche.\nBut : Réveiller le quadriceps, qui tient la rotule et protège le genou."
+        },
+        {
+         "n": "Chaise contre le mur, genoux peu pliés",
+         "d": "20 sec",
+         "v": "https://youtu.be/px1KnY0CWHo",
+         "c": "Position : Dos et fesses contre un mur, pieds à 40 cm du mur, largeur de bassin (comme dans la vidéo, mais sans ballon).\nExécution : Glisse de quelques centimètres seulement vers le bas et tiens. Jamais jusqu'à 90°.\nGenou : Genoux dans l'axe des pieds. Si ça tire, remonte un peu."
+        },
+        {
+         "n": "Équilibre sur une jambe",
+         "d": "20 sec / jambe",
+         "v": "https://youtu.be/JNE4Oi0pD8s",
+         "c": "Position : Debout de profil près d'un mur ou d'un meuble stable, bout des doigts posés dessus si besoin.\nExécution : Lève un pied et tiens en gardant le bassin horizontal. Commence par la jambe droite, puis la gauche.\nProgression : Quand c'est facile, décolle les doigts. Genou de la jambe d'appui légèrement fléchi, jamais verrouillé."
+        },
+        {
+         "n": "Serrage du ballon (ou coussin) entre les genoux",
+         "d": "coussin, 5 sec x10",
+         "v": "https://youtu.be/_ZE5oF1qaWo",
+         "c": "Position : Sur le dos, genoux pliés autant que confortable, ballon ou coussin plié entre les genoux.\nExécution : Serre 5 secondes en contractant l'intérieur des cuisses, relâche. Respiration normale."
+        }
+       ]
+      },
+      {
+       "code": "FIN",
+       "nom": "Retour au calme",
+       "tours": "1 tour, 3 min",
+       "exos": [
+        {
+         "n": "Étirement des pectoraux dans une porte, bras bas",
+         "d": "30 sec / côté",
+         "v": "https://youtu.be/Yh5HQiz8Bkw",
+         "c": "Exécution : Avant-bras contre l'encadrement de la porte, coude sous la hauteur de l'épaule. Avance doucement le buste jusqu'à sentir l'étirement devant l'épaule.\nÉpaule : Côté droit : coude encore plus bas. Jamais de douleur ni de fourmillements dans le bras."
+        },
+        {
+         "n": "Respiration abdominale, allongée",
+         "d": "1 min",
+         "v": "https://youtu.be/6YB0pv3iv0g",
+         "c": "Exécution : Sur le dos, genoux pliés, une main sur le ventre. Inspire par le nez en gonflant le ventre, souffle longuement en relâchant les épaules."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "s13",
+     "num": 2.5,
+     "titre": "Autonomie · semaine 1 · séance 2/2 : Dos et épaules",
+     "lieu": "En autonomie",
+     "semaine": 1,
+     "blocs": [
+      {
+       "code": "A1",
+       "nom": "Échauffement",
+       "tours": "1 tour, 4 min",
+       "exos": [
+        {
+         "n": "Montées de genoux sur place, en marchant",
+         "d": "1 min",
+         "v": "https://youtu.be/-aQbL65YHR0",
+         "c": "Exécution : Marche sur place en montant les genoux à hauteur confortable, bras qui accompagnent. Jamais de saut."
+        },
+        {
+         "n": "Rotation du buste assise",
+         "d": "x10 / côté",
+         "v": "https://youtu.be/CoJucPAoMwA",
+         "c": "Position : Assise sur une chaise ou le banc, pieds à plat, bras croisés sur la poitrine (ou petit ballon tenu devant soi).\nExécution : Tourne le buste d'un côté en suivant des yeux, reviens au centre, puis de l'autre côté. Le bassin et les genoux restent face à l'avant.\nBut : Mobiliser le haut du dos, enroulé vers l'avant."
+        }
+       ]
+      },
+      {
+       "code": "B1",
+       "nom": "Circuit",
+       "tours": "3 tours, récup 45 sec",
+       "exos": [
+        {
+         "n": "Rentré du menton",
+         "d": "allongée, 3 sec x8",
+         "v": "https://youtu.be/tQYo15dpKdM",
+         "c": "Position : Allongée sur le dos sans coussin (semaines 1-2), puis debout, dos au mur (à partir de la semaine 2).\nExécution : Rentre le menton comme pour faire un double menton, l'arrière de la tête glisse vers l'arrière. Tiens 3 secondes, relâche.\nBut : Ramener la tête au-dessus des épaules."
+        },
+        {
+         "n": "Rowing un bras, main sur une chaise, haltère 1 kg",
+         "d": "x12 / côté",
+         "v": "https://youtu.be/Qi5W_9e4Q8M",
+         "c": "Position : Une main posée sur le dossier ou l'assise d'une chaise, buste penché, dos plat, genoux légèrement fléchis, haltère dans l'autre main bras tendu.\nExécution : Tire le coude vers la hanche en serrant l'omoplate, tiens 1 seconde, redescends lentement.\nPoint clé : Le dos ne tourne pas. Même mouvement que le rowing de la salle, un bras à la fois."
+        },
+        {
+         "n": "Rotation externe d'épaule couchée sur le côté, haltère 1 kg",
+         "d": "x12 / côté",
+         "v": "https://youtu.be/20v3G-odF5c",
+         "c": "Position : Allongée sur le côté, tête sur un coussin, coude du bras du dessus plié à 90° et collé à la taille (serviette dessous), haltère en main.\nExécution : Monte l'avant-bras vers le plafond sans décoller le coude, redescends lentement. Puis change de côté.\nÉpaule : C'est le même mouvement qu'à l'élastique de la salle. Pour le bras gauche, si l'appui sur l'épaule droite gêne, fais-le debout sans poids."
+        },
+        {
+         "n": "W allongée sur le ventre",
+         "d": "x8",
+         "v": "https://youtu.be/TVBV40eGM3A",
+         "c": "Position : Allongée sur le ventre, front posé sur une serviette pliée, coudes pliés le long du corps, les bras forment un W.\nExécution : Décolle les coudes et les mains de quelques centimètres en serrant les omoplates vers le bas et l'arrière, tiens 2 secondes, redescends.\nÉpaule : Petit mouvement, sans douleur ni fourmillements. La nuque reste longue, regard vers le sol."
+        },
+        {
+         "n": "Abduction de hanche allongée sur le côté",
+         "d": "x12 / côté",
+         "v": "https://youtu.be/kYjqRczyvYg",
+         "c": "Position : Allongée sur le côté, jambe du dessous pliée, jambe du dessus tendue dans l'axe du corps. Coussin sous la tête.\nExécution : Monte la jambe du dessus d'environ 30 cm, pointe de pied vers l'avant, tiens 1 seconde, redescends lentement.\nÉpaule : Sur le côté droit, bras du dessous posé devant toi, sans appui sur l'épaule. Si ça gêne, fais ce côté debout, main au mur."
+        }
+       ]
+      },
+      {
+       "code": "FIN",
+       "nom": "Retour au calme",
+       "tours": "1 tour, 3 min",
+       "exos": [
+        {
+         "n": "Étirement des pectoraux dans une porte, bras bas",
+         "d": "30 sec / côté",
+         "v": "https://youtu.be/Yh5HQiz8Bkw",
+         "c": "Exécution : Avant-bras contre l'encadrement de la porte, coude sous la hauteur de l'épaule. Avance doucement le buste jusqu'à sentir l'étirement devant l'épaule.\nÉpaule : Côté droit : coude encore plus bas. Jamais de douleur ni de fourmillements dans le bras."
+        },
+        {
+         "n": "Respiration abdominale, allongée",
+         "d": "1 min",
+         "v": "https://youtu.be/6YB0pv3iv0g",
+         "c": "Exécution : Sur le dos, genoux pliés, une main sur le ventre. Inspire par le nez en gonflant le ventre, souffle longuement en relâchant les épaules."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "s04",
+     "num": 4,
+     "titre": "Autonomie · semaine 2 · séance 1/2 : Jambes et genou",
+     "lieu": "En autonomie",
+     "semaine": 2,
+     "blocs": [
+      {
+       "code": "A1",
+       "nom": "Échauffement",
+       "tours": "1 tour, 4 min",
+       "exos": [
+        {
+         "n": "Montées de genoux sur place, en marchant",
+         "d": "1 min",
+         "v": "https://youtu.be/-aQbL65YHR0",
+         "c": "Exécution : Marche sur place en montant les genoux à hauteur confortable, bras qui accompagnent. Jamais de saut."
+        },
+        {
+         "n": "Rotation du buste assise",
+         "d": "x10 / côté",
+         "v": "https://youtu.be/CoJucPAoMwA",
+         "c": "Position : Assise sur une chaise ou le banc, pieds à plat, bras croisés sur la poitrine (ou petit ballon tenu devant soi).\nExécution : Tourne le buste d'un côté en suivant des yeux, reviens au centre, puis de l'autre côté. Le bassin et les genoux restent face à l'avant.\nBut : Mobiliser le haut du dos, enroulé vers l'avant."
+        }
+       ]
+      },
+      {
+       "code": "B1",
+       "nom": "Circuit",
+       "tours": "3 tours, récup 45 sec",
+       "exos": [
+        {
+         "n": "Pont fessier",
+         "d": "x12, pause 2 sec",
+         "v": "https://youtu.be/91uayvdKAQY",
+         "c": "Position : Sur le dos, pieds à plat largeur de bassin. Pieds un peu plus loin des fesses si le genou tire. À la salle : élastique au-dessus des genoux.\nExécution : Monte le bassin en serrant les fessiers, tiens 2 à 3 secondes en haut, redescends lentement.\nPoint clé : On pousse dans les talons, sans cambrer en haut."
+        },
+        {
+         "n": "Contraction du quadriceps, serviette sous le genou",
+         "d": "5 sec x10 / jambe",
+         "v": "https://youtu.be/IaSSfEiyPWc",
+         "c": "Position : Assise ou allongée, jambe tendue, serviette roulée sous le genou.\nExécution : Écrase la serviette avec l'arrière du genou en contractant le devant de la cuisse, pointe de pied vers toi. Tiens 5 secondes, relâche.\nBut : Réveiller le quadriceps, qui tient la rotule et protège le genou."
+        },
+        {
+         "n": "Chaise contre le mur, genoux peu pliés",
+         "d": "30 sec",
+         "v": "https://youtu.be/px1KnY0CWHo",
+         "c": "Position : Dos et fesses contre un mur, pieds à 40 cm du mur, largeur de bassin (comme dans la vidéo, mais sans ballon).\nExécution : Glisse de quelques centimètres seulement vers le bas et tiens. Jamais jusqu'à 90°.\nGenou : Genoux dans l'axe des pieds. Si ça tire, remonte un peu."
+        },
+        {
+         "n": "Équilibre sur une jambe",
+         "d": "20 sec / jambe",
+         "v": "https://youtu.be/JNE4Oi0pD8s",
+         "c": "Position : Debout de profil près d'un mur ou d'un meuble stable, bout des doigts posés dessus si besoin.\nExécution : Lève un pied et tiens en gardant le bassin horizontal. Commence par la jambe droite, puis la gauche.\nProgression : Quand c'est facile, décolle les doigts. Genou de la jambe d'appui légèrement fléchi, jamais verrouillé."
+        },
+        {
+         "n": "Serrage du ballon (ou coussin) entre les genoux",
+         "d": "coussin, 5 sec x10",
+         "v": "https://youtu.be/_ZE5oF1qaWo",
+         "c": "Position : Sur le dos, genoux pliés autant que confortable, ballon ou coussin plié entre les genoux.\nExécution : Serre 5 secondes en contractant l'intérieur des cuisses, relâche. Respiration normale."
+        }
+       ]
+      },
+      {
+       "code": "FIN",
+       "nom": "Retour au calme",
+       "tours": "1 tour, 3 min",
+       "exos": [
+        {
+         "n": "Étirement des pectoraux dans une porte, bras bas",
+         "d": "30 sec / côté",
+         "v": "https://youtu.be/Yh5HQiz8Bkw",
+         "c": "Exécution : Avant-bras contre l'encadrement de la porte, coude sous la hauteur de l'épaule. Avance doucement le buste jusqu'à sentir l'étirement devant l'épaule.\nÉpaule : Côté droit : coude encore plus bas. Jamais de douleur ni de fourmillements dans le bras."
+        },
+        {
+         "n": "Respiration abdominale, allongée",
+         "d": "1 min",
+         "v": "https://youtu.be/6YB0pv3iv0g",
+         "c": "Exécution : Sur le dos, genoux pliés, une main sur le ventre. Inspire par le nez en gonflant le ventre, souffle longuement en relâchant les épaules."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "s14",
+     "num": 4.5,
+     "titre": "Autonomie · semaine 2 · séance 2/2 : Dos et épaules",
+     "lieu": "En autonomie",
+     "semaine": 2,
+     "blocs": [
+      {
+       "code": "A1",
+       "nom": "Échauffement",
+       "tours": "1 tour, 4 min",
+       "exos": [
+        {
+         "n": "Montées de genoux sur place, en marchant",
+         "d": "1 min",
+         "v": "https://youtu.be/-aQbL65YHR0",
+         "c": "Exécution : Marche sur place en montant les genoux à hauteur confortable, bras qui accompagnent. Jamais de saut."
+        },
+        {
+         "n": "Rotation du buste assise",
+         "d": "x10 / côté",
+         "v": "https://youtu.be/CoJucPAoMwA",
+         "c": "Position : Assise sur une chaise ou le banc, pieds à plat, bras croisés sur la poitrine (ou petit ballon tenu devant soi).\nExécution : Tourne le buste d'un côté en suivant des yeux, reviens au centre, puis de l'autre côté. Le bassin et les genoux restent face à l'avant.\nBut : Mobiliser le haut du dos, enroulé vers l'avant."
+        }
+       ]
+      },
+      {
+       "code": "B1",
+       "nom": "Circuit",
+       "tours": "3 tours, récup 45 sec",
+       "exos": [
+        {
+         "n": "Rentré du menton",
+         "d": "dos au mur, 3 sec x8",
+         "v": "https://youtu.be/tQYo15dpKdM",
+         "c": "Position : Allongée sur le dos sans coussin (semaines 1-2), puis debout, dos au mur (à partir de la semaine 2).\nExécution : Rentre le menton comme pour faire un double menton, l'arrière de la tête glisse vers l'arrière. Tiens 3 secondes, relâche.\nBut : Ramener la tête au-dessus des épaules."
+        },
+        {
+         "n": "Rowing un bras, main sur une chaise, haltère 1 kg",
+         "d": "x12 / côté",
+         "v": "https://youtu.be/Qi5W_9e4Q8M",
+         "c": "Position : Une main posée sur le dossier ou l'assise d'une chaise, buste penché, dos plat, genoux légèrement fléchis, haltère dans l'autre main bras tendu.\nExécution : Tire le coude vers la hanche en serrant l'omoplate, tiens 1 seconde, redescends lentement.\nPoint clé : Le dos ne tourne pas. Même mouvement que le rowing de la salle, un bras à la fois."
+        },
+        {
+         "n": "Rotation externe d'épaule couchée sur le côté, haltère 1 kg",
+         "d": "x12 / côté",
+         "v": "https://youtu.be/20v3G-odF5c",
+         "c": "Position : Allongée sur le côté, tête sur un coussin, coude du bras du dessus plié à 90° et collé à la taille (serviette dessous), haltère en main.\nExécution : Monte l'avant-bras vers le plafond sans décoller le coude, redescends lentement. Puis change de côté.\nÉpaule : C'est le même mouvement qu'à l'élastique de la salle. Pour le bras gauche, si l'appui sur l'épaule droite gêne, fais-le debout sans poids."
+        },
+        {
+         "n": "W allongée sur le ventre",
+         "d": "x8",
+         "v": "https://youtu.be/TVBV40eGM3A",
+         "c": "Position : Allongée sur le ventre, front posé sur une serviette pliée, coudes pliés le long du corps, les bras forment un W.\nExécution : Décolle les coudes et les mains de quelques centimètres en serrant les omoplates vers le bas et l'arrière, tiens 2 secondes, redescends.\nÉpaule : Petit mouvement, sans douleur ni fourmillements. La nuque reste longue, regard vers le sol."
+        },
+        {
+         "n": "Abduction de hanche allongée sur le côté",
+         "d": "x12 / côté",
+         "v": "https://youtu.be/kYjqRczyvYg",
+         "c": "Position : Allongée sur le côté, jambe du dessous pliée, jambe du dessus tendue dans l'axe du corps. Coussin sous la tête.\nExécution : Monte la jambe du dessus d'environ 30 cm, pointe de pied vers l'avant, tiens 1 seconde, redescends lentement.\nÉpaule : Sur le côté droit, bras du dessous posé devant toi, sans appui sur l'épaule. Si ça gêne, fais ce côté debout, main au mur."
+        }
+       ]
+      },
+      {
+       "code": "FIN",
+       "nom": "Retour au calme",
+       "tours": "1 tour, 3 min",
+       "exos": [
+        {
+         "n": "Étirement des pectoraux dans une porte, bras bas",
+         "d": "30 sec / côté",
+         "v": "https://youtu.be/Yh5HQiz8Bkw",
+         "c": "Exécution : Avant-bras contre l'encadrement de la porte, coude sous la hauteur de l'épaule. Avance doucement le buste jusqu'à sentir l'étirement devant l'épaule.\nÉpaule : Côté droit : coude encore plus bas. Jamais de douleur ni de fourmillements dans le bras."
+        },
+        {
+         "n": "Respiration abdominale, allongée",
+         "d": "1 min",
+         "v": "https://youtu.be/6YB0pv3iv0g",
+         "c": "Exécution : Sur le dos, genoux pliés, une main sur le ventre. Inspire par le nez en gonflant le ventre, souffle longuement en relâchant les épaules."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "s06",
+     "num": 6,
+     "titre": "Autonomie · semaine 3 · séance 1/2 : Jambes et genou",
+     "lieu": "En autonomie",
+     "semaine": 3,
+     "blocs": [
+      {
+       "code": "A1",
+       "nom": "Échauffement",
+       "tours": "1 tour, 4 min",
+       "exos": [
+        {
+         "n": "Montées de genoux sur place, en marchant",
+         "d": "1 min",
+         "v": "https://youtu.be/-aQbL65YHR0",
+         "c": "Exécution : Marche sur place en montant les genoux à hauteur confortable, bras qui accompagnent. Jamais de saut."
+        },
+        {
+         "n": "Rotation du buste assise",
+         "d": "x10 / côté",
+         "v": "https://youtu.be/CoJucPAoMwA",
+         "c": "Position : Assise sur une chaise ou le banc, pieds à plat, bras croisés sur la poitrine (ou petit ballon tenu devant soi).\nExécution : Tourne le buste d'un côté en suivant des yeux, reviens au centre, puis de l'autre côté. Le bassin et les genoux restent face à l'avant.\nBut : Mobiliser le haut du dos, enroulé vers l'avant."
+        }
+       ]
+      },
+      {
+       "code": "B1",
+       "nom": "Circuit",
+       "tours": "3 tours, récup 45 sec",
+       "exos": [
+        {
+         "n": "Pont fessier sur une jambe",
+         "d": "x8 / côté",
+         "v": "https://youtu.be/3NXv0Nany-Q",
+         "c": "Position : Sur le dos, un pied au sol près des fesses, l'autre genou ramené vers la poitrine.\nExécution : Monte le bassin en poussant dans le talon, tiens 2 secondes, redescends. Le bassin reste horizontal.\nGenou : Commence par la jambe droite. Si la jambe gauche tire ou fait mal, reviens au pont sur deux jambes de ce côté."
+        },
+        {
+         "n": "Montée de marche basse",
+         "d": "1re marche, x8 / côté",
+         "v": "https://youtu.be/gxAqDyBNdz8",
+         "c": "Position : Face à une marche basse (10-15 cm) : la 1re marche de l'escalier, main sur la rampe ou au mur.\nExécution : Pose tout le pied sur la marche, monte en poussant dans le talon sans t'aider de la jambe du bas, redescends lentement (3 secondes).\nGenou : Le genou reste dans l'axe du 2e orteil. Si la rotule gauche se dérobe, on arrête la série et on reprend la chaise isométrique."
+        },
+        {
+         "n": "Chaise contre le mur, genoux peu pliés",
+         "d": "40 sec",
+         "v": "https://youtu.be/px1KnY0CWHo",
+         "c": "Position : Dos et fesses contre un mur, pieds à 40 cm du mur, largeur de bassin (comme dans la vidéo, mais sans ballon).\nExécution : Glisse de quelques centimètres seulement vers le bas et tiens. Jamais jusqu'à 90°.\nGenou : Genoux dans l'axe des pieds. Si ça tire, remonte un peu."
+        },
+        {
+         "n": "Équilibre sur une jambe",
+         "d": "30 sec / jambe",
+         "v": "https://youtu.be/JNE4Oi0pD8s",
+         "c": "Position : Debout de profil près d'un mur ou d'un meuble stable, bout des doigts posés dessus si besoin.\nExécution : Lève un pied et tiens en gardant le bassin horizontal. Commence par la jambe droite, puis la gauche.\nProgression : Quand c'est facile, décolle les doigts. Genou de la jambe d'appui légèrement fléchi, jamais verrouillé."
+        },
+        {
+         "n": "Contraction du quadriceps, serviette sous le genou",
+         "d": "5 sec x10 / jambe",
+         "v": "https://youtu.be/IaSSfEiyPWc",
+         "c": "Position : Assise ou allongée, jambe tendue, serviette roulée sous le genou.\nExécution : Écrase la serviette avec l'arrière du genou en contractant le devant de la cuisse, pointe de pied vers toi. Tiens 5 secondes, relâche.\nBut : Réveiller le quadriceps, qui tient la rotule et protège le genou."
+        }
+       ]
+      },
+      {
+       "code": "FIN",
+       "nom": "Retour au calme",
+       "tours": "1 tour, 3 min",
+       "exos": [
+        {
+         "n": "Étirement des pectoraux dans une porte, bras bas",
+         "d": "30 sec / côté",
+         "v": "https://youtu.be/Yh5HQiz8Bkw",
+         "c": "Exécution : Avant-bras contre l'encadrement de la porte, coude sous la hauteur de l'épaule. Avance doucement le buste jusqu'à sentir l'étirement devant l'épaule.\nÉpaule : Côté droit : coude encore plus bas. Jamais de douleur ni de fourmillements dans le bras."
+        },
+        {
+         "n": "Respiration abdominale, allongée",
+         "d": "1 min",
+         "v": "https://youtu.be/6YB0pv3iv0g",
+         "c": "Exécution : Sur le dos, genoux pliés, une main sur le ventre. Inspire par le nez en gonflant le ventre, souffle longuement en relâchant les épaules."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "s15",
+     "num": 6.5,
+     "titre": "Autonomie · semaine 3 · séance 2/2 : Dos et épaules",
+     "lieu": "En autonomie",
+     "semaine": 3,
+     "blocs": [
+      {
+       "code": "A1",
+       "nom": "Échauffement",
+       "tours": "1 tour, 4 min",
+       "exos": [
+        {
+         "n": "Montées de genoux sur place, en marchant",
+         "d": "1 min 30",
+         "v": "https://youtu.be/-aQbL65YHR0",
+         "c": "Exécution : Marche sur place en montant les genoux à hauteur confortable, bras qui accompagnent. Jamais de saut."
+        },
+        {
+         "n": "Rotation du buste assise",
+         "d": "x10 / côté",
+         "v": "https://youtu.be/CoJucPAoMwA",
+         "c": "Position : Assise sur une chaise ou le banc, pieds à plat, bras croisés sur la poitrine (ou petit ballon tenu devant soi).\nExécution : Tourne le buste d'un côté en suivant des yeux, reviens au centre, puis de l'autre côté. Le bassin et les genoux restent face à l'avant.\nBut : Mobiliser le haut du dos, enroulé vers l'avant."
+        }
+       ]
+      },
+      {
+       "code": "B1",
+       "nom": "Circuit",
+       "tours": "3 tours, récup 45 sec",
+       "exos": [
+        {
+         "n": "Rentré du menton",
+         "d": "dos au mur, 3 sec x10",
+         "v": "https://youtu.be/tQYo15dpKdM",
+         "c": "Position : Allongée sur le dos sans coussin (semaines 1-2), puis debout, dos au mur (à partir de la semaine 2).\nExécution : Rentre le menton comme pour faire un double menton, l'arrière de la tête glisse vers l'arrière. Tiens 3 secondes, relâche.\nBut : Ramener la tête au-dessus des épaules."
+        },
+        {
+         "n": "Rowing un bras, main sur une chaise, haltère 1 kg",
+         "d": "x15 / côté",
+         "v": "https://youtu.be/Qi5W_9e4Q8M",
+         "c": "Position : Une main posée sur le dossier ou l'assise d'une chaise, buste penché, dos plat, genoux légèrement fléchis, haltère dans l'autre main bras tendu.\nExécution : Tire le coude vers la hanche en serrant l'omoplate, tiens 1 seconde, redescends lentement.\nPoint clé : Le dos ne tourne pas. Même mouvement que le rowing de la salle, un bras à la fois."
+        },
+        {
+         "n": "Rotation externe d'épaule couchée sur le côté, haltère 1 kg",
+         "d": "x15 / côté",
+         "v": "https://youtu.be/20v3G-odF5c",
+         "c": "Position : Allongée sur le côté, tête sur un coussin, coude du bras du dessus plié à 90° et collé à la taille (serviette dessous), haltère en main.\nExécution : Monte l'avant-bras vers le plafond sans décoller le coude, redescends lentement. Puis change de côté.\nÉpaule : C'est le même mouvement qu'à l'élastique de la salle. Pour le bras gauche, si l'appui sur l'épaule droite gêne, fais-le debout sans poids."
+        },
+        {
+         "n": "W allongée sur le ventre",
+         "d": "x10",
+         "v": "https://youtu.be/TVBV40eGM3A",
+         "c": "Position : Allongée sur le ventre, front posé sur une serviette pliée, coudes pliés le long du corps, les bras forment un W.\nExécution : Décolle les coudes et les mains de quelques centimètres en serrant les omoplates vers le bas et l'arrière, tiens 2 secondes, redescends.\nÉpaule : Petit mouvement, sans douleur ni fourmillements. La nuque reste longue, regard vers le sol."
+        },
+        {
+         "n": "Dead bug, bras vers le plafond",
+         "d": "x8 / côté",
+         "v": "https://youtu.be/g_BYB0R-4Ws",
+         "c": "Position : Sur le dos, bras tendus vers le plafond, hanches et genoux pliés autant que confortable.\nExécution : Bas du dos plaqué au sol, tends une jambe vers l'avant puis reviens, en soufflant longuement. Alterne.\nÉpaule : Les bras restent vers le plafond : on ne les descend jamais derrière la tête."
+        }
+       ]
+      },
+      {
+       "code": "FIN",
+       "nom": "Retour au calme",
+       "tours": "1 tour, 3 min",
+       "exos": [
+        {
+         "n": "Étirement des pectoraux dans une porte, bras bas",
+         "d": "30 sec / côté",
+         "v": "https://youtu.be/Yh5HQiz8Bkw",
+         "c": "Exécution : Avant-bras contre l'encadrement de la porte, coude sous la hauteur de l'épaule. Avance doucement le buste jusqu'à sentir l'étirement devant l'épaule.\nÉpaule : Côté droit : coude encore plus bas. Jamais de douleur ni de fourmillements dans le bras."
+        },
+        {
+         "n": "Respiration abdominale, allongée",
+         "d": "1 min",
+         "v": "https://youtu.be/6YB0pv3iv0g",
+         "c": "Exécution : Sur le dos, genoux pliés, une main sur le ventre. Inspire par le nez en gonflant le ventre, souffle longuement en relâchant les épaules."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "s08",
+     "num": 8,
+     "titre": "Autonomie · semaine 4 · séance 1/2 : Jambes et genou",
+     "lieu": "En autonomie",
+     "semaine": 4,
+     "blocs": [
+      {
+       "code": "A1",
+       "nom": "Échauffement",
+       "tours": "1 tour, 4 min",
+       "exos": [
+        {
+         "n": "Montées de genoux sur place, en marchant",
+         "d": "1 min",
+         "v": "https://youtu.be/-aQbL65YHR0",
+         "c": "Exécution : Marche sur place en montant les genoux à hauteur confortable, bras qui accompagnent. Jamais de saut."
+        },
+        {
+         "n": "Rotation du buste assise",
+         "d": "x10 / côté",
+         "v": "https://youtu.be/CoJucPAoMwA",
+         "c": "Position : Assise sur une chaise ou le banc, pieds à plat, bras croisés sur la poitrine (ou petit ballon tenu devant soi).\nExécution : Tourne le buste d'un côté en suivant des yeux, reviens au centre, puis de l'autre côté. Le bassin et les genoux restent face à l'avant.\nBut : Mobiliser le haut du dos, enroulé vers l'avant."
+        }
+       ]
+      },
+      {
+       "code": "B1",
+       "nom": "Circuit",
+       "tours": "3 tours, récup 45 sec",
+       "exos": [
+        {
+         "n": "Pont fessier sur une jambe",
+         "d": "x10 / côté",
+         "v": "https://youtu.be/3NXv0Nany-Q",
+         "c": "Position : Sur le dos, un pied au sol près des fesses, l'autre genou ramené vers la poitrine.\nExécution : Monte le bassin en poussant dans le talon, tiens 2 secondes, redescends. Le bassin reste horizontal.\nGenou : Commence par la jambe droite. Si la jambe gauche tire ou fait mal, reviens au pont sur deux jambes de ce côté."
+        },
+        {
+         "n": "Montée de marche basse",
+         "d": "1re marche, x8 / côté",
+         "v": "https://youtu.be/gxAqDyBNdz8",
+         "c": "Position : Face à une marche basse (10-15 cm) : la 1re marche de l'escalier, main sur la rampe ou au mur.\nExécution : Pose tout le pied sur la marche, monte en poussant dans le talon sans t'aider de la jambe du bas, redescends lentement (3 secondes).\nGenou : Le genou reste dans l'axe du 2e orteil. Si la rotule gauche se dérobe, on arrête la série et on reprend la chaise isométrique."
+        },
+        {
+         "n": "Chaise contre le mur, genoux peu pliés",
+         "d": "40 sec",
+         "v": "https://youtu.be/px1KnY0CWHo",
+         "c": "Position : Dos et fesses contre un mur, pieds à 40 cm du mur, largeur de bassin (comme dans la vidéo, mais sans ballon).\nExécution : Glisse de quelques centimètres seulement vers le bas et tiens. Jamais jusqu'à 90°.\nGenou : Genoux dans l'axe des pieds. Si ça tire, remonte un peu."
+        },
+        {
+         "n": "Équilibre sur une jambe",
+         "d": "30 sec / jambe",
+         "v": "https://youtu.be/JNE4Oi0pD8s",
+         "c": "Position : Debout de profil près d'un mur ou d'un meuble stable, bout des doigts posés dessus si besoin.\nExécution : Lève un pied et tiens en gardant le bassin horizontal. Commence par la jambe droite, puis la gauche.\nProgression : Quand c'est facile, décolle les doigts. Genou de la jambe d'appui légèrement fléchi, jamais verrouillé."
+        },
+        {
+         "n": "Contraction du quadriceps, serviette sous le genou",
+         "d": "5 sec x10 / jambe",
+         "v": "https://youtu.be/IaSSfEiyPWc",
+         "c": "Position : Assise ou allongée, jambe tendue, serviette roulée sous le genou.\nExécution : Écrase la serviette avec l'arrière du genou en contractant le devant de la cuisse, pointe de pied vers toi. Tiens 5 secondes, relâche.\nBut : Réveiller le quadriceps, qui tient la rotule et protège le genou."
+        }
+       ]
+      },
+      {
+       "code": "FIN",
+       "nom": "Retour au calme",
+       "tours": "1 tour, 3 min",
+       "exos": [
+        {
+         "n": "Étirement des pectoraux dans une porte, bras bas",
+         "d": "30 sec / côté",
+         "v": "https://youtu.be/Yh5HQiz8Bkw",
+         "c": "Exécution : Avant-bras contre l'encadrement de la porte, coude sous la hauteur de l'épaule. Avance doucement le buste jusqu'à sentir l'étirement devant l'épaule.\nÉpaule : Côté droit : coude encore plus bas. Jamais de douleur ni de fourmillements dans le bras."
+        },
+        {
+         "n": "Respiration abdominale, allongée",
+         "d": "1 min",
+         "v": "https://youtu.be/6YB0pv3iv0g",
+         "c": "Exécution : Sur le dos, genoux pliés, une main sur le ventre. Inspire par le nez en gonflant le ventre, souffle longuement en relâchant les épaules."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "s16",
+     "num": 8.5,
+     "titre": "Autonomie · semaine 4 · séance 2/2 : Dos et épaules",
+     "lieu": "En autonomie",
+     "semaine": 4,
+     "blocs": [
+      {
+       "code": "A1",
+       "nom": "Échauffement",
+       "tours": "1 tour, 4 min",
+       "exos": [
+        {
+         "n": "Montées de genoux sur place, en marchant",
+         "d": "1 min 30",
+         "v": "https://youtu.be/-aQbL65YHR0",
+         "c": "Exécution : Marche sur place en montant les genoux à hauteur confortable, bras qui accompagnent. Jamais de saut."
+        },
+        {
+         "n": "Rotation du buste assise",
+         "d": "x10 / côté",
+         "v": "https://youtu.be/CoJucPAoMwA",
+         "c": "Position : Assise sur une chaise ou le banc, pieds à plat, bras croisés sur la poitrine (ou petit ballon tenu devant soi).\nExécution : Tourne le buste d'un côté en suivant des yeux, reviens au centre, puis de l'autre côté. Le bassin et les genoux restent face à l'avant.\nBut : Mobiliser le haut du dos, enroulé vers l'avant."
+        }
+       ]
+      },
+      {
+       "code": "B1",
+       "nom": "Circuit",
+       "tours": "3 tours, récup 45 sec",
+       "exos": [
+        {
+         "n": "Rentré du menton",
+         "d": "dos au mur, 3 sec x10",
+         "v": "https://youtu.be/tQYo15dpKdM",
+         "c": "Position : Allongée sur le dos sans coussin (semaines 1-2), puis debout, dos au mur (à partir de la semaine 2).\nExécution : Rentre le menton comme pour faire un double menton, l'arrière de la tête glisse vers l'arrière. Tiens 3 secondes, relâche.\nBut : Ramener la tête au-dessus des épaules."
+        },
+        {
+         "n": "Rowing un bras, main sur une chaise, haltère 1 kg",
+         "d": "x15 / côté",
+         "v": "https://youtu.be/Qi5W_9e4Q8M",
+         "c": "Position : Une main posée sur le dossier ou l'assise d'une chaise, buste penché, dos plat, genoux légèrement fléchis, haltère dans l'autre main bras tendu.\nExécution : Tire le coude vers la hanche en serrant l'omoplate, tiens 1 seconde, redescends lentement.\nPoint clé : Le dos ne tourne pas. Même mouvement que le rowing de la salle, un bras à la fois."
+        },
+        {
+         "n": "Rotation externe d'épaule couchée sur le côté, haltère 1 kg",
+         "d": "x15 / côté",
+         "v": "https://youtu.be/20v3G-odF5c",
+         "c": "Position : Allongée sur le côté, tête sur un coussin, coude du bras du dessus plié à 90° et collé à la taille (serviette dessous), haltère en main.\nExécution : Monte l'avant-bras vers le plafond sans décoller le coude, redescends lentement. Puis change de côté.\nÉpaule : C'est le même mouvement qu'à l'élastique de la salle. Pour le bras gauche, si l'appui sur l'épaule droite gêne, fais-le debout sans poids."
+        },
+        {
+         "n": "W allongée sur le ventre",
+         "d": "x10",
+         "v": "https://youtu.be/TVBV40eGM3A",
+         "c": "Position : Allongée sur le ventre, front posé sur une serviette pliée, coudes pliés le long du corps, les bras forment un W.\nExécution : Décolle les coudes et les mains de quelques centimètres en serrant les omoplates vers le bas et l'arrière, tiens 2 secondes, redescends.\nÉpaule : Petit mouvement, sans douleur ni fourmillements. La nuque reste longue, regard vers le sol."
+        },
+        {
+         "n": "Dead bug, bras vers le plafond",
+         "d": "x8 / côté",
+         "v": "https://youtu.be/g_BYB0R-4Ws",
+         "c": "Position : Sur le dos, bras tendus vers le plafond, hanches et genoux pliés autant que confortable.\nExécution : Bas du dos plaqué au sol, tends une jambe vers l'avant puis reviens, en soufflant longuement. Alterne.\nÉpaule : Les bras restent vers le plafond : on ne les descend jamais derrière la tête."
+        }
+       ]
+      },
+      {
+       "code": "FIN",
+       "nom": "Retour au calme",
+       "tours": "1 tour, 3 min",
+       "exos": [
+        {
+         "n": "Étirement des pectoraux dans une porte, bras bas",
+         "d": "30 sec / côté",
+         "v": "https://youtu.be/Yh5HQiz8Bkw",
+         "c": "Exécution : Avant-bras contre l'encadrement de la porte, coude sous la hauteur de l'épaule. Avance doucement le buste jusqu'à sentir l'étirement devant l'épaule.\nÉpaule : Côté droit : coude encore plus bas. Jamais de douleur ni de fourmillements dans le bras."
+        },
+        {
+         "n": "Respiration abdominale, allongée",
+         "d": "1 min",
+         "v": "https://youtu.be/6YB0pv3iv0g",
+         "c": "Exécution : Sur le dos, genoux pliés, une main sur le ventre. Inspire par le nez en gonflant le ventre, souffle longuement en relâchant les épaules."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "s10",
+     "num": 10,
+     "titre": "Autonomie · semaine 5 · séance 1/2 : Jambes et genou",
+     "lieu": "En autonomie",
+     "semaine": 5,
+     "blocs": [
+      {
+       "code": "A1",
+       "nom": "Échauffement",
+       "tours": "1 tour, 4 min",
+       "exos": [
+        {
+         "n": "Montées de genoux sur place, en marchant",
+         "d": "1 min 30",
+         "v": "https://youtu.be/-aQbL65YHR0",
+         "c": "Exécution : Marche sur place en montant les genoux à hauteur confortable, bras qui accompagnent. Jamais de saut."
+        },
+        {
+         "n": "Rotation du buste assise",
+         "d": "x10 / côté",
+         "v": "https://youtu.be/CoJucPAoMwA",
+         "c": "Position : Assise sur une chaise ou le banc, pieds à plat, bras croisés sur la poitrine (ou petit ballon tenu devant soi).\nExécution : Tourne le buste d'un côté en suivant des yeux, reviens au centre, puis de l'autre côté. Le bassin et les genoux restent face à l'avant.\nBut : Mobiliser le haut du dos, enroulé vers l'avant."
+        }
+       ]
+      },
+      {
+       "code": "B1",
+       "nom": "Circuit",
+       "tours": "3 tours, récup 45 sec",
+       "exos": [
+        {
+         "n": "Assis-debout sur une chaise + coussin",
+         "d": "x10",
+         "v": "https://youtu.be/y6NUWq_AEvI",
+         "c": "Position : Devant une chaise rehaussée d'un ou deux coussins, pieds largeur de hanches, bras croisés sur la poitrine.\nExécution : Assieds-toi en 3 secondes, puis relève-toi en poussant dans les talons, sans élan.\nGenou : Genoux dans l'axe des pieds. Seulement si la douleur reste à 3/10 maximum, sinon ajoute un coussin."
+        },
+        {
+         "n": "Montée de marche basse",
+         "d": "descente 3 sec, x10 / côté",
+         "v": "https://youtu.be/gxAqDyBNdz8",
+         "c": "Position : Face à une marche basse (10-15 cm) : la 1re marche de l'escalier, main sur la rampe ou au mur.\nExécution : Pose tout le pied sur la marche, monte en poussant dans le talon sans t'aider de la jambe du bas, redescends lentement (3 secondes).\nGenou : Le genou reste dans l'axe du 2e orteil. Si la rotule gauche se dérobe, on arrête la série et on reprend la chaise isométrique."
+        },
+        {
+         "n": "Pont fessier sur une jambe",
+         "d": "x10 / côté",
+         "v": "https://youtu.be/3NXv0Nany-Q",
+         "c": "Position : Sur le dos, un pied au sol près des fesses, l'autre genou ramené vers la poitrine.\nExécution : Monte le bassin en poussant dans le talon, tiens 2 secondes, redescends. Le bassin reste horizontal.\nGenou : Commence par la jambe droite. Si la jambe gauche tire ou fait mal, reviens au pont sur deux jambes de ce côté."
+        },
+        {
+         "n": "Équilibre sur une jambe",
+         "d": "30 sec / jambe, sans les doigts si OK",
+         "v": "https://youtu.be/JNE4Oi0pD8s",
+         "c": "Position : Debout de profil près d'un mur ou d'un meuble stable, bout des doigts posés dessus si besoin.\nExécution : Lève un pied et tiens en gardant le bassin horizontal. Commence par la jambe droite, puis la gauche.\nProgression : Quand c'est facile, décolle les doigts. Genou de la jambe d'appui légèrement fléchi, jamais verrouillé."
+        },
+        {
+         "n": "Abduction de hanche allongée sur le côté",
+         "d": "x15 / côté",
+         "v": "https://youtu.be/kYjqRczyvYg",
+         "c": "Position : Allongée sur le côté, jambe du dessous pliée, jambe du dessus tendue dans l'axe du corps. Coussin sous la tête.\nExécution : Monte la jambe du dessus d'environ 30 cm, pointe de pied vers l'avant, tiens 1 seconde, redescends lentement.\nÉpaule : Sur le côté droit, bras du dessous posé devant toi, sans appui sur l'épaule. Si ça gêne, fais ce côté debout, main au mur."
+        }
+       ]
+      },
+      {
+       "code": "FIN",
+       "nom": "Retour au calme",
+       "tours": "1 tour, 3 min",
+       "exos": [
+        {
+         "n": "Étirement des pectoraux dans une porte, bras bas",
+         "d": "30 sec / côté",
+         "v": "https://youtu.be/Yh5HQiz8Bkw",
+         "c": "Exécution : Avant-bras contre l'encadrement de la porte, coude sous la hauteur de l'épaule. Avance doucement le buste jusqu'à sentir l'étirement devant l'épaule.\nÉpaule : Côté droit : coude encore plus bas. Jamais de douleur ni de fourmillements dans le bras."
+        },
+        {
+         "n": "Respiration abdominale, allongée",
+         "d": "1 min",
+         "v": "https://youtu.be/6YB0pv3iv0g",
+         "c": "Exécution : Sur le dos, genoux pliés, une main sur le ventre. Inspire par le nez en gonflant le ventre, souffle longuement en relâchant les épaules."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "s17",
+     "num": 10.5,
+     "titre": "Autonomie · semaine 5 · séance 2/2 : Dos et épaules",
+     "lieu": "En autonomie",
+     "semaine": 5,
+     "blocs": [
+      {
+       "code": "A1",
+       "nom": "Échauffement",
+       "tours": "1 tour, 4 min",
+       "exos": [
+        {
+         "n": "Montées de genoux sur place, en marchant",
+         "d": "1 min 30",
+         "v": "https://youtu.be/-aQbL65YHR0",
+         "c": "Exécution : Marche sur place en montant les genoux à hauteur confortable, bras qui accompagnent. Jamais de saut."
+        },
+        {
+         "n": "Rotation du buste assise",
+         "d": "x10 / côté",
+         "v": "https://youtu.be/CoJucPAoMwA",
+         "c": "Position : Assise sur une chaise ou le banc, pieds à plat, bras croisés sur la poitrine (ou petit ballon tenu devant soi).\nExécution : Tourne le buste d'un côté en suivant des yeux, reviens au centre, puis de l'autre côté. Le bassin et les genoux restent face à l'avant.\nBut : Mobiliser le haut du dos, enroulé vers l'avant."
+        }
+       ]
+      },
+      {
+       "code": "B1",
+       "nom": "Circuit",
+       "tours": "3 tours, récup 45 sec",
+       "exos": [
+        {
+         "n": "Rowing un bras, main sur une chaise, haltère 1 kg",
+         "d": "tempo lent, x15 / côté",
+         "v": "https://youtu.be/Qi5W_9e4Q8M",
+         "c": "Position : Une main posée sur le dossier ou l'assise d'une chaise, buste penché, dos plat, genoux légèrement fléchis, haltère dans l'autre main bras tendu.\nExécution : Tire le coude vers la hanche en serrant l'omoplate, tiens 1 seconde, redescends lentement.\nPoint clé : Le dos ne tourne pas. Même mouvement que le rowing de la salle, un bras à la fois."
+        },
+        {
+         "n": "Rotation externe d'épaule couchée sur le côté, haltère 1 kg",
+         "d": "x15 / côté",
+         "v": "https://youtu.be/20v3G-odF5c",
+         "c": "Position : Allongée sur le côté, tête sur un coussin, coude du bras du dessus plié à 90° et collé à la taille (serviette dessous), haltère en main.\nExécution : Monte l'avant-bras vers le plafond sans décoller le coude, redescends lentement. Puis change de côté.\nÉpaule : C'est le même mouvement qu'à l'élastique de la salle. Pour le bras gauche, si l'appui sur l'épaule droite gêne, fais-le debout sans poids."
+        },
+        {
+         "n": "W allongée sur le ventre",
+         "d": "x12",
+         "v": "https://youtu.be/TVBV40eGM3A",
+         "c": "Position : Allongée sur le ventre, front posé sur une serviette pliée, coudes pliés le long du corps, les bras forment un W.\nExécution : Décolle les coudes et les mains de quelques centimètres en serrant les omoplates vers le bas et l'arrière, tiens 2 secondes, redescends.\nÉpaule : Petit mouvement, sans douleur ni fourmillements. La nuque reste longue, regard vers le sol."
+        },
+        {
+         "n": "Dead bug, bras vers le plafond",
+         "d": "x10 / côté",
+         "v": "https://youtu.be/g_BYB0R-4Ws",
+         "c": "Position : Sur le dos, bras tendus vers le plafond, hanches et genoux pliés autant que confortable.\nExécution : Bas du dos plaqué au sol, tends une jambe vers l'avant puis reviens, en soufflant longuement. Alterne.\nÉpaule : Les bras restent vers le plafond : on ne les descend jamais derrière la tête."
+        },
+        {
+         "n": "Rentré du menton",
+         "d": "dos au mur, 3 sec x10",
+         "v": "https://youtu.be/tQYo15dpKdM",
+         "c": "Position : Allongée sur le dos sans coussin (semaines 1-2), puis debout, dos au mur (à partir de la semaine 2).\nExécution : Rentre le menton comme pour faire un double menton, l'arrière de la tête glisse vers l'arrière. Tiens 3 secondes, relâche.\nBut : Ramener la tête au-dessus des épaules."
+        }
+       ]
+      },
+      {
+       "code": "FIN",
+       "nom": "Retour au calme",
+       "tours": "1 tour, 3 min",
+       "exos": [
+        {
+         "n": "Étirement des pectoraux dans une porte, bras bas",
+         "d": "30 sec / côté",
+         "v": "https://youtu.be/Yh5HQiz8Bkw",
+         "c": "Exécution : Avant-bras contre l'encadrement de la porte, coude sous la hauteur de l'épaule. Avance doucement le buste jusqu'à sentir l'étirement devant l'épaule.\nÉpaule : Côté droit : coude encore plus bas. Jamais de douleur ni de fourmillements dans le bras."
+        },
+        {
+         "n": "Respiration abdominale, allongée",
+         "d": "1 min",
+         "v": "https://youtu.be/6YB0pv3iv0g",
+         "c": "Exécution : Sur le dos, genoux pliés, une main sur le ventre. Inspire par le nez en gonflant le ventre, souffle longuement en relâchant les épaules."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "s12",
+     "num": 12,
+     "titre": "Autonomie · semaine 6 · séance 1/2 : Jambes et genou",
+     "lieu": "En autonomie",
+     "semaine": 6,
+     "blocs": [
+      {
+       "code": "A1",
+       "nom": "Échauffement",
+       "tours": "1 tour, 4 min",
+       "exos": [
+        {
+         "n": "Montées de genoux sur place, en marchant",
+         "d": "1 min 30",
+         "v": "https://youtu.be/-aQbL65YHR0",
+         "c": "Exécution : Marche sur place en montant les genoux à hauteur confortable, bras qui accompagnent. Jamais de saut."
+        },
+        {
+         "n": "Rotation du buste assise",
+         "d": "x10 / côté",
+         "v": "https://youtu.be/CoJucPAoMwA",
+         "c": "Position : Assise sur une chaise ou le banc, pieds à plat, bras croisés sur la poitrine (ou petit ballon tenu devant soi).\nExécution : Tourne le buste d'un côté en suivant des yeux, reviens au centre, puis de l'autre côté. Le bassin et les genoux restent face à l'avant.\nBut : Mobiliser le haut du dos, enroulé vers l'avant."
+        }
+       ]
+      },
+      {
+       "code": "B1",
+       "nom": "Circuit",
+       "tours": "3 tours, récup 45 sec",
+       "exos": [
+        {
+         "n": "Assis-debout sur une chaise + coussin",
+         "d": "x12",
+         "v": "https://youtu.be/y6NUWq_AEvI",
+         "c": "Position : Devant une chaise rehaussée d'un ou deux coussins, pieds largeur de hanches, bras croisés sur la poitrine.\nExécution : Assieds-toi en 3 secondes, puis relève-toi en poussant dans les talons, sans élan.\nGenou : Genoux dans l'axe des pieds. Seulement si la douleur reste à 3/10 maximum, sinon ajoute un coussin."
+        },
+        {
+         "n": "Montée de marche basse",
+         "d": "descente 3 sec, x10 / côté",
+         "v": "https://youtu.be/gxAqDyBNdz8",
+         "c": "Position : Face à une marche basse (10-15 cm) : la 1re marche de l'escalier, main sur la rampe ou au mur.\nExécution : Pose tout le pied sur la marche, monte en poussant dans le talon sans t'aider de la jambe du bas, redescends lentement (3 secondes).\nGenou : Le genou reste dans l'axe du 2e orteil. Si la rotule gauche se dérobe, on arrête la série et on reprend la chaise isométrique."
+        },
+        {
+         "n": "Pont fessier sur une jambe",
+         "d": "x10 / côté",
+         "v": "https://youtu.be/3NXv0Nany-Q",
+         "c": "Position : Sur le dos, un pied au sol près des fesses, l'autre genou ramené vers la poitrine.\nExécution : Monte le bassin en poussant dans le talon, tiens 2 secondes, redescends. Le bassin reste horizontal.\nGenou : Commence par la jambe droite. Si la jambe gauche tire ou fait mal, reviens au pont sur deux jambes de ce côté."
+        },
+        {
+         "n": "Équilibre sur une jambe",
+         "d": "30 sec / jambe, sans les doigts si OK",
+         "v": "https://youtu.be/JNE4Oi0pD8s",
+         "c": "Position : Debout de profil près d'un mur ou d'un meuble stable, bout des doigts posés dessus si besoin.\nExécution : Lève un pied et tiens en gardant le bassin horizontal. Commence par la jambe droite, puis la gauche.\nProgression : Quand c'est facile, décolle les doigts. Genou de la jambe d'appui légèrement fléchi, jamais verrouillé."
+        },
+        {
+         "n": "Abduction de hanche allongée sur le côté",
+         "d": "x15 / côté",
+         "v": "https://youtu.be/kYjqRczyvYg",
+         "c": "Position : Allongée sur le côté, jambe du dessous pliée, jambe du dessus tendue dans l'axe du corps. Coussin sous la tête.\nExécution : Monte la jambe du dessus d'environ 30 cm, pointe de pied vers l'avant, tiens 1 seconde, redescends lentement.\nÉpaule : Sur le côté droit, bras du dessous posé devant toi, sans appui sur l'épaule. Si ça gêne, fais ce côté debout, main au mur."
+        }
+       ]
+      },
+      {
+       "code": "FIN",
+       "nom": "Retour au calme",
+       "tours": "1 tour, 3 min",
+       "exos": [
+        {
+         "n": "Étirement des pectoraux dans une porte, bras bas",
+         "d": "30 sec / côté",
+         "v": "https://youtu.be/Yh5HQiz8Bkw",
+         "c": "Exécution : Avant-bras contre l'encadrement de la porte, coude sous la hauteur de l'épaule. Avance doucement le buste jusqu'à sentir l'étirement devant l'épaule.\nÉpaule : Côté droit : coude encore plus bas. Jamais de douleur ni de fourmillements dans le bras."
+        },
+        {
+         "n": "Respiration abdominale, allongée",
+         "d": "1 min",
+         "v": "https://youtu.be/6YB0pv3iv0g",
+         "c": "Exécution : Sur le dos, genoux pliés, une main sur le ventre. Inspire par le nez en gonflant le ventre, souffle longuement en relâchant les épaules."
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "s18",
+     "num": 12.5,
+     "titre": "Autonomie · semaine 6 · séance 2/2 : Dos et épaules",
+     "lieu": "En autonomie",
+     "semaine": 6,
+     "blocs": [
+      {
+       "code": "A1",
+       "nom": "Échauffement",
+       "tours": "1 tour, 4 min",
+       "exos": [
+        {
+         "n": "Montées de genoux sur place, en marchant",
+         "d": "1 min 30",
+         "v": "https://youtu.be/-aQbL65YHR0",
+         "c": "Exécution : Marche sur place en montant les genoux à hauteur confortable, bras qui accompagnent. Jamais de saut."
+        },
+        {
+         "n": "Rotation du buste assise",
+         "d": "x10 / côté",
+         "v": "https://youtu.be/CoJucPAoMwA",
+         "c": "Position : Assise sur une chaise ou le banc, pieds à plat, bras croisés sur la poitrine (ou petit ballon tenu devant soi).\nExécution : Tourne le buste d'un côté en suivant des yeux, reviens au centre, puis de l'autre côté. Le bassin et les genoux restent face à l'avant.\nBut : Mobiliser le haut du dos, enroulé vers l'avant."
+        }
+       ]
+      },
+      {
+       "code": "B1",
+       "nom": "Circuit",
+       "tours": "3 tours, récup 45 sec",
+       "exos": [
+        {
+         "n": "Rowing un bras, main sur une chaise, haltère 1 kg",
+         "d": "tempo lent, x15 / côté",
+         "v": "https://youtu.be/Qi5W_9e4Q8M",
+         "c": "Position : Une main posée sur le dossier ou l'assise d'une chaise, buste penché, dos plat, genoux légèrement fléchis, haltère dans l'autre main bras tendu.\nExécution : Tire le coude vers la hanche en serrant l'omoplate, tiens 1 seconde, redescends lentement.\nPoint clé : Le dos ne tourne pas. Même mouvement que le rowing de la salle, un bras à la fois."
+        },
+        {
+         "n": "Rotation externe d'épaule couchée sur le côté, haltère 1 kg",
+         "d": "x15 / côté",
+         "v": "https://youtu.be/20v3G-odF5c",
+         "c": "Position : Allongée sur le côté, tête sur un coussin, coude du bras du dessus plié à 90° et collé à la taille (serviette dessous), haltère en main.\nExécution : Monte l'avant-bras vers le plafond sans décoller le coude, redescends lentement. Puis change de côté.\nÉpaule : C'est le même mouvement qu'à l'élastique de la salle. Pour le bras gauche, si l'appui sur l'épaule droite gêne, fais-le debout sans poids."
+        },
+        {
+         "n": "W allongée sur le ventre",
+         "d": "x12",
+         "v": "https://youtu.be/TVBV40eGM3A",
+         "c": "Position : Allongée sur le ventre, front posé sur une serviette pliée, coudes pliés le long du corps, les bras forment un W.\nExécution : Décolle les coudes et les mains de quelques centimètres en serrant les omoplates vers le bas et l'arrière, tiens 2 secondes, redescends.\nÉpaule : Petit mouvement, sans douleur ni fourmillements. La nuque reste longue, regard vers le sol."
+        },
+        {
+         "n": "Dead bug, bras vers le plafond",
+         "d": "x10 / côté",
+         "v": "https://youtu.be/g_BYB0R-4Ws",
+         "c": "Position : Sur le dos, bras tendus vers le plafond, hanches et genoux pliés autant que confortable.\nExécution : Bas du dos plaqué au sol, tends une jambe vers l'avant puis reviens, en soufflant longuement. Alterne.\nÉpaule : Les bras restent vers le plafond : on ne les descend jamais derrière la tête."
+        },
+        {
+         "n": "Rentré du menton",
+         "d": "dos au mur, 3 sec x10",
+         "v": "https://youtu.be/tQYo15dpKdM",
+         "c": "Position : Allongée sur le dos sans coussin (semaines 1-2), puis debout, dos au mur (à partir de la semaine 2).\nExécution : Rentre le menton comme pour faire un double menton, l'arrière de la tête glisse vers l'arrière. Tiens 3 secondes, relâche.\nBut : Ramener la tête au-dessus des épaules."
+        }
+       ]
+      },
+      {
+       "code": "FIN",
+       "nom": "Retour au calme",
+       "tours": "1 tour, 3 min",
+       "exos": [
+        {
+         "n": "Étirement des pectoraux dans une porte, bras bas",
+         "d": "30 sec / côté",
+         "v": "https://youtu.be/Yh5HQiz8Bkw",
+         "c": "Exécution : Avant-bras contre l'encadrement de la porte, coude sous la hauteur de l'épaule. Avance doucement le buste jusqu'à sentir l'étirement devant l'épaule.\nÉpaule : Côté droit : coude encore plus bas. Jamais de douleur ni de fourmillements dans le bras."
+        },
+        {
+         "n": "Respiration abdominale, allongée",
+         "d": "1 min",
+         "v": "https://youtu.be/6YB0pv3iv0g",
+         "c": "Exécution : Sur le dos, genoux pliés, une main sur le ventre. Inspire par le nez en gonflant le ventre, souffle longuement en relâchant les épaules."
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

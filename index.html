@@ -981,30 +981,55 @@ async function pasteSeances(){
   const f = $("su-f")?.files?.[0];
   try { const raw = f ? (await f.text()).trim() : (S.drafts["su.paste"] || "").trim(); const j = JSON.parse(raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1)); arr = j.seances || []; if (!arr.length) throw 0; }
   catch (e) { toast("Bloc illisible : recopie-le en entier."); return; }
-  const list = seancesSorted(); let num = Math.floor(Math.max(0, ...allSeances().map(y => y.num || 0)));
-  const str = (x, n) => String(x ?? "").slice(0, n), b = S.db.batch();
-  const pris = new Set(list.map(y => y.num).concat(allSeances().map(y => y.num)));
-  for (const x of arr.slice(0, 30)) {
-    /* "num" décimal (ex. 1.5) : séance insérée entre deux séances existantes */
+  const b = S.db.batch(); putSeances(b, S.fiche, arr, S.cur.seances);
+  if (await run(b.commit(), `${arr.length} séance${arr.length > 1 ? "s" : ""} ajoutée${arr.length > 1 ? "s" : ""}`)) clearDrafts("su.paste");
+}
+/* écrit les séances dans le lot b ; exist = séances actuelles du membre {sid: séance} */
+function putSeances(b, mid, arr, exist, keepDone){
+  const all = Object.values(exist || {});
+  let num = Math.floor(Math.max(0, ...all.map(y => y.num || 0)));
+  const str = (x, n) => String(x ?? "").slice(0, n);
+  const pris = new Set(all.map(y => y.num));
+  const blocs = x => (x.blocs || []).slice(0, 8).map(bl => ({code: str(bl.code, 8), nom: str(bl.nom, 60), tours: str(bl.tours, 80),
+    exos: (bl.exos || []).slice(0, 12).map(e => ({n: str(e.n, 120), d: str(e.d, 80), v: /^https:\/\//.test(e.v || "") ? str(e.v, 300) : "", c: str(e.c, 1500)}))}));
+  for (let x of arr.slice(0, 30)) {
     /* "id" d'une séance existante (ex. "s05") : on remplace son contenu, en gardant coches, ressenti et statut */
-    if (/^s[0-9_]+$/.test(x.id || "") && S.cur.seances[x.id]) {
-      const lieu0 = ["Salle","En autonomie","À distance"].includes(x.lieu) ? x.lieu : S.cur.seances[x.id].lieu;
-      const maj = {titre: str(x.titre || S.cur.seances[x.id].titre, 120), lieu: lieu0,
-        blocs: (x.blocs || []).slice(0, 8).map(bl => ({code: str(bl.code, 8), nom: str(bl.nom, 60), tours: str(bl.tours, 80),
-          exos: (bl.exos || []).slice(0, 12).map(e => ({n: str(e.n, 120), d: str(e.d, 80), v: /^https:\/\//.test(e.v || "") ? str(e.v, 300) : "", c: str(e.c, 1500)}))}))};
+    /* keepDone : une séance déjà faite garde son contenu, la nouvelle est ajoutée à la suite */
+    const old = /^s[0-9_]+$/.test(x.id || "") && exist?.[x.id];
+    if (old && !(keepDone && old.statut === "faite")) {
+      const maj = {titre: str(x.titre || old.titre, 120), lieu: ["Salle","En autonomie","À distance"].includes(x.lieu) ? x.lieu : old.lieu, blocs: blocs(x)};
       if (/^\d{4}-\d{2}-\d{2}$/.test(x.date || "")) maj.date = x.date;
       if (Number(x.semaine)) maj.semaine = Number(x.semaine);
-      b.set(S.db.doc(`members/${S.fiche}/seances/${x.id}`), maj, {merge: true}); continue; }
+      if (keepDone) { maj.coches = firebase.firestore.FieldValue.delete();
+        const n = Number(x.num); if (n > 0 && n !== old.num && !pris.has(n)) { pris.delete(old.num); pris.add(n); maj.num = n; } }
+      b.set(S.db.doc(`members/${mid}/seances/${x.id}`), maj, {merge: true}); continue; }
     /* "num" libre (ex. 1.5 entre deux séances, ou 5 si la séance 5 a disparu) : on le garde */
+    if (old) x = {...x, num: old.num + 0.25};
     const n = Number(x.num), insere = n > 0 && !pris.has(n);
     const cur = insere ? n : (() => { do num++; while (pris.has(num)); return num; })(), sid = Number.isInteger(cur) ? `s${pad(cur)}` : "s" + String(cur).replace(".", "_");
     pris.add(cur);
     const lieu = ["Salle","En autonomie","À distance"].includes(x.lieu) ? x.lieu : "Salle";
-    b.set(S.db.doc(`members/${S.fiche}/seances/${sid}`), {num: cur, titre: str(x.titre || "Séance " + cur, 120), lieu, visible: lieu !== "En autonomie", semaine: Number(x.semaine) || null,
-      date: /^\d{4}-\d{2}-\d{2}$/.test(x.date || "") ? x.date : null, heure: "", statut: "prevue",
-      blocs: (x.blocs || []).slice(0, 8).map(bl => ({code: str(bl.code, 8), nom: str(bl.nom, 60), tours: str(bl.tours, 80),
-        exos: (bl.exos || []).slice(0, 12).map(e => ({n: str(e.n, 120), d: str(e.d, 80), v: /^https:\/\//.test(e.v || "") ? str(e.v, 300) : "", c: str(e.c, 1500)}))}))}); }
-  if (await run(b.commit(), `${arr.length} séance${arr.length > 1 ? "s" : ""} ajoutée${arr.length > 1 ? "s" : ""}`)) clearDrafts("su.paste");
+    b.set(S.db.doc(`members/${mid}/seances/${sid}`), {num: cur, titre: str(x.titre || "Séance " + cur, 120), lieu, visible: lieu !== "En autonomie", semaine: Number(x.semaine) || null,
+      date: /^\d{4}-\d{2}-\d{2}$/.test(x.date || "") ? x.date : null, heure: "", statut: "prevue", blocs: blocs(x)}); }
+}
+/* mises à jour préparées par Claude (maj.json sur le site) : appliquées une seule fois, à l'ouverture coach */
+async function applyMajs(){
+  let majs;
+  try { const r = await fetch("maj.json?t=" + Date.now(), {cache: "no-store"}); if (!r.ok) return; majs = (await r.json()).majs || []; } catch (e) { return; }
+  if (!majs.length) return;
+  let mem = {};
+  try { (await S.db.collection("members").get({source: "server"})).docs.forEach(d => mem[d.id] = d.data()); } catch (e) { return; }
+  for (const m of majs) {
+    const mid = Object.keys(mem).find(k => (mem[k].prenom || "").trim().toLowerCase() === String(m.prenom || "").toLowerCase());
+    if (!mid || !m.id || (mem[mid].majs || []).includes(m.id) || !(m.seances || []).length) continue;
+    try {
+      const q = await S.db.collection(`members/${mid}/seances`).get({source: "server"}), exist = {};
+      q.docs.forEach(d => exist[d.id] = d.data());
+      const b = S.db.batch(); putSeances(b, mid, m.seances, exist, true);
+      b.update(S.db.doc("members/" + mid), {majs: firebase.firestore.FieldValue.arrayUnion(m.id)});
+      await b.commit(); toast(m.message || `${m.prenom} : séances mises à jour`);
+    } catch (e) {}
+  }
 }
 async function newSeance(){
   const list = seancesSorted(), last = list[list.length-1], num = (last?.num || 0) + 1, id = "s" + pad(num);
@@ -1117,7 +1142,7 @@ function startData(isCoach, cid){
     S.slots = o; render(); }, () => {});
   if (isCoach) {
     S.owner = true; S.tab = "planning"; seedPerso(db);
-    db.collection("members").limit(500).onSnapshot(q => { const o = {}; q.docs.forEach(x => o[x.id] = x.data()); S.members = o; S.membersLoaded = true; render(); }, () => {});
+    db.collection("members").limit(500).onSnapshot(q => { const o = {}; q.docs.forEach(x => o[x.id] = x.data()); S.members = o; S.membersLoaded = true; render(); if (!S.majsVu) { S.majsVu = true; applyMajs(); } }, () => {});
   } else { S.owner = false; S.uid = cid; S.tab = "reserver"; watch(cid); }
   S.mode = "ready"; render(true);
 }
