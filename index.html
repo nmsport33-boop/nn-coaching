@@ -95,6 +95,14 @@ main{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-lef
 .repos .t{font-family:var(--display);font-size:30px;min-width:3.2ch;text-align:center;font-variant-numeric:tabular-nums}
 .repos .l{font-size:13px;color:#ccc;max-width:9em;line-height:1.2}
 .repos button{white-space:nowrap;background:#2a2a2a;color:#fff;border:1px solid #555;border-radius:999px;padding:6px 10px;font:inherit;font-size:13px}
+#bravo{position:fixed;inset:0;z-index:58;pointer-events:none;display:none;place-items:center;overflow:hidden}
+#bravo.on{display:grid;pointer-events:auto}
+#bravo .in{background:#111;color:#fff;border:3px solid var(--gold);border-radius:22px;padding:18px 26px;text-align:center;display:flex;flex-direction:column;gap:4px;box-shadow:0 12px 40px rgba(0,0,0,.35);animation:pop .35s ease-out}
+#bravo .in b{font-family:var(--display);font-size:30px;letter-spacing:.02em}#bravo .in span{font-size:18px;font-weight:700;color:var(--gold)}
+#bravo.grand{background:rgba(0,0,0,.55)}#bravo.grand .in{padding:28px 34px}#bravo.grand .in b{font-size:44px}#bravo.grand .in span{font-size:26px}
+#bravo i{position:absolute;top:-20px;width:10px;height:16px;border-radius:2px;animation:tombe linear forwards}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes tombe{to{transform:translateY(110vh) rotate(720deg)}}
 .repos.fini{background:var(--gold);color:#111}.repos.fini .l{color:#111}
 .proj .x{position:fixed;z-index:2;bottom:10px;right:12px;background:#222;color:#fff;border:1px solid #555;border-radius:999px;padding:8px 14px;font:inherit;font-size:14px;opacity:.75}
 .banner{background:var(--gold-soft);border-radius:14px;padding:12px 14px;font-size:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -272,7 +280,7 @@ textarea{min-height:84px;resize:vertical}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-10-30d";
+const BUILD = "2026-10-30e";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -436,7 +444,7 @@ function tourBar(s, sid, b, bi){
   return `<div class="tourbar ${fini ? "fini" : ""}"><span class="dots">${Array.from({length: n}, (_, i) => `<i class="${i < f ? "on" : ""}"></i>`).join("")}</span>
     <span class="lbl">${fini ? "Bloc terminé" : `Tour <b>${f + 1}</b> / ${n}`}</span>
     ${f > 0 ? `<button class="btn sm ghost" data-a="tour-moins" data-v="${sid}" data-k="${bi}" aria-label="Retirer un tour">−</button>` : ""}
-    ${fini ? "" : `<button class="btn sm solid" data-a="tour" data-v="${sid}" data-k="${bi}">✓ Tour ${f + 1} fini${f + 1 < n && reposSec(b.tours) ? " · repos" : ""}</button>`}</div>`;
+    ${fini ? "" : `<button class="btn sm solid" data-a="tour" data-v="${sid}" data-k="${bi}">✓ Tour ${f + 1} fini · repos</button>`}</div>`;
 }
 /* remarque de l'adhérent sur un exercice (douleur, gêne, trop facile…) : seances.remarques {"bloc-exo": texte} */
 function remarqueRow(s, sid, bi, ei){
@@ -1007,7 +1015,7 @@ document.addEventListener("input", e => { const k = e.target.dataset?.d; if (k !
 document.addEventListener("change", e => { const k = e.target.dataset?.d; if (k !== undefined) S.drafts[k] = e.target.type === "checkbox" ? e.target.checked : e.target.value; });
 document.addEventListener("click", e => {
   const t = e.target.closest("[data-a]"); if (!t || t.disabled) return;
-  e.preventDefault();
+  e.preventDefault(); audioOn();
   if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
   act(t.dataset.a, t.dataset).then(() => render(true));
 });
@@ -1038,7 +1046,7 @@ async function act(a, ds){
     case "proj-close": closeProj(); return;
     case "board-open": await openBoard(); return;
     case "board-go": boardGo(); return;
-    case "repos-plus": if (S.repos) { S.repos.fin += 15000; tickRepos(); } return;
+    case "repos-plus": if (S.repos) { S.repos.fin += 15000; S.repos.bip = 99; tickRepos(); } return;
     case "repos-stop": stopRepos(); return;
     case "pickfor": { const ok = await claim(k, v); if (ok) { S.sheet = null; toast(`${S.members[v]?.prenom || "Adhérent"} placé·e ${fmtSlot(k)}`); const t = slotDate(k);
       setTimeout(() => assignSeance(v, S.team[v], S.members[v], k.split("_")[0], `${pad(t.getHours())}:${pad(t.getMinutes())}`, true, k, true), 1500); } return; }
@@ -1084,8 +1092,10 @@ async function act(a, ds){
       const n = nbTours(b.tours), fait = Math.min(n, ((s.toursFaits || {})[k] || 0) + 1), ref = db.doc(`members/${memberId()}/seances/${v}`);
       const args = [new firebase.firestore.FieldPath("toursFaits", String(k)), fait];
       if (fait >= n) (b.exos || []).forEach((_, ei) => args.push(new firebase.firestore.FieldPath("coches", k + "-" + ei), true));
-      if (!await run(ref.update(...args))) return;
-      if (fait < n) startRepos(b); else { stopRepos(); toast(`${b.code} terminé 💪`); } return; }
+      const tf = {...(s.toursFaits || {}), [k]: fait}, avecTours = (s.blocs || []).map((x, i) => [x, i]).filter(([x]) => nbTours(x.tours) >= 2 && (x.exos || []).length);
+      const tout = avecTours.every(([x, i]) => (tf[i] || 0) >= nbTours(x.tours));
+      if (tout) { stopRepos(); finSeance(); } else { startRepos(b); if (fait >= n) bravoBloc(b); }
+      await run(ref.update(...args)); return; }
     case "tour-moins": { const s = S.cur.seances[v], f = ((s?.toursFaits || {})[k] || 0);
       if (f > 0) await run(db.doc(`members/${memberId()}/seances/${v}`).update(new firebase.firestore.FieldPath("toursFaits", String(k)), f - 1)); return; }
     case "cancel-edit": S.edit = false; clearDrafts("bl."); return;
@@ -1097,7 +1107,7 @@ async function act(a, ds){
       r.at = Date.now(); r.par = S.owner ? "coach" : "adherent";
       if (await run(db.doc(`members/${memberId()}/seances/${v}`).update({ressenti:r}), "Ressenti enregistré")) clearDrafts(p);
       return; }
-    case "toggle-faite": { const s = S.cur.seances[v];
+    case "toggle-faite": { const s = S.cur.seances[v]; if (s.statut !== "faite") { stopRepos(); finSeance(); }
       await run(db.doc(`members/${memberId()}/seances/${v}`).update({statut: s.statut === "faite" ? "prevue" : "faite"}), s.statut === "faite" ? "Séance remise en prévue" : "Séance marquée comme faite"); return; }
     case "del-seance": if (S.confirmDel !== v) { S.confirmDel = v; return; }
       if (await run(db.doc(`members/${memberId()}/seances/${v}`).delete(), "Séance supprimée")) { S.sheet = null; S.confirmDel = null; } return;
@@ -1235,21 +1245,51 @@ function boardGo(){
 }
 /* --- minuteur de repos : démarre quand on coche un exercice --- */
 function startRepos(b){
-  const sec = reposSec(b.tours) || (/^a/i.test(b.code) ? 0 : 60); if (!sec) return;
+  const sec = reposSec(b.tours) || (/^a/i.test(b.code) ? 30 : 60);
   S.repos = {fin: Date.now() + sec * 1000, lbl: `Repos ${/^fin/i.test(b.code) ? "finisher" : b.code}`};
   try { localStorage.setItem("nn.repos", JSON.stringify(S.repos)); } catch (e) {}
-  try { S.ac = S.ac || new (window.AudioContext || window.webkitAudioContext)(); S.ac.resume?.(); } catch (e) {}
-  tickRepos();
+  S.repos.bip = 99; audioOn(); tickRepos();
 }
 function stopRepos(){ S.repos = null; try { localStorage.removeItem("nn.repos"); } catch (e) {} clearInterval(S.reposH); S.reposH = null; const el = $("repos"); el.hidden = true; el.className = "repos"; }
-function bip(){ try { const ac = S.ac; if (!ac) return; [0, .35, .7].forEach(t => { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = 880; g.gain.value = .25; o.connect(g); g.connect(ac.destination); o.start(ac.currentTime + t); o.stop(ac.currentTime + t + .2); }); } catch (e) {} }
+/* --- sons (Web Audio, rien à télécharger) --- */
+function audioOn(){ try { S.ac = S.ac || new (window.AudioContext || window.webkitAudioContext)(); if (S.ac.state !== "running") S.ac.resume(); } catch (e) {} }
+function ton(f, t0, dur, vol = .3, type = "sine", f2){ const ac = S.ac; if (!ac) return; const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + t0;
+  o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .01); g.gain.exponentialRampToValueAtTime(.001, t + dur);
+  o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + dur + .05); }
+const bip = (fort) => { try { fort ? (ton(1320, 0, .7, .45, "square"), navigator.vibrate?.([400])) : (ton(880, 0, .15, .35, "square"), navigator.vibrate?.(80)); } catch (e) {} };
+/* fin de bloc : petite fanfare + bravo */
+function bravoBloc(b){ try { [523, 659, 784, 1047].forEach((f, i) => ton(f, i * .12, .35, .3, "triangle")); } catch (e) {}
+  celebre(`${/^fin/i.test(b.code) ? "Finisher" : b.code} terminé`, ["Bravo 💪", "Bien joué 🔥", "Top, continue 👊", "Solide 💥"][Math.floor(Math.random() * 4)], false); }
+/* fin de séance : foule qui applaudit + sifflets + confettis */
+function finSeance(){ try { foule(); } catch (e) {} celebre("Séance terminée !", "Énorme 👏👏👏", true); }
+function foule(){ const ac = S.ac; if (!ac) return; const t0 = ac.currentTime, len = 5;
+  const buf = ac.createBuffer(1, ac.sampleRate * len, ac.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  /* rumeur de la foule */
+  const bruit = ac.createBufferSource(), lp = ac.createBiquadFilter(), g = ac.createGain(); bruit.buffer = buf; lp.type = "lowpass"; lp.frequency.value = 900;
+  g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(.35, t0 + .4); g.gain.setValueAtTime(.35, t0 + 3.6); g.gain.linearRampToValueAtTime(0, t0 + len);
+  bruit.connect(lp); lp.connect(g); g.connect(ac.destination); bruit.start(t0); bruit.stop(t0 + len);
+  /* applaudissements : plein de petits claquements */
+  for (let i = 0; i < 260; i++) { const t = t0 + Math.random() * 4.4, c = ac.createBufferSource(), bp = ac.createBiquadFilter(), cg = ac.createGain();
+    c.buffer = buf; bp.type = "bandpass"; bp.frequency.value = 900 + Math.random() * 1800; bp.Q.value = 1.2;
+    cg.gain.setValueAtTime(.5 + Math.random() * .5, t); cg.gain.exponentialRampToValueAtTime(.001, t + .06 + Math.random() * .05);
+    c.connect(bp); bp.connect(cg); cg.connect(ac.destination); c.start(t, Math.random() * 4, .12); }
+  /* sifflets */
+  [[.5, 1900, 2900], [1.6, 2200, 1500], [2.4, 1800, 3000], [2.75, 2600, 2600], [3.4, 2000, 2800]].forEach(([t, a, b2]) => { ton(a, t, .45, .18, "sine", b2); }); }
+function celebre(titre, sous, grand){
+  let el = $("bravo"); if (!el) { el = document.createElement("div"); el.id = "bravo"; document.body.appendChild(el); el.addEventListener("click", () => el.className = ""); }
+  el.innerHTML = `<div class="in"><b>${esc(titre)}</b><span>${esc(sous)}</span></div>${grand ? Array.from({length: 60}, (_, i) => `<i style="left:${Math.random() * 100}%;background:${["#c9a227","#c2185b","#2e7d5b","#1e88e5","#fff"][i % 5]};animation-delay:${(Math.random() * 1.2).toFixed(2)}s;animation-duration:${(2.2 + Math.random() * 1.6).toFixed(2)}s"></i>`).join("") : ""}`;
+  el.className = "on" + (grand ? " grand" : ""); clearTimeout(celebre.h); celebre.h = setTimeout(() => el.className = "", grand ? 5500 : 1800);
+  try { navigator.vibrate?.(grand ? [200, 100, 200, 100, 400] : [120, 60, 120]); } catch (e) {} }
 function tickRepos(){
   const el = $("repos"), r = S.repos; if (!r) return stopRepos();
   const left = Math.ceil((r.fin - Date.now()) / 1000);
   if (left <= 0) {
-    if (!el.classList.contains("fini")) { el.className = "repos fini"; el.innerHTML = `<span class="l">Repos terminé : c'est reparti</span><button data-a="repos-stop">OK</button>`; bip(); try { navigator.vibrate?.([300, 150, 300]); } catch (e) {} }
+    if (!el.classList.contains("fini")) { el.className = "repos fini"; el.innerHTML = `<span class="l">Repos terminé : c'est reparti</span><button data-a="repos-stop">OK</button>`; bip(true); }
     if (left < -8) stopRepos(); }
-  else { el.className = "repos"; el.innerHTML = `<span class="l">${esc(r.lbl)}</span><span class="t">${Math.floor(left / 60)}:${pad(left % 60)}</span><button data-a="repos-plus">+15 s</button><button data-a="repos-stop">Stop</button>`; }
+  else { if (left <= 3 && left < (r.bip ?? 99)) { r.bip = left; bip(false); }
+    el.className = "repos"; el.innerHTML = `<span class="l">${esc(r.lbl)}</span><span class="t">${Math.floor(left / 60)}:${pad(left % 60)}</span><button data-a="repos-plus">+15 s</button><button data-a="repos-stop">Stop</button>`; }
   el.hidden = false;
   if (!S.reposH) S.reposH = setInterval(tickRepos, 250);
 }
