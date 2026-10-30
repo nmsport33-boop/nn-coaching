@@ -211,6 +211,12 @@ main{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-lef
 .ex .n{grid-column:2;min-width:0;font-size:14.5px}
 .tick{width:28px;height:28px;flex:none;border-radius:50%;border:2px solid var(--line);background:transparent;color:transparent;font-weight:700;font-size:14px;line-height:1;display:grid;place-items:center;padding:0}
 .tick.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.ronds{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
+.ronds span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.rond{width:38px;height:38px;border-radius:50%;border:2px solid var(--line);background:transparent;color:var(--muted);font-weight:700;font-size:15px;display:grid;place-items:center;padding:0;cursor:pointer}
+.rond.next{border-color:var(--gold);color:inherit;box-shadow:0 0 0 3px var(--gold-soft, #f6efd9)}
+.rond.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.ex.multi{grid-template-columns:minmax(0,1fr) auto}.ex.multi .n,.ex.multi .d{grid-column:1}.ex.multi .vid{grid-column:2}.ex.multi .ronds{grid-column:1 / span 2}
 .ex.done .n{color:var(--muted);text-decoration:line-through}
 .tourbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 14px;background:var(--gold-soft, #f6efd9);border-bottom:1px solid var(--line);font-size:14px}
 .tourbar .lbl{flex:1}
@@ -280,7 +286,7 @@ textarea{min-height:84px;resize:vertical}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-10-30e";
+const BUILD = "2026-10-30f";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -438,13 +444,24 @@ function chargeRow(s, sid, bi, ei, e){
 }
 /* nombre de tours du bloc : « 3 tours », « 4 séries », « 3-4 tours » (on prend le plus petit) */
 const nbTours = t => { const m = String(t || "").match(/(\d+)(?:\s*(?:-|à)\s*\d+)?\s*(tours?|séries?|T\b|S\b)/i); return m ? Number(m[1]) : 0; };
+/* un rond par tour sur chaque exo : coches["bloc-exo-tN"] ; les anciens toursFaits comptent comme cochés */
+const rondOn = (s, bi, ei, t) => { const v = (s.coches || {})[`${bi}-${ei}-t${t}`]; return v === undefined ? t <= ((s.toursFaits || {})[bi] || 0) : !!v; };
+const exoFait = (s, bi, ei, b) => { const n = nbTours(b.tours); return n >= 2 ? Array.from({length: n}, (_, i) => rondOn(s, bi, ei, i + 1)).every(Boolean) : !!(s.coches || {})[bi + "-" + ei]; };
+/* tours complets d'un bloc = tours dont tous les exos sont cochés, dans l'ordre */
+const toursComplets = (s, bi, b) => { const n = nbTours(b.tours), ex = b.exos || []; let f = 0; while (f < n && ex.every((_, ei) => rondOn(s, bi, ei, f + 1))) f++; return f; };
+const blocFini = (s, bi, b) => (b.exos || []).every((_, ei) => exoFait(s, bi, ei, b));
+const seanceFinie = s => (s.blocs || []).some(b => (b.exos || []).length) && (s.blocs || []).every((b, bi) => blocFini(s, bi, b));
+function rondsExo(s, sid, b, bi, ei){
+  const n = nbTours(b.tours), f = toursComplets(s, bi, b);
+  return `<div class="ronds"><span>Tour</span>${Array.from({length: n}, (_, i) => { const t = i + 1, on = rondOn(s, bi, ei, t);
+    return `<button class="rond ${on ? "on" : ""} ${!on && t === f + 1 ? "next" : ""}" data-a="rond" data-v="${sid}" data-k="${bi}-${ei}-t${t}" aria-pressed="${on}" aria-label="Tour ${t} fini">${on ? "✓" : t}</button>`; }).join("")}</div>`;
+}
 function tourBar(s, sid, b, bi){
   const n = nbTours(b.tours); if (n < 2 || !(b.exos || []).length) return "";
-  const f = Math.min(n, (s.toursFaits || {})[bi] || 0), fini = f >= n;
+  const f = toursComplets(s, bi, b), fini = f >= n;
   return `<div class="tourbar ${fini ? "fini" : ""}"><span class="dots">${Array.from({length: n}, (_, i) => `<i class="${i < f ? "on" : ""}"></i>`).join("")}</span>
     <span class="lbl">${fini ? "Bloc terminé" : `Tour <b>${f + 1}</b> / ${n}`}</span>
-    ${f > 0 ? `<button class="btn sm ghost" data-a="tour-moins" data-v="${sid}" data-k="${bi}" aria-label="Retirer un tour">−</button>` : ""}
-    ${fini ? "" : `<button class="btn sm solid" data-a="tour" data-v="${sid}" data-k="${bi}">✓ Tour ${f + 1} fini · repos</button>`}</div>`;
+    ${fini ? "" : `<span class="small">Coche le rond <b>${f + 1}</b> de chaque exo : le repos part tout seul</span>`}</div>`;
 }
 /* remarque de l'adhérent sur un exercice (douleur, gêne, trop facile…) : seances.remarques {"bloc-exo": texte} */
 function remarqueRow(s, sid, bi, ei){
@@ -913,12 +930,12 @@ function seanceBody(sid, s){
   if (S.edit && coach) out += blocsForm(s);
   else {
     const co = s.coches || {}, tot = (s.blocs||[]).reduce((t,b) => t + (b.exos||[]).length, 0);
-    const nbOk = (s.blocs||[]).reduce((t,b,bi) => t + (b.exos||[]).filter((_,ei) => co[bi+"-"+ei]).length, 0);
+    const nbOk = (s.blocs||[]).reduce((t,b,bi) => t + (b.exos||[]).filter((_,ei) => exoFait(s,bi,ei,b)).length, 0);
     out += `<section class="sec"><div class="sec-h"><h2>Programme</h2><div class="row">${tot ? `<button class="btn sm ink" data-a="project" data-v="seance" data-k="${sid}">▶ Projeter</button>` : ""}${coach ? `<button class="btn sm ghost" data-a="edit-blocs">Modifier</button>` : tot ? `<span class="chip ${nbOk===tot?"ok":""}">${nbOk} / ${tot} cochés</span>` : ""}</div></div>
       ${tot ? `<p class="small muted" style="margin:0">« Projeter » affiche la séance en grand, fond noir, pour un écran ou une télé pendant que tu la fais.</p>` : ""}
-      ${!coach && tot ? `<p class="small muted" style="margin:0">Coche chaque exercice quand tu as fini tous ses tours.</p>` : ""}
+      ${!coach && tot ? `<p class="small muted" style="margin:0">Un rond par tour sur chaque exo : coche le 1 après ton premier passage, le 2 au suivant… Quand tous les exos d'un tour sont cochés, le repos démarre tout seul.</p>` : ""}
       ${(s.blocs||[]).map((b,bi) => `<div class="bloc"><div class="bloc-h"><b>${esc(b.code)}${b.nom ? " · " + esc(b.nom) : ""}</b><span>${esc(b.tours||"")}</span></div>${tourBar(s, sid, b, bi)}
-        ${(b.exos||[]).length ? b.exos.map((e,ei) => `<div class="ex ${co[bi+"-"+ei]?"done":""}"><button class="tick ${co[bi+"-"+ei]?"on":""}" data-a="coche" data-v="${sid}" data-k="${bi}-${ei}" aria-label="Cocher ${esc(e.n)}" aria-pressed="${co[bi+"-"+ei]?"true":"false"}">✓</button><span class="n">${esc(e.n)}</span><span class="d">${esc(e.d||"")}</span>${/^https:\/\//.test(e.v||"") ? `<a class="vid" href="${esc(e.v)}" target="_blank" rel="noopener">VIDÉO</a>` : ""}</div>${chargeRow(s, sid, bi, ei, e)}<div class="exbas">${e.c ? `<details class="how"><summary>Comment faire</summary><p>${esc(e.c)}</p></details>` : ""}${remarqueRow(s, sid, bi, ei)}</div>`).join("") : `<div class="ex"><span class="n muted">À compléter</span></div>`}</div>`).join("")}</section>`;
+        ${(b.exos||[]).length ? b.exos.map((e,ei) => `<div class="ex ${exoFait(s,bi,ei,b)?"done":""} ${nbTours(b.tours)>=2?"multi":""}">${nbTours(b.tours)>=2 ? "" : `<button class="tick ${co[bi+"-"+ei]?"on":""}" data-a="coche" data-v="${sid}" data-k="${bi}-${ei}" aria-label="Cocher ${esc(e.n)}" aria-pressed="${co[bi+"-"+ei]?"true":"false"}">✓</button>`}<span class="n">${esc(e.n)}</span><span class="d">${esc(e.d||"")}</span>${/^https:\/\//.test(e.v||"") ? `<a class="vid" href="${esc(e.v)}" target="_blank" rel="noopener">VIDÉO</a>` : ""}${nbTours(b.tours)>=2 ? rondsExo(s, sid, b, bi, ei) : ""}</div>${chargeRow(s, sid, bi, ei, e)}<div class="exbas">${e.c ? `<details class="how"><summary>Comment faire</summary><p>${esc(e.c)}</p></details>` : ""}${remarqueRow(s, sid, bi, ei)}</div>`).join("") : `<div class="ex"><span class="n muted">À compléter</span></div>`}</div>`).join("")}</section>`;
   }
   // ressenti
   const r = s.ressenti || {}, k = "rs." + sid + ".";
@@ -1084,20 +1101,18 @@ async function act(a, ds){
       return; }
     case "prep-auto": S.sheet = {type:"seance", sid:v}; S.edit = true; S.confirmDel = null; return;
     case "visible": await run(db.doc(`members/${memberId()}/seances/${v}`).update({visible: k === "1"}), k === "1" ? `Séance débloquée pour ${S.cur.member?.prenom || "l'adhérent"}` : "Séance cachée"); return;
-    case "coche": { const on = !(S.cur.seances[v]?.coches || {})[k];
-      /* on ne touche que cette case : les autres coches restent */
-      await run(db.doc(`members/${memberId()}/seances/${v}`).update(new firebase.firestore.FieldPath("coches", k), on)); return; }
-    /* tour fini : compteur du bloc + repos ; au dernier tour, tout le bloc est coché */
-    case "tour": { const s = S.cur.seances[v], b = s?.blocs?.[k]; if (!b) return;
-      const n = nbTours(b.tours), fait = Math.min(n, ((s.toursFaits || {})[k] || 0) + 1), ref = db.doc(`members/${memberId()}/seances/${v}`);
-      const args = [new firebase.firestore.FieldPath("toursFaits", String(k)), fait];
-      if (fait >= n) (b.exos || []).forEach((_, ei) => args.push(new firebase.firestore.FieldPath("coches", k + "-" + ei), true));
-      const tf = {...(s.toursFaits || {}), [k]: fait}, avecTours = (s.blocs || []).map((x, i) => [x, i]).filter(([x]) => nbTours(x.tours) >= 2 && (x.exos || []).length);
-      const tout = avecTours.every(([x, i]) => (tf[i] || 0) >= nbTours(x.tours));
-      if (tout) { stopRepos(); finSeance(); } else { startRepos(b); if (fait >= n) bravoBloc(b); }
-      await run(ref.update(...args)); return; }
-    case "tour-moins": { const s = S.cur.seances[v], f = ((s?.toursFaits || {})[k] || 0);
-      if (f > 0) await run(db.doc(`members/${memberId()}/seances/${v}`).update(new firebase.firestore.FieldPath("toursFaits", String(k)), f - 1)); return; }
+    case "coche": case "rond": { const s = S.cur.seances[v]; if (!s) return;
+      const bi = Number(k.split("-")[0]), b = s.blocs?.[bi]; if (!b) return;
+      const on = a === "rond" ? !rondOn(s, bi, Number(k.split("-")[1]), Number(k.split("-t")[1])) : !(s.coches || {})[k];
+      const apres = {...s, coches: {...(s.coches || {}), [k]: on}}, args = [new firebase.firestore.FieldPath("coches", k), on];
+      if (a === "rond") { /* on fige les anciens tours en coches explicites, puis on recalcule le compteur du bloc */
+        (b.exos || []).forEach((_, ei) => { for (let t = 1; t <= nbTours(b.tours); t++) { const kk = `${bi}-${ei}-t${t}`; if (kk !== k && (s.coches || {})[kk] === undefined && rondOn(s, bi, ei, t)) { apres.coches[kk] = true; args.push(new firebase.firestore.FieldPath("coches", kk), true); } } });
+        const avant = toursComplets(s, bi, b), fait = toursComplets(apres, bi, b);
+        apres.toursFaits = {...(s.toursFaits || {}), [bi]: fait}; args.push(new firebase.firestore.FieldPath("toursFaits", String(bi)), fait);
+        if (on && fait > avant) { if (seanceFinie(apres)) { stopRepos(); finSeance(); } else { startRepos(b); if (fait >= nbTours(b.tours)) bravoBloc(b); } }
+      } else if (on && blocFini(apres, bi, b)) { if (seanceFinie(apres)) finSeance(); else bravoBloc(b); }
+      /* on ne touche que ces cases : les autres coches restent */
+      await run(db.doc(`members/${memberId()}/seances/${v}`).update(...args)); return; }
     case "cancel-edit": S.edit = false; clearDrafts("bl."); return;
     case "save-blocs": return saveBlocs(v);
     case "scale": S.drafts[ds.f] = Number(v); return;
