@@ -392,6 +392,39 @@ input[type=text],input[type=date],input[type=number],input[type=time],input[type
 .repos{background:rgba(10,12,24,.92);border-color:#22e3ff;box-shadow:0 0 24px rgba(34,227,255,.35)}
 .toast{background:#22e3ff;color:#05060d}
 .banner{border:1px solid var(--line)}
+/* écran de projection : néon, épuré, lisible de loin */
+.proj{background:radial-gradient(70% 50% at 50% 0%,rgba(123,92,255,.18),transparent 70%),linear-gradient(rgba(120,170,255,.04) 1px,transparent 1px) 0 0/40px 40px,linear-gradient(90deg,rgba(120,170,255,.04) 1px,transparent 1px) 0 0/40px 40px,#04050b;font-family:var(--body);color:#e9f1ff}
+.proj .side{font-family:var(--display);color:#22e3ff;letter-spacing:.18em;font-size:clamp(16px,3vh,40px);text-shadow:0 0 18px rgba(34,227,255,.6)}
+.proj .wm{border:2px solid rgba(34,227,255,.12);color:rgba(34,227,255,.07);font-family:var(--display);box-shadow:0 0 80px rgba(34,227,255,.06)}
+.proj .box{border:1px solid rgba(34,227,255,.28);border-radius:clamp(10px,1.6vh,22px);background:rgba(14,18,36,.72);backdrop-filter:blur(10px);box-shadow:0 0 30px rgba(34,227,255,.08),inset 0 1px 0 rgba(255,255,255,.06);padding:1.4vh 1.2vw;gap:1vh;font-size:var(--fs)}
+.proj .box.vide{border-style:dashed;border-color:rgba(120,170,255,.12);background:transparent;box-shadow:none}
+.proj .box header{display:flex;align-items:baseline;gap:.6em;flex-wrap:wrap}
+.proj .box h3{border:0;padding:0;min-height:0;text-align:left;font-family:var(--display);font-size:1.45em;letter-spacing:.08em;text-transform:uppercase;color:#fff;text-shadow:0 0 16px rgba(34,227,255,.45)}
+.proj .box .ttl{flex:1;min-width:0;font-size:.62em;color:#8a94b4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.proj .box .pct{font-family:var(--display);font-size:.7em;color:#22e3ff}
+.proj .bar{height:max(4px,.5vh);border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.proj .bar i{display:block;height:100%;background:linear-gradient(90deg,#7b5cff,#22e3ff);box-shadow:0 0 12px #22e3ff;transition:width .5s}
+.proj .lines{padding:0;gap:.75em;font-size:1em;line-height:1.2}
+.proj .pb-h{display:flex;align-items:center;gap:.6em;font-size:.72em;color:#8a94b4;margin-bottom:.25em}
+.proj .pb-h b{font-family:var(--display);color:#22e3ff;font-size:1.1em;letter-spacing:.08em}
+.proj .pb-h .dots{display:flex;gap:.3em;margin-left:auto}.proj .pb-h .dots i{width:.7em;height:.7em;border-radius:50%;border:2px solid #22e3ff}.proj .pb-h .dots i.on{background:#22e3ff;box-shadow:0 0 8px #22e3ff}
+.proj .pb-h .okb{margin-left:auto;color:#2dffb0}
+.proj .pe{display:flex;align-items:baseline;gap:.5em;padding:.18em .45em;border-left:3px solid transparent;border-radius:.3em}
+.proj .pe .n{flex:1;min-width:0;font-weight:600}
+.proj .pe .d{font-weight:700;color:#7df3ff;white-space:nowrap;font-variant-numeric:tabular-nums}
+.proj .pe.ok{opacity:.38}.proj .pe.ok .d{color:inherit}
+.proj .pe.cur{border-left-color:#22e3ff;background:linear-gradient(90deg,rgba(34,227,255,.16),transparent);box-shadow:-6px 0 16px -6px #22e3ff}
+.proj .pe.cur .n{color:#fff;font-weight:800}
+.proj .pb.fini .pb-h b{color:#2dffb0}
+.proj .pb:not(.actif):not(.fini){opacity:.85}
+.proj .pr-rest{display:flex;align-items:center;justify-content:space-between;gap:1em;padding:.5em .8em;border-radius:.6em;background:linear-gradient(120deg,rgba(123,92,255,.55),rgba(34,227,255,.35));box-shadow:0 0 24px rgba(34,227,255,.35)}
+.proj .pr-rest span{font-family:var(--display);font-size:.7em;letter-spacing:.14em;text-transform:uppercase}
+.proj .pr-rest b{font-family:var(--display);font-size:2.1em;line-height:1;font-variant-numeric:tabular-nums;text-shadow:0 0 18px #22e3ff}
+.proj .box.rest{border-color:rgba(123,92,255,.7);box-shadow:0 0 36px rgba(123,92,255,.35)}
+.proj .box.go .pr-rest{background:linear-gradient(120deg,#2dffb0,#22e3ff);color:#04281c}
+.proj .box.done{border-color:rgba(45,255,176,.6);box-shadow:0 0 36px rgba(45,255,176,.25)}
+.proj .sub{color:#8a94b4}
+.proj .x{background:rgba(255,255,255,.08);border-color:rgba(34,227,255,.3)}
 .sheet main > .sec:first-child h2{font-size:20px!important;line-height:1.25}
 .card h2,.card h3{font-size:18px;line-height:1.3}
 </style>
@@ -418,7 +451,7 @@ input[type=text],input[type=date],input[type=number],input[type=time],input[type
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-10-30k";
+const BUILD = "2026-10-30m";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -575,7 +608,7 @@ function chargeRow(s, sid, bi, ei, e){
   return `<div class="chg"><label for="ch-${sid}-${k}">Ma charge</label><input id="ch-${sid}-${k}" data-charge="${sid}" data-k="${k}" inputmode="text" autocomplete="off" placeholder="${esc(prev ? prev.v : "ex. 30 kg")}" value="${esc(v)}">${prev ? `<span class="small muted">Dernière fois : <b>${esc(prev.v)}</b></span>` : ""}</div>`;
 }
 /* nombre de tours du bloc : « 3 tours », « 4 séries », « 3-4 tours » (on prend le plus petit) */
-const nbTours = t => { const m = String(t || "").match(/(\d+)(?:\s*(?:-|à)\s*\d+)?\s*(tours?|séries?|T\b|S\b)/i); return m ? Number(m[1]) : 0; };
+const nbTours = t => { t = String(t || ""); const m = t.match(/(\d+)(?:\s*(?:-|à)\s*\d+)?\s*(?:tours?|séries?)\b/i) || t.match(/(\d+)(?:-\d+)?\s*[TS]\b/); return m ? Math.min(Number(m[1]), 12) : 0; };
 /* un rond par tour sur chaque exo : coches["bloc-exo-tN"] ; les anciens toursFaits comptent comme cochés */
 const rondOn = (s, bi, ei, t) => { const v = (s.coches || {})[`${bi}-${ei}-t${t}`]; return v === undefined ? t <= ((s.toursFaits || {})[bi] || 0) : !!v; };
 const exoFait = (s, bi, ei, b) => { const n = nbTours(b.tours); return n >= 2 ? Array.from({length: n}, (_, i) => rondOn(s, bi, ei, i + 1)).every(Boolean) : !!(s.coches || {})[bi + "-" + ei]; };
@@ -1259,7 +1292,7 @@ async function act(a, ds){
     case "proj-close": closeProj(); return;
     case "board-open": await openBoard(); return;
     case "board-go": boardGo(); return;
-    case "repos-plus": if (S.repos) { S.repos.fin += 15000; S.repos.bip = 99; tickRepos(); } return;
+    case "repos-plus": if (S.repos) { S.repos.fin += 15000; S.repos.bip = 99; reposPartage(); tickRepos(); } return;
     case "repos-stop": stopRepos(); return;
     case "pickfor": { const ok = await claim(k, v); if (ok) { S.sheet = null; toast(`${S.members[v]?.prenom || "Adhérent"} placé·e ${fmtSlot(k)}`); const t = slotDate(k);
       setTimeout(() => assignSeance(v, S.team[v], S.members[v], k.split("_")[0], `${pad(t.getHours())}:${pad(t.getMinutes())}`, true, k, true), 1500); } return; }
@@ -1318,7 +1351,7 @@ async function act(a, ds){
         (b.exos || []).forEach((_, ei) => { for (let t = 1; t <= nbTours(b.tours); t++) { const kk = `${bi}-${ei}-t${t}`; if (kk !== k && (s.coches || {})[kk] === undefined && rondOn(s, bi, ei, t)) { apres.coches[kk] = true; args.push(new firebase.firestore.FieldPath("coches", kk), true); } } });
         const avant = toursComplets(s, bi, b), fait = toursComplets(apres, bi, b);
         apres.toursFaits = {...(s.toursFaits || {}), [bi]: fait}; args.push(new firebase.firestore.FieldPath("toursFaits", String(bi)), fait);
-        if (on && fait > avant) { if (seanceFinie(apres)) { stopRepos(); finSeance(); } else { startRepos(b); if (fait >= nbTours(b.tours)) bravoBloc(b); } }
+        if (on && fait > avant) { if (seanceFinie(apres)) { stopRepos(); finSeance(); } else { startRepos(b, v); if (fait >= nbTours(b.tours)) bravoBloc(b); } }
       } else if (on && blocFini(apres, bi, b)) { if (seanceFinie(apres)) finSeance(); else bravoBloc(b); }
       /* on ne touche que ces cases : les autres coches restent */
       await run(db.doc(`members/${memberId()}/seances/${v}`).update(...args)); return; }
@@ -1414,27 +1447,53 @@ function choisirSeance(list, day, salleSeule){
 }
 async function project(kind, k){
   let cols = [], label = "";
-  if (kind === "seance") { const s = S.cur.seances[k]; if (s) cols = [{prenom: S.cur.member?.prenom || "", s}]; }
+  if (kind === "seance") { const s = S.cur.seances[k]; if (s) cols = [{prenom: S.cur.member?.prenom || "", s: {id: k, ...s}, mid: memberId()}]; }
   else { const day = k.split("_")[0]; label = creneauLbl(slotDate(k));
     for (const x of seatsOf(S.slots[k])) {
       try { const q = await S.db.collection(`members/${x.by}/seances`).get();
         const s = choisirSeance(q.docs.map(d => ({id: d.id, ...d.data()})), day, true);
-        cols.push({prenom: S.members[x.by]?.prenom || "Adhérent", s}); } catch (e) {} } }
+        cols.push({prenom: S.members[x.by]?.prenom || "Adhérent", s, mid: x.by}); } catch (e) {} } }
   showProj(cols, label);
 }
 const creneauLbl = t => `Créneau de ${t.getHours()}H${pad(t.getMinutes())}`;
 function showProj(cols, label){
   if (!cols.length) { toast("Rien à projeter."); return; }
   const el = $("proj"), n = cols.length, c = Math.min(n, 3), r = n >= 3 ? 2 : 1;
-  /* à partir de 3 personnes : 6 cases comme au tableau de la salle, les cases vides restent */
-  const cases = n >= 3 ? cols.concat(Array(Math.max(0, 6 - n)).fill(null)) : cols;
   el.style.setProperty("--c", c); el.style.setProperty("--r", r);
-  el.innerHTML = `<button class="x" data-a="proj-close">Fermer ✕</button>${label ? `<div class="side">${esc(label)}</div>` : ""}<div class="cols"><div class="wm">NN</div>${cases.map(x => x ? `<div class="box"><h3>${esc(x.prenom)}</h3>
-    <div class="lines">${x.s ? projLines(x.s) : `<div class="sub">Pas de séance prévue.</div>`}</div></div>` : `<div class="box"><h3></h3></div>`).join("")}</div>`;
+  S.projCols = cols; S.projLabel = label;
+  /* en direct : chaque coche, chaque tour et chaque repos lancé sur le téléphone s'affiche ici */
+  (S.projSubs || []).forEach(u => u()); S.projSubs = cols.filter(x => x.s?.id && x.mid).map(x =>
+    S.db.doc(`members/${x.mid}/seances/${x.s.id}`).onSnapshot(q => { if (q.exists) { x.s = {id: q.id, ...q.data()}; drawProj(); } }, () => {}));
+  drawProj();
   el.hidden = false; S.projOn = true; fitProj();
+  clearInterval(S.projH); S.projH = setInterval(projTick, 500);
   try { (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el)?.catch?.(() => {}); } catch (e) {}
   try { navigator.wakeLock?.request("screen").then(w => S.wake = w, () => {}); } catch (e) {}
 }
+function projBox(x){
+  if (!x) return `<div class="box vide"></div>`;
+  const s = x.s; if (!s) return `<div class="box"><header><h3>${esc(x.prenom)}</h3></header><div class="sub">Pas de séance prévue.</div></div>`;
+  const st = etapes(s), fait = st.filter(y => y.ok).length, cur = st.find(y => !y.ok), r = s.repos, rest = r && r.fin > Date.now() - 2000;
+  const blocs = (s.blocs || []).map((b, bi) => { const ex = b.exos || []; if (!ex.length) return "";
+    const n = nbTours(b.tours), tf = n >= 2 ? toursComplets(s, bi, b) : 0, fini = blocFini(s, bi, b), actif = cur && cur.bi === bi;
+    return `<div class="pb ${fini ? "fini" : ""} ${actif ? "actif" : ""}"><div class="pb-h"><b>${/^fin/i.test(b.code) ? "Finisher" : esc(b.code)}</b><span>${esc(b.tours || "")}</span>
+      ${n >= 2 ? `<span class="dots">${Array.from({length: n}, (_, i) => `<i class="${i < tf ? "on" : ""}"></i>`).join("")}</span>` : fini ? `<span class="okb">✓</span>` : ""}</div>
+      ${fini ? "" : ex.map((e, ei) => { const ok = exoFait(s, bi, ei, b), now = actif && cur.ei === ei;
+        return `<div class="pe ${ok ? "ok" : ""} ${now ? "cur" : ""}"><span class="n">${now ? "▶ " : ok ? "✓ " : ""}${esc(e.n)}</span>${e.d ? `<span class="d">${esc(e.d)}</span>` : ""}</div>`; }).join("")}</div>`; }).join("");
+  return `<div class="box ${rest ? "rest" : ""} ${fait && fait === st.length ? "done" : ""}"><header><h3>${esc(x.prenom)}</h3><span class="ttl">${esc(s.titre || "")}</span>
+      ${st.length ? `<span class="pct">${fait === st.length ? "Terminé ✓" : `${fait}/${st.length}`}</span>` : ""}</header>
+    ${st.length ? `<div class="bar"><i style="width:${Math.round(fait / st.length * 100)}%"></i></div>` : ""}
+    ${rest ? `<div class="pr-rest"><span>${esc(r.lbl || "Repos")}</span><b class="pr-t" data-fin="${r.fin}">${mmss(Math.max(0, Math.ceil((r.fin - Date.now()) / 1000)))}</b></div>` : ""}
+    <div class="lines">${blocs}</div></div>`;
+}
+function drawProj(){ const el = $("proj"), cols = S.projCols || [], n = cols.length;
+  const cases = n >= 3 ? cols.concat(Array(Math.max(0, 6 - n)).fill(null)) : cols;
+  el.innerHTML = `<button class="x" data-a="proj-close">Fermer ✕</button>${S.projLabel ? `<div class="side">${esc(S.projLabel)}</div>` : ""}<div class="cols"><div class="wm">NN</div>${cases.map(projBox).join("")}</div>`;
+  if (S.projOn) fitProj(); }
+function projTick(){ let fin = false;
+  document.querySelectorAll("#proj .pr-t").forEach(t => { const left = Math.ceil((Number(t.dataset.fin) - Date.now()) / 1000);
+    if (left > 0) t.textContent = mmss(left); else if (left < -2) fin = true; else { t.textContent = "GO"; t.closest(".box")?.classList.add("go"); } });
+  if (fin) drawProj(); }
 /* tableau de plusieurs adhérents (coach) : chacun garde sa séance sur son téléphone */
 async function openBoard(){
   S.sheet = {type: "board"}; S.board = null; render(true);
@@ -1462,19 +1521,22 @@ function boardBody(){
 }
 function boardGo(){
   const cols = Object.entries(S.members).filter(([mid]) => d("bd.on." + mid, false)).sort((a,b) => (a[1].prenom||"").localeCompare(b[1].prenom||""))
-    .map(([mid, m]) => ({prenom: m.prenom, s: (S.board?.[mid] || []).find(x => x.id === d("bd.s." + mid, "")) || null}));
+    .map(([mid, m]) => ({prenom: m.prenom, mid, s: (S.board?.[mid] || []).find(x => x.id === d("bd.s." + mid, "")) || null}));
   if (!cols.length) { toast("Coche au moins une personne."); return; }
   if (cols.length > 6) { toast("6 personnes maximum sur le tableau."); return; }
   showProj(cols, String(d("bd.titre", "")).trim());
 }
 /* --- minuteur de repos : démarre quand on coche un exercice --- */
-function startRepos(b){
+function reposPartage(){ const r = S.repos; if (!r?.sid || !S.db) return;
+  S.db.doc(`members/${r.mid}/seances/${r.sid}`).update({repos: {fin: r.fin, lbl: r.lbl}}).catch(() => {}); }
+function startRepos(b, sid){
   const sec = reposSec(b.tours) || (/^a/i.test(b.code) ? 30 : 60);
-  S.repos = {fin: Date.now() + sec * 1000, lbl: `Repos ${/^fin/i.test(b.code) ? "finisher" : b.code}`};
+  S.repos = {fin: Date.now() + sec * 1000, lbl: `Repos ${/^fin/i.test(b.code) ? "finisher" : b.code}`, sid, mid: sid ? memberId() : null}; reposPartage();
   try { localStorage.setItem("nn.repos", JSON.stringify(S.repos)); } catch (e) {}
   S.repos.bip = 99; audioOn(); tickRepos();
 }
-function stopRepos(){ S.repos = null; try { localStorage.removeItem("nn.repos"); } catch (e) {} clearInterval(S.reposH); S.reposH = null; const el = $("repos"); el.hidden = true; el.className = "repos"; if (S.go) renderGo(); }
+function stopRepos(){ const r = S.repos; if (r?.sid && S.db) S.db.doc(`members/${r.mid}/seances/${r.sid}`).update({repos: firebase.firestore.FieldValue.delete()}).catch(() => {});
+  S.repos = null; try { localStorage.removeItem("nn.repos"); } catch (e) {} clearInterval(S.reposH); S.reposH = null; const el = $("repos"); el.hidden = true; el.className = "repos"; if (S.go) renderGo(); }
 /* --- sons (Web Audio, rien à télécharger) --- */
 function audioOn(){ try { S.ac = S.ac || new (window.AudioContext || window.webkitAudioContext)(); if (S.ac.state !== "running") S.ac.resume(); } catch (e) {} }
 function ton(f, t0, dur, vol = .3, type = "sine", f2){ const ac = S.ac; if (!ac) return; const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + t0;
@@ -1507,13 +1569,14 @@ function tickRepos(){
 try { const r = JSON.parse(localStorage.getItem("nn.repos") || "null"); if (r && r.fin > Date.now()) { S.repos = r; setTimeout(tickRepos, 0); } } catch (e) {}
 /* la police la plus grande possible sans dépasser l'écran */
 function fitProj(){ const el = $("proj"); if (el.hidden) return;
-  let lo = 12, hi = 72;
+  let lo = 8, hi = 72;
   const fits = fs => { el.style.setProperty("--fs", fs + "px"); return [...el.querySelectorAll(".box")].every(b => b.scrollHeight <= b.clientHeight + 1) && el.scrollHeight <= el.clientHeight + 1; };
   while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (fits(mid)) lo = mid; else hi = mid; }
   el.style.setProperty("--fs", lo + "px"); }
 window.addEventListener("resize", () => { if (S.projOn) fitProj(); });
 document.addEventListener("fullscreenchange", () => { if (S.projOn) setTimeout(fitProj, 100); });
 function closeProj(){ const el = $("proj"); el.hidden = true; el.innerHTML = ""; S.projOn = false;
+  (S.projSubs || []).forEach(u => u()); S.projSubs = []; clearInterval(S.projH);
   try { if (document.fullscreenElement) document.exitFullscreen(); else if (document.webkitFullscreenElement) document.webkitExitFullscreen(); } catch (e) {}
   try { S.wake?.release(); } catch (e) {} S.wake = null; }
 document.addEventListener("keydown", e => { if (e.key === "Escape" && S.projOn) closeProj(); });
