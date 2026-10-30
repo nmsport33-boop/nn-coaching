@@ -191,19 +191,23 @@ main{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-lef
 .bloc-h{background:var(--band);color:var(--band-fg);display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 14px}
 .bloc-h b{font-family:var(--display);font-size:18px;letter-spacing:.02em}
 .bloc-h span{font-size:12px;color:var(--gold)}
-.ex{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--line)}
+/* nom de l'exercice sur toute la largeur, la dose en dessous */
+.ex{display:grid;grid-template-columns:auto minmax(0,1fr) auto;column-gap:10px;row-gap:2px;align-items:center;padding:10px 14px;border-top:1px solid var(--line)}
+.ex .tick{grid-row:1 / span 2}
+.ex .vid{grid-column:3;grid-row:1 / span 2}
 .ex:first-of-type{border-top:0}
 .how{padding:0 14px 10px 52px;font-size:13.5px;color:var(--muted)}
 .how summary{cursor:pointer;color:var(--mag);font-weight:600;font-size:12.5px}
 .how p{margin:6px 0 0;white-space:pre-wrap}
-.ex .n{flex:1;min-width:0;font-size:14.5px}
+.ex .n{grid-column:2;min-width:0;font-size:14.5px}
 .tick{width:28px;height:28px;flex:none;border-radius:50%;border:2px solid var(--line);background:transparent;color:transparent;font-weight:700;font-size:14px;line-height:1;display:grid;place-items:center;padding:0}
 .tick.on{background:var(--ok);border-color:var(--ok);color:#fff}
 .ex.done .n{color:var(--muted);text-decoration:line-through}
 .chg{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:0 14px 10px 56px;font-size:13px}
 .chg label{font-weight:600;color:var(--muted)}
 .chg input{width:9.5em;padding:6px 10px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:15px;background:var(--bg)}
-.ex .d{max-width:40%;white-space:normal;overflow-wrap:anywhere;font-weight:700;font-size:13.5px;text-align:right;font-variant-numeric:tabular-nums}
+.ex .d{grid-column:2;font-weight:700;font-size:13.5px;font-variant-numeric:tabular-nums}
+.ex .d:empty{display:none}
 .vid{font-size:11px;font-weight:700;letter-spacing:.05em;background:var(--mag);color:#fff;border-radius:6px;padding:4px 8px;text-decoration:none;flex:none}
 
 .note{background:var(--surface);border-radius:14px;padding:10px 14px;display:flex;flex-direction:column;gap:4px}
