@@ -42,6 +42,11 @@ service cloud.firestore {
       allow delete: if coach() || (linked() && resource.data.by == myCid());
       allow update: if coach();
     }
+    // SMS d'encouragement : Claude écrit les textes, le raccourci iPhone de Nathanael les lit (adresse secrète, pas de liste possible)
+    match /envoi/{jeton} {
+      allow get: if true;
+      allow write: if coach() || claude();
+    }
     match /members/{cid} {
       allow read, write: if coach() || claude();
       allow get: if linked() && myCid() == cid;
