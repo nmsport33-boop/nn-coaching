@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-cache">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>NN Coaching</title>
 <meta name="theme-color" content="#16161d">
@@ -262,6 +263,15 @@ textarea{min-height:84px;resize:vertical}
 <script src="config.js"></script>
 <script src="seed-perso.js"></script>
 <script>
+/* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
+const BUILD = "2026-10-30b";
+async function checkBuild(){
+  if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
+  try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
+    if (v && v !== BUILD && !S.projOn) { const u = new URL(location.href); u.searchParams.set("v", v); location.replace(u.toString()); } } catch (e) {}
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") checkBuild(); });
+setTimeout(checkBuild, 3000);
 /* ---------- constantes ---------- */
 const HOURS = {1:[14,15,16,17,18], 3:[14,15,16,17,18], 5:[14,15,16,17,18], 6:[9,10,11]}; // lun, mer, ven, sam
 const WEEKS_AHEAD = 6;
