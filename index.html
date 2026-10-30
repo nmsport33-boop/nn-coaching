@@ -272,7 +272,7 @@ textarea{min-height:84px;resize:vertical}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-10-30c";
+const BUILD = "2026-10-30d";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -899,7 +899,7 @@ function seanceBody(sid, s){
     const r = prev.ressenti || {};
     out += `<section class="sec"><div class="banner ${hasAlert(prev)?"warn":""}" style="flex-direction:column;align-items:flex-start">
       <b>À prendre en compte (séance ${prev.num})</b>
-      ${hasAlert(prev) ? `<span>Ressenti : douleur ${r.pendant ?? "–"}/10 pendant, ${r.lendemain ?? "–"}/10 le lendemain${r.gonfle ? ", genou gonflé" : ""}. Règle : 3/10 max, sinon on réduit l'amplitude ou on reprend la séance d'avant.</span>` : ""}
+      ${hasAlert(prev) ? `<span>Ressenti : douleur anormale ${r.pendant ?? "–"}/10 pendant, ${r.lendemain ?? "–"}/10 le lendemain${r.ou ? " (" + esc(r.ou) + ")" : ""}${r.gonfle ? ", genou gonflé" : ""}. Règle : 3/10 max, sinon on réduit l'amplitude ou on reprend la séance d'avant.</span>` : ""}
       ${prevNotes.map(n => `<span>« ${esc(n.texte)} » <span class="muted small">(${n.auteur==="coach"?"coach":esc(m.prenom||"adhérent")})</span></span>`).join("")}</div></section>`;
   }
   if (S.edit && coach) out += blocsForm(s);
@@ -916,9 +916,13 @@ function seanceBody(sid, s){
   const r = s.ressenti || {}, k = "rs." + sid + ".";
   const sc = (f, hot) => `<div class="scale">${Array.from({length:11},(_,i) => `<button class="${d(k+f, r[f])===i?"on":""} ${hot&&i>3?"hot":""}" data-a="scale" data-f="${k+f}" data-v="${i}">${i}</button>`).join("")}</div>`;
   out += `<section class="sec"><h2>Ressenti</h2><div class="card">
+    <label class="f">Forme en début de séance (0 = épuisé, 10 = au top)</label>${sc("formeDebut")}
     <label class="f">Effort ressenti (0 = rien, 10 = maximal)</label>${sc("rpe")}
-    <label class="f">Douleur pendant la séance /10</label>${sc("pendant", true)}
-    <label class="f">Douleur le lendemain matin /10</label>${sc("lendemain", true)}
+    <label class="f">Forme en fin d'entraînement (0 = vidé, 10 = au top)</label>${sc("formeFin")}
+    <p class="small muted" style="margin:4px 0 0"><b>Douleur anormale</b> : pas les courbatures ni la brûlure du muscle qui travaille. Une douleur dans une articulation, qui pique, qui lance, ou qui ne ressemble pas à l'effort.</p>
+    <label class="f">Douleur anormale pendant la séance /10</label>${sc("pendant", true)}
+    <label class="f">Douleur anormale le lendemain matin /10</label>${sc("lendemain", true)}
+    <label class="f">Où ? (si douleur anormale)<input id="ou-${sid}" data-d="${k}ou" maxlength="120" placeholder="Ex. genou gauche en descente" value="${esc(d(k+"ou", r.ou || ""))}"></label>
     <label class="check"><input type="checkbox" id="gf-${sid}" data-d="${k}gonfle" ${d(k+"gonfle", !!r.gonfle)?"checked":""}> Genou gonflé ou qui se dérobe</label>
     <p class="small muted" style="margin:0">Règle : 3/10 maximum pendant l'effort, et pas plus mal le lendemain. Si le genou gonfle, se bloque ou se dérobe plus souvent : avis médical.</p>
     <div class="row"><button class="btn solid" data-a="save-ressenti" data-v="${sid}" ${S.writeBlocked?"disabled":""}>Enregistrer le ressenti</button>
@@ -1089,7 +1093,7 @@ async function act(a, ds){
     case "scale": S.drafts[ds.f] = Number(v); return;
     case "save-ressenti": {
       const p = "rs." + v + ".", r = {...(S.cur.seances[v]?.ressenti || {})};
-      for (const f of ["rpe","pendant","lendemain","gonfle"]) if ((p+f) in S.drafts) r[f] = S.drafts[p+f];
+      for (const f of ["formeDebut","rpe","formeFin","pendant","lendemain","ou","gonfle"]) if ((p+f) in S.drafts) r[f] = S.drafts[p+f];
       r.at = Date.now(); r.par = S.owner ? "coach" : "adherent";
       if (await run(db.doc(`members/${memberId()}/seances/${v}`).update({ressenti:r}), "Ressenti enregistré")) clearDrafts(p);
       return; }
