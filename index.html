@@ -303,8 +303,20 @@ body.going .repos{display:none!important}
 .go-fin{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center}
 .go-fin h3{font-family:"Montserrat",var(--body);font-weight:800;font-size:34px}
 .go-fin p{margin:0;color:#cfccc2;font-size:16px}
+/* accueil : la séance du jour en grand, avec le bouton Commencer */
+.hero{border-radius:28px;padding:22px 20px;background:radial-gradient(120% 90% at 50% 0%,#2b2a33 0%,#141419 60%,#0b0b0e 100%);color:#f4f3ee;display:flex;flex-direction:column;gap:14px;text-align:center;box-shadow:0 14px 36px rgba(0,0,0,.18)}
+.hero .eyebrow{color:#d6b04c;letter-spacing:.14em}
+.hero h2{font-family:"Montserrat",var(--body);font-weight:800;font-size:clamp(24px,6.6vw,30px);line-height:1.15;color:#fff;text-transform:none}
+.hero .meta{font-size:14px;color:#bdbbb2}
+.hero .btn.link{color:#d6b04c;align-self:center}
+.hero-l{display:flex;flex-direction:column;gap:10px;text-align:left}
+.hero-r{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:12px 12px 12px 14px}
+.hero-r .av{width:42px;height:42px;border-radius:50%;background:#d6b04c;color:#111;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:20px;flex:none}
+.hero-r .m{flex:1;min-width:0}.hero-r .m b{display:block;font-size:15.5px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hero-r .m span{font-size:13px;color:#bdbbb2}
+.hero-r .go{border:0;border-radius:16px;padding:12px 16px;font-weight:800;font-size:15px;background:linear-gradient(135deg,#d81b64,#a3104a);color:#fff;white-space:nowrap}
+.hero-r .go.fait{background:rgba(98,196,151,.18);color:#62c497}
 /* gros bouton d'action, centré */
-.btn.xl{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:62px;border-radius:20px;font-family:var(--display);font-size:22px;letter-spacing:.06em;text-transform:uppercase;background:linear-gradient(135deg,#d81b64,#a3104a);color:#fff;box-shadow:0 10px 26px rgba(194,24,91,.32)}
+.btn.xl{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:62px;padding:12px 16px;border-radius:20px;font-family:var(--display);font-size:clamp(17px,5.2vw,21px);letter-spacing:.04em;white-space:normal;text-transform:uppercase;background:linear-gradient(135deg,#d81b64,#a3104a);color:#fff;box-shadow:0 10px 26px rgba(194,24,91,.32)}
 .btn.xl.gold{background:linear-gradient(135deg,#e2bd57,#a8811a);color:#111;box-shadow:0 10px 26px rgba(168,129,26,.32)}
 .btn.xl.light{background:#fff;color:#111;box-shadow:none}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:14px}
@@ -335,7 +347,7 @@ body.going .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-10-30i";
+const BUILD = "2026-10-30j";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -648,7 +660,7 @@ function view(){
   let pre = "";
   if (S.asMember) pre = `<div class="banner mag"><span>Tu vois l'appli comme <b>${esc(S.members[S.asMember]?.prenom || "l'adhérent")}</b>. Ce que tu écris ici est signé « Coach ».</span><button class="btn sm solid" data-a="exit-preview">Revenir en coach</button></div>`;
   if (isCoachUI()) {
-    if (S.tab === "planning") return pre + planning(true);
+    if (S.tab === "planning") return pre + heroCoach() + planning(true);
     if (S.tab === "adherents") return pre + (S.fiche ? fiche() : adherents());
   }
   // adhérent
@@ -657,8 +669,8 @@ function view(){
   if (S.cur.member === null) return pre + onboarding();
   const abo = `<section class="sec">${aboCard(S.cur.member, false)}</section>`;
   const fo = formuleCard(S.cur.member);
-  if (S.tab === "reserver") return pre + abo + fo + mesRdv() + planning(false);
-  if (S.tab === "seances") return pre + abo + (optionOf(S.cur.member, S.cur.seances) === "coache" ? fo + seancesView() : seancesView() + fo);
+  if (S.tab === "reserver") return pre + heroAdh() + abo + fo + mesRdv() + planning(false);
+  if (S.tab === "seances") return pre + heroAdh() + abo + (optionOf(S.cur.member, S.cur.seances) === "coache" ? fo + seancesView() : seancesView() + fo);
   if (S.tab === "cycle") return pre + cycleView(S.cur.member, true);
   return pre;
 }
@@ -850,7 +862,7 @@ function seancesView(){
     ${nx && !waiting ? `<button class="card tap" data-a="open-seance" data-v="${nx.id}" style="border:2px solid var(--gold)">
       <span class="eyebrow">Prochaine séance</span><div class="h"><b style="font-family:var(--display);font-size:24px">S${nx.num} · ${esc(nx.titre||"")}</b></div>
       <span class="small muted">${esc(lieuLbl(nx))}${nx.date ? " · " + esc(fmtDay(parseIso(nx.date)) + heureLbl(nx.heure)) : ` · semaine ${nx.semaine||""}`}</span>
-      <span class="small" style="color:var(--mag);font-weight:700">Voir le programme et ajouter une note ›</span></button>${goBtn(nx.id, nx)}` : ""}
+      <span class="small" style="color:var(--mag);font-weight:700">Voir le programme et ajouter une note ›</span></button>` : ""}
     <div class="list">${list.map(s => sline(s, nx, m)).join("")}</div></section>`;
 }
 
@@ -1053,6 +1065,25 @@ function renderGo(){
 function goTick(left){ const t = $("goT"), box = $("goR"); if (!t) return;
   if (left > 0) t.textContent = mmss(left); else if (!box.classList.contains("fini")) renderGo(); }
 
+/* accueil adhérent : prochaine séance + Commencer */
+function heroAdh(){
+  const list = seancesSorted(), nx = nextSeance(list); if (!nx || !etapes(nx).length) return "";
+  const today = iso(new Date()), quand = nx.date === today ? "Aujourd'hui" : nx.date ? fmtDay(parseIso(nx.date)) : "Prochaine séance";
+  return `<section class="hero"><span class="eyebrow">${esc(quand)}${esc(heureLbl(nx.heure))}</span><h2>${esc(nx.titre || "Séance " + nx.num)}</h2>
+    <span class="meta">${esc(lieuLbl(nx))} · ${etapes(nx).length} étapes</span>${goBtn(nx.id, nx)}
+    <button class="btn link" data-a="open-seance" data-v="${nx.id}">Voir le programme ›</button></section>`;
+}
+/* accueil coach : toutes les séances du jour, chacune avec son bouton */
+function heroCoach(){
+  const today = iso(new Date());
+  const l = Object.entries(S.team).flatMap(([mid, o]) => Object.entries(o || {}).filter(([, x]) => x.date === today).map(([id, x]) => ({mid, id, ...x})))
+    .filter(x => etapes(x).length).sort((a, b) => (a.heure || "99").localeCompare(b.heure || "99"));
+  return `<section class="hero"><span class="eyebrow">Aujourd'hui</span><h2>${l.length ? `${l.length} séance${l.length > 1 ? "s" : ""} au programme` : "Pas de séance aujourd'hui"}</h2>
+    ${l.length ? `<div class="hero-l">${l.map(x => { const st = etapes(x), f = st.filter(y => y.ok).length;
+      return `<div class="hero-r"><span class="av">${esc(initials(S.members[x.mid]?.prenom))}</span><span class="m"><b>${esc(S.members[x.mid]?.prenom || "")} · ${esc(x.titre || "Séance")}</b><span>${esc(lieuLbl(x))}${esc(heureLbl(x.heure))}${f ? ` · ${f}/${st.length}` : ""}</span></span>
+        <button class="go ${x.statut === "faite" ? "fait" : ""}" data-a="go-team" data-v="${esc(x.mid)}" data-k="${esc(x.id)}">${x.statut === "faite" ? "✓ Faite" : f ? "▶ Reprendre" : "▶ Lancer"}</button></div>`; }).join("")}</div>` : `<span class="meta">Le planning de la semaine est juste en dessous.</span>`}</section>`;
+}
+
 function blocsForm(s){
   const k = "bl." + s.id + ".";
   const blocs = s.blocs && s.blocs.length ? s.blocs : DEFAULT_BLOCS;
@@ -1170,6 +1201,7 @@ async function act(a, ds){
     case "go": { const s = S.cur.seances[v]; if (!s) return; const st = etapes(s);
       S.go = {sid: v, i: st.every(x => x.ok) ? 0 : st.findIndex(x => !x.ok)}; return; }
     case "go-close": S.go = null; return;
+    case "go-team": S.tab = "adherents"; S.fiche = v; S.sheet = {type: "seance", sid: k}; S.edit = false; watch(v); S.go = {sid: k}; return;
     case "go-nav": if (S.go) S.go.i = Math.max(0, (S.go.i || 0) + Number(v)); return;
     case "go-ressenti": { const sid = S.go?.sid; S.go = null; S.sheet = {type: "seance", sid}; S.edit = false;
       setTimeout(() => $("ressenti")?.scrollIntoView({behavior: "smooth", block: "start"}), 120); return; }
