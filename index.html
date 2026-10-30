@@ -286,7 +286,7 @@ textarea{min-height:84px;resize:vertical}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-10-30g";
+const BUILD = "2026-10-30h";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -1274,13 +1274,11 @@ function ton(f, t0, dur, vol = .3, type = "sine", f2){ const ac = S.ac; if (!ac)
   o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + dur + .05); }
 const bip = (fort) => { try { fort ? (ton(1320, 0, .7, .45, "square"), navigator.vibrate?.([400])) : (ton(880, 0, .15, .35, "square"), navigator.vibrate?.(80)); } catch (e) {} };
 /* fin de bloc : petite fanfare + bravo */
-function bravoBloc(b){ try { [523, 659, 784, 1047].forEach((f, i) => ton(f, i * .12, .35, .3, "triangle")); } catch (e) {}
+function bravoBloc(b){ sonBloc();
   celebre(`${/^fin/i.test(b.code) ? "Finisher" : b.code} terminé`, ["Bravo 💪", "Bien joué 🔥", "Top, continue 👊", "Solide 💥"][Math.floor(Math.random() * 4)], false); }
-/* fin de séance : petite fanfare de victoire + confettis */
-function finSeance(){ try { fanfare(); } catch (e) {} celebre("Séance terminée !", "Énorme 👏👏👏", true); }
-function fanfare(){ /* ta-ta-ta taaa… puis accord final */
-  [[392, 0, .14], [392, .16, .14], [392, .32, .14], [523, .48, .55], [466, 1.08, .22], [523, 1.34, .22], [659, 1.6, 1.4]].forEach(([f, t, d]) => { ton(f, t, d, .22, "triangle"); ton(f * 2, t, d, .06, "sine"); });
-  [523, 659, 784].forEach(f => ton(f, 1.6, 1.4, .12, "triangle")); }
+/* fin de séance : le même petit son qu'en fin de bloc + confettis */
+const sonBloc = () => { try { [523, 659, 784, 1047].forEach((f, i) => ton(f, i * .12, .35, .3, "triangle")); } catch (e) {} };
+function finSeance(){ sonBloc(); celebre("Séance terminée !", "Énorme 👏👏👏", true); }
 function celebre(titre, sous, grand){
   let el = $("bravo"); if (!el) { el = document.createElement("div"); el.id = "bravo"; document.body.appendChild(el); el.addEventListener("click", () => el.className = ""); }
   el.innerHTML = `<div class="in"><b>${esc(titre)}</b><span>${esc(sous)}</span></div>${grand ? Array.from({length: 60}, (_, i) => `<i style="left:${Math.random() * 100}%;background:${["#c9a227","#c2185b","#2e7d5b","#1e88e5","#fff"][i % 5]};animation-delay:${(Math.random() * 1.2).toFixed(2)}s;animation-duration:${(2.2 + Math.random() * 1.6).toFixed(2)}s"></i>`).join("") : ""}`;
