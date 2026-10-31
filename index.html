@@ -413,11 +413,11 @@ input[type=text],input[type=date],input[type=number],input[type=time],input[type
 #ecran .e-nom{font-family:var(--display);font-size:clamp(20px,4.2vh,52px);letter-spacing:.1em;text-transform:uppercase;text-shadow:0 0 22px rgba(34,227,255,.5)}
 #ecran .e-bloc{font-family:var(--display);font-size:clamp(14px,2.6vh,30px);letter-spacing:.14em;color:#22e3ff;text-transform:uppercase}
 #ecran .e-pct{margin-left:auto;font-family:var(--display);font-size:clamp(14px,2.6vh,30px);color:#7df3ff}
-#ecran .e-main{display:flex;flex-direction:column;justify-content:center;gap:3vh;min-width:0}
+#ecran .e-main{display:flex;flex-direction:column;justify-content:safe center;gap:2.4vh;min-width:0;min-height:0;overflow:hidden}
 #ecran .e-tours{display:flex;gap:1vh;align-items:center}
 #ecran .e-tours i{width:2.2vh;height:2.2vh;border-radius:50%;border:3px solid #22e3ff}#ecran .e-tours i.on{background:#22e3ff;box-shadow:0 0 12px #22e3ff}#ecran .e-tours span{font-family:var(--display);font-size:clamp(14px,2.8vh,32px);margin-left:1vh;color:#cfd8f0}
-#ecran .e-exo{font-family:var(--display);font-size:clamp(28px,8vh,110px);line-height:1.04;text-transform:uppercase;letter-spacing:.03em;overflow-wrap:anywhere}
-#ecran .e-dose{font-family:var(--display);font-size:clamp(28px,9vh,120px);color:#7df3ff;text-shadow:0 0 30px rgba(34,227,255,.6);line-height:1}
+#ecran .e-exo{font-family:var(--display);font-size:clamp(24px,6.6vh,100px);line-height:1.04;text-transform:uppercase;letter-spacing:.03em;overflow-wrap:anywhere}
+#ecran .e-dose{font-family:var(--display);font-size:clamp(24px,7.5vh,110px);color:#7df3ff;text-shadow:0 0 30px rgba(34,227,255,.6);line-height:1}
 #ecran .e-next{font-size:clamp(14px,2.8vh,30px);color:#8a94b4}#ecran .e-next b{color:#e9f1ff}
 #ecran .e-side{display:flex;flex-direction:column;justify-content:center;gap:2vh;min-width:0}
 #ecran .vbox{max-height:none;width:min(100%,62vh);align-self:center;border-radius:2.4vh}
@@ -425,14 +425,8 @@ input[type=text],input[type=date],input[type=number],input[type=time],input[type
 #ecran .e-novid{align-self:center;width:min(100%,62vh);aspect-ratio:1;border-radius:2.4vh;border:1px dashed rgba(120,170,255,.25);display:grid;place-items:center;color:#56607c;font-family:var(--display);letter-spacing:.2em}
 #ecran .e-bar{grid-column:1 / -1;height:1vh;min-height:6px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
 #ecran .e-bar i{display:block;height:100%;background:linear-gradient(90deg,#7b5cff,#22e3ff);box-shadow:0 0 14px #22e3ff;transition:width .6s}
-#ecran .e-rest{position:absolute;inset:0;z-index:2;display:grid;place-items:center;background:rgba(4,5,11,.82);backdrop-filter:blur(6px);text-align:center}
-#ecran .e-rest span{display:block;font-family:var(--display);font-size:clamp(18px,4vh,44px);letter-spacing:.3em;color:#22e3ff;text-transform:uppercase}
-#ecran .e-rest b{display:block;font-family:var(--display);font-size:clamp(80px,30vh,340px);line-height:1;text-shadow:0 0 50px rgba(34,227,255,.7);font-variant-numeric:tabular-nums}
-#ecran .e-rest small{display:block;font-size:clamp(14px,3vh,34px);color:#8a94b4;margin-top:2vh}
-#ecran .e-rest.go b{color:#2dffb0;text-shadow:0 0 50px rgba(45,255,176,.7)}
-#ecran .e-fin{grid-column:1 / -1;grid-row:2;display:grid;place-items:center;text-align:center;font-family:var(--display);font-size:clamp(30px,9vh,110px);text-transform:uppercase;text-shadow:0 0 40px rgba(45,255,176,.6);color:#2dffb0}
+#ecran .e-fin{grid-column:1 / -1;display:grid;place-items:center;text-align:center;font-family:var(--display);font-size:clamp(30px,9vh,110px);text-transform:uppercase;text-shadow:0 0 40px rgba(45,255,176,.6);color:#2dffb0}
 #ecran .e-wait{grid-column:1 / -1;grid-row:2;display:grid;place-items:center;color:#8a94b4;font-size:3vh}
-#ecran .e-x{position:fixed;right:12px;bottom:10px;z-index:3;background:rgba(255,255,255,.06);color:#8a94b4;border:1px solid rgba(120,170,255,.2);border-radius:99px;padding:6px 12px;font-size:13px;opacity:.6}
 @media (max-aspect-ratio: 1/1){ #ecran{grid-template-columns:1fr;grid-template-rows:auto auto minmax(0,1fr) auto} #ecran .vbox,#ecran .e-novid{width:min(100%,38vh)} }
 /* écran de projection : néon, épuré, lisible de loin */
 .proj{background:radial-gradient(70% 50% at 50% 0%,rgba(123,92,255,.18),transparent 70%),linear-gradient(rgba(120,170,255,.04) 1px,transparent 1px) 0 0/40px 40px,linear-gradient(90deg,rgba(120,170,255,.04) 1px,transparent 1px) 0 0/40px 40px,#04050b;font-family:var(--body);color:#e9f1ff}
@@ -469,6 +463,56 @@ input[type=text],input[type=date],input[type=number],input[type=time],input[type
 .proj .x{background:rgba(255,255,255,.08);border-color:rgba(34,227,255,.3)}
 .sheet main > .sec:first-child h2{font-size:20px!important;line-height:1.25}
 .card h2,.card h3{font-size:18px;line-height:1.3}
+
+/* anneaux de temps (repos, chrono) */
+.ring{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke:rgba(255,255,255,.08);stroke-width:7}
+.ring{overflow:visible}.ring .fg{stroke:#22e3ff;stroke-linecap:round;stroke-dasharray:100;transition:stroke-dashoffset .25s linear}
+.ring.chr .fg{stroke:#2dffb0}
+.go-rest{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center}
+.go-lbl{font-family:var(--display);font-size:15px;letter-spacing:.3em;text-transform:uppercase;color:#22e3ff}
+.go-rest.chr .go-lbl{color:#2dffb0}.go-rest.chg .go-lbl,.go-rest.pret .go-lbl{color:#ffd166}
+.go-rest h3{font-family:var(--display);font-size:clamp(20px,6vw,28px);letter-spacing:.04em;text-transform:uppercase;margin:0}
+.go-ring{position:relative;width:min(72vw,300px);aspect-ratio:1}
+.go-ring b{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-size:clamp(54px,18vw,84px);font-variant-numeric:tabular-nums;text-shadow:0 0 24px rgba(34,227,255,.6)}
+.go-suiv{display:flex;flex-direction:column;gap:4px}.go-suiv span{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:#8a94b4}
+.go-suiv b{font-family:var(--display);font-size:clamp(18px,5.4vw,24px);text-transform:uppercase;letter-spacing:.04em}.go-suiv i{font-style:normal;color:#7df3ff;font-weight:700}
+.go-rbtn{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.go-rbtn button,#ecran .e-rb button{border:1px solid rgba(34,227,255,.35);background:rgba(255,255,255,.06);color:#e9f1ff;border-radius:99px;padding:14px 22px;font-weight:800;font-size:16px}
+.go-rbtn .pass,#ecran .e-rb .pass{background:linear-gradient(135deg,#22e3ff,#7b5cff);color:#05060d;border:0;box-shadow:0 0 24px rgba(34,227,255,.45)}
+.go-fait.gochr{background:radial-gradient(circle at 35% 30%,#fff1b8,#ffd166 45%,#e0a100);color:#2a1d00;box-shadow:0 0 0 6px rgba(255,209,102,.14),0 0 40px rgba(255,209,102,.55)}
+.go-sans{color:#8a94b4!important;font-size:13px;align-self:center}
+body.ecran-on .repos{display:none!important}
+#ecran{grid-template-rows:auto minmax(0,1fr) auto auto;z-index:70}
+#ecran .e-now{display:flex;align-items:center;gap:2vw;flex-wrap:wrap;font-family:var(--display);font-size:clamp(13px,2.4vh,26px);letter-spacing:.3em;text-transform:uppercase;color:#2dffb0}
+#ecran .e-tours{display:inline-flex;gap:.8vh;align-items:center;letter-spacing:.1em;color:#cfd8f0}
+#ecran .e-tours i{width:1.8vh;height:1.8vh;min-width:10px;min-height:10px}#ecran .e-tours i.cur{box-shadow:0 0 0 .5vh rgba(34,227,255,.35)}
+#ecran .e-chr{display:flex;align-items:center;gap:3vh}
+#ecran .e-chr span{font-family:var(--display);font-size:clamp(16px,3.4vh,40px);letter-spacing:.12em;text-transform:uppercase;color:#2dffb0}
+#ecran .e-chr.chg span,#ecran .e-chr.pret span{color:#ffd166}
+#ecran .e-ring{position:relative;width:clamp(100px,24vh,320px);aspect-ratio:1;flex:none}
+#ecran .e-ring b{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-size:clamp(34px,8.5vh,120px);font-variant-numeric:tabular-nums;text-shadow:0 0 30px rgba(45,255,176,.6)}
+#ecran .e-ctl{grid-column:1 / -1;display:flex;align-items:center;justify-content:center;gap:2.4vw;position:relative}
+#ecran .e-nav{width:clamp(48px,8vh,84px);height:clamp(48px,8vh,84px);border-radius:50%;border:1px solid rgba(120,170,255,.25);background:rgba(255,255,255,.06);color:#e9f1ff;font-size:clamp(22px,4vh,40px)}
+#ecran .e-nav:disabled{opacity:.2}
+#ecran .e-go{min-width:min(46vw,420px);height:clamp(52px,9vh,96px);border-radius:99px;border:0;font-family:var(--display);font-size:clamp(17px,3.4vh,36px);letter-spacing:.08em;text-transform:uppercase;background:linear-gradient(135deg,#9dfff0,#2dffb0 50%,#0fae78);color:#04281c;box-shadow:0 0 40px rgba(45,255,176,.45)}
+#ecran .e-go.chr{background:linear-gradient(135deg,#fff1b8,#ffd166 50%,#e0a100);color:#2a1d00;box-shadow:0 0 40px rgba(255,209,102,.45)}
+#ecran .e-go.deja{background:rgba(255,255,255,.08);color:#cfd8f0;box-shadow:none}
+#ecran .e-quit{position:absolute;left:0;border:1px solid rgba(120,170,255,.2);background:rgba(255,255,255,.05);color:#8a94b4;border-radius:99px;padding:8px 14px;font-size:clamp(12px,1.8vh,18px)}
+#ecran .e-rest{position:absolute;inset:0;z-index:2;display:grid;place-items:center;background:rgba(4,5,11,.9);backdrop-filter:blur(8px);text-align:center;padding:4vh 4vw}
+#ecran .e-rest[hidden]{display:none}
+#ecran .e-rest .in{display:flex;flex-direction:column;align-items:center;gap:3vh}
+#ecran .e-rest .lbl{font-family:var(--display);font-size:clamp(16px,3.6vh,42px);letter-spacing:.3em;color:#22e3ff;text-transform:uppercase}
+#ecran .e-rest .e-ring{width:clamp(180px,48vh,560px)}
+#ecran .e-rest .e-ring b{font-size:clamp(50px,12vh,170px);text-shadow:0 0 40px rgba(34,227,255,.7)}
+#ecran .e-suiv{font-size:clamp(15px,3.2vh,38px);color:#8a94b4}#ecran .e-suiv b{color:#e9f1ff;font-family:var(--display);text-transform:uppercase;letter-spacing:.04em}
+#ecran .e-rb{display:flex;gap:2vw}#ecran .e-rb button{font-size:clamp(15px,2.6vh,30px);padding:1.6vh 3vh}
+@media (max-aspect-ratio: 1/1){ #ecran{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr) auto auto;gap:2vh;padding:calc(env(safe-area-inset-top,0px) + 2vh) 16px calc(env(safe-area-inset-bottom,0px) + 2vh)}
+  #ecran .e-top{flex-wrap:wrap;gap:4px 12px} #ecran .e-nom{font-size:clamp(18px,6vw,30px)} #ecran .e-bloc,#ecran .e-pct{font-size:clamp(12px,3.4vw,18px)}
+  #ecran .e-now{font-size:clamp(11px,3.2vw,16px);letter-spacing:.2em} #ecran .e-exo{font-size:clamp(22px,8vw,44px)} #ecran .e-dose{font-size:clamp(24px,9vw,48px)}
+  #ecran .e-next{font-size:clamp(13px,3.8vw,18px)} #ecran .e-ring{width:clamp(110px,34vw,200px)} #ecran .e-ring b{font-size:clamp(34px,11vw,64px)} #ecran .e-chr span{font-size:clamp(14px,4vw,20px)}
+  #ecran .e-ctl{gap:10px} #ecran .e-quit{position:static;padding:8px 10px} #ecran .e-go{min-width:0;flex:1;height:60px;font-size:clamp(15px,4.4vw,20px)} #ecran .e-nav{width:52px;height:52px;flex:none;font-size:24px}
+  #ecran .e-rest .e-ring{width:min(70vw,320px)} #ecran .e-rest .e-ring b{font-size:clamp(54px,18vw,90px)} #ecran .e-rb{flex-wrap:wrap;justify-content:center} }
 </style>
 </head>
 <body>
@@ -494,7 +538,7 @@ input[type=text],input[type=date],input[type=number],input[type=time],input[type
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-10-31a";
+const BUILD = "2026-10-31b";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -775,7 +819,7 @@ function watch(mid){
   if (!mid || !S.db) return;
   const base = "members/" + mid;
   unsubs.push(S.db.doc(base).onSnapshot(s => { S.cur.member = s.exists ? s.data() : null; render(); if (!S.owner && S.cur.member) syncBookings(mid, S.cur.seances, S.cur.member, false); }, () => {}));
-  unsubs.push(S.db.collection(base + "/seances").onSnapshot(q => { const o = {}; q.docs.forEach(x => o[x.id] = x.data()); S.cur.seances = o; render();
+  unsubs.push(S.db.collection(base + "/seances").onSnapshot(q => { const o = {}; q.docs.forEach(x => o[x.id] = x.data()); S.cur.seances = o; syncLive(); render();
     if (!S.owner && S.cur.member) syncBookings(mid, o, S.cur.member, false); }, () => {}));
   unsubs.push(S.db.collection(base + "/notes").orderBy("at").limit(500).onSnapshot(q => { S.cur.notes = q.docs.map(x => ({id:x.id, ...x.data()})); render(); }, () => {}));
 }
@@ -1187,6 +1231,8 @@ function renderGo(){
   const st = etapes(s), fait = st.filter(x => x.ok).length, pct = st.length ? Math.round(fait / st.length * 100) : 0;
   const top = `<div class="go-top"><button class="go-x" data-a="go-close" aria-label="Quitter">✕</button><div class="go-prog"><i style="width:${pct}%"></i></div><span class="go-cnt">${fait} / ${st.length}</span><button class="go-x ecr" data-a="go-panel" aria-label="Projeter">📺</button></div>`;
   const panel = g.panel ? panneauEcran(g.sid) : "";
+  if (s.focus && s.focus !== g.vu) { g.vu = s.focus;   /* l'écran projeté a avancé : le téléphone suit */
+    if (s.focusBy && s.focusBy !== dev()) { const j = st.findIndex(y => y.k === s.focus); if (j >= 0) { g.i = j; g.focus = s.focus; } } }
   if (g.i == null || g.i >= st.length) g.i = Math.max(0, st.findIndex(x => !x.ok));
   if (fait === st.length && g.fin) {
     el.innerHTML = `${panel}<div class="in">${top}<div class="go-fin"><div style="font-size:64px">🏆</div><h3>Séance terminée !</h3><p>Énorme. Dis à Nathanael comment ça s'est passé : 30 secondes, et il ajuste la suite.</p>
@@ -1195,22 +1241,35 @@ function renderGo(){
   const x = st[g.i], b = x.b, e = x.e, r = S.repos, left = r ? Math.ceil((r.fin - Date.now()) / 1000) : 0;
   const suiv = st.slice(g.i + 1).find(y => !y.ok);
   const tours = x.n >= 2 ? `<div class="go-tours">${Array.from({length: x.n}, (_, i) => `<i class="${i + 1 < x.t || toursComplets(s, x.bi, b) > i ? "on" : ""} ${i + 1 === x.t ? "cur" : ""}"></i>`).join("")}<span>Tour ${x.t} / ${x.n}</span></div>` : "";
-  const repos = r ? `<div class="go-repos ${left <= 0 ? "fini" : ""}" id="goR"><span>${left <= 0 ? "C'est reparti" : esc(r.lbl || "Repos")}</span><b id="goT">${left <= 0 ? "GO" : mmss(left)}</b>
-    <div class="row">${left > 0 ? `<button data-a="repos-plus">+15 s</button>` : ""}<button data-a="repos-stop">${left > 0 ? "Passer le repos" : "OK"}</button></div></div>` : "";
-  if (g.focus !== x.k && S.db) { g.focus = x.k; S.db.doc(`members/${memberId()}/seances/${g.sid}`).update({focus: x.k}).catch(() => {}); }
-  el.innerHTML = `${panel}<div class="in">${top}
-    <div class="go-bloc"><span class="code">${esc(/^fin/i.test(b.code) ? "Finisher" : b.code)}${b.nom ? " · " + esc(b.nom) : ""}</span>${tours}</div>
-    ${repos}
-    <div class="go-card" ${r ? `style="opacity:.85"` : ""}>${r ? `<span class="eyebrow" style="color:#bdbbb2">À suivre</span>` : ""}<h3>${esc(e.n)}</h3>${e.d ? `<div class="go-dose">${esc(e.d)}</div>` : ""}
+  if (g.focus !== x.k) focusSur(g.sid, x.k);
+  const bloc = `<div class="go-bloc"><span class="code">${esc(/^fin/i.test(b.code) ? "Finisher" : b.code)}${b.nom ? " · " + esc(b.nom) : ""}</span>${tours}</div>`;
+  const c = S.chrono?.sid === g.sid && S.chrono.k === x.k ? S.chrono : null;
+  if (r?.sid === g.sid && left > 0 && !c) {   /* repos : tout l'écran, puis l'exo suivant arrive tout seul */
+    el.innerHTML = `${panel}<div class="in">${top}${bloc}<div class="go-rest"><span class="go-lbl">${esc(r.lbl || "Repos")}</span>
+      <div class="go-ring">${ring("rep", (r.fin - Date.now()) / (r.dur || 60000))}<b class="rep-t">${mmss(left)}</b></div>
+      <div class="go-suiv"><span>À suivre</span><b>${esc(e.n)}</b>${e.d ? `<i>${esc(e.d)}</i>` : ""}</div>
+      <div class="go-rbtn"><button data-a="repos-plus">+15 s</button><button class="pass" data-a="repos-stop">Passer le repos ›</button></div></div></div>`;
+    el.hidden = false; return; }
+  if (c) {   /* exo en temps : gros chrono, il se coche tout seul à la fin */
+    el.innerHTML = `${panel}<div class="in">${top}${bloc}<div class="go-rest chr ${c.ph}"><span class="go-lbl">${chronoLbl(c)}</span><h3>${esc(e.n)}</h3>
+      <div class="go-ring">${ring("chr", chronoFrac(c))}<b class="chr-t">${chronoTxt(c)}</b></div>
+      <div class="go-rbtn"><button data-a="chrono-stop">Annuler</button><button class="pass" data-a="go-fait" data-v="${g.sid}" data-k="${x.k}">✓ Terminé</button></div></div></div>`;
+    el.hidden = false; return; }
+  const t = !x.ok && dureeExo(e.d);
+  el.innerHTML = `${panel}<div class="in">${top}${bloc}
+    <div class="go-card"><h3>${esc(e.n)}</h3>${e.d ? `<div class="go-dose">${esc(e.d)}</div>` : ""}
       ${ytId(e.v) ? (g.vid === x.k ? `<div class="vbox"><iframe src="${esc(ytEmbed(ytId(e.v), true))}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="Vidéo ${esc(e.n)}"></iframe></div>` : "")
         + `<div class="vrow">${g.vid === x.k ? `<button data-a="go-vid" data-v="">Masquer la vidéo</button>` : `<button class="vid" data-a="go-vid" data-v="${x.k}">▶ Vidéo ici</button>`}<a href="${esc(e.v)}" target="_blank" rel="noopener">YouTube ↗</a></div>`
         : /^https:\/\//.test(e.v || "") ? `<a class="vid" href="${esc(e.v)}" target="_blank" rel="noopener">▶ Voir la vidéo</a>` : ""}
       ${e.c ? `<details><summary>Comment faire ›</summary><p>${esc(e.c)}</p></details>` : ""}
       ${chargeRow(s, g.sid, x.bi, x.ei, e)}${remarqueRow(s, g.sid, x.bi, x.ei)}</div>
-    ${suiv && !r ? `<div class="go-next">Ensuite : <b>${esc(suiv.e.n)}</b>${suiv.n >= 2 && suiv.t !== x.t ? ` · tour ${suiv.t}` : ""}</div>` : ""}
+    ${suiv ? `<div class="go-next">Ensuite : <b>${esc(suiv.e.n)}</b>${suiv.n >= 2 && suiv.t !== x.t ? ` · tour ${suiv.t}` : ""}</div>` : ""}
     <div class="go-bas"><button class="go-nav" data-a="go-nav" data-v="-1" ${g.i <= 0 ? "disabled" : ""} aria-label="Exo précédent">‹</button>
-      ${x.ok ? `<button class="go-fait deja" data-a="go-nav" data-v="1"><b>✓</b>Déjà fait</button>` : `<button class="go-fait" data-a="go-fait" data-v="${g.sid}" data-k="${x.k}" data-f="${x.a}"><b>✓</b>C'est fait</button>`}
-      <button class="go-nav" data-a="go-nav" data-v="1" ${g.i >= st.length - 1 ? "disabled" : ""} aria-label="Exo suivant">›</button></div></div>`;
+      ${x.ok ? `<button class="go-fait deja" data-a="go-nav" data-v="1"><b>✓</b>Déjà fait</button>`
+        : t ? `<button class="go-fait gochr" data-a="chrono-go" data-v="${g.sid}" data-k="${x.k}"><b>▶</b>GO ${t.sec < 60 ? t.sec + " s" : mmss(t.sec)}${t.sides > 1 ? " ×2" : ""}</button>`
+        : `<button class="go-fait" data-a="go-fait" data-v="${g.sid}" data-k="${x.k}"><b>✓</b>C'est fait</button>`}
+      <button class="go-nav" data-a="go-nav" data-v="1" ${g.i >= st.length - 1 ? "disabled" : ""} aria-label="Exo suivant">›</button></div>
+    ${t ? `<button class="btn link go-sans" data-a="go-fait" data-v="${g.sid}" data-k="${x.k}">Cocher sans le chrono</button>` : ""}</div>`;
   el.hidden = false; if (g.panel) chargerQR(() => { const q = $("qrE"); if (q && !q.firstChild) try { const c = qrcode(0, "M"); c.addData(lienEcran(g.sid)); c.make(); q.innerHTML = c.createSvgTag({cellSize: 4, margin: 0, scalable: true}); } catch (e) {} });
 }
 /* vidéos YouTube : identifiant, lecteur intégré (carré), lien YouTube */
@@ -1230,8 +1289,55 @@ function panneauEcran(sid){ const u = lienEcran(sid);
     <button class="btn link" data-a="go-panel-x" style="color:#8a94b4">Fermer</button></div></div>`; }
 
 /* minuteur dans la séance guidée : on ne change que les chiffres */
-function goTick(left){ const t = $("goT"), box = $("goR"); if (!t) return;
-  if (left > 0) t.textContent = mmss(left); else if (!box.classList.contains("fini")) renderGo(); }
+const ring = (cl, f) => `<svg class="ring ${cl}" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="54"/><circle class="fg" cx="60" cy="60" r="54" pathLength="100" style="stroke-dashoffset:${(100 - Math.max(0, Math.min(1, f)) * 100).toFixed(1)}"/></svg>`;
+function majRing(cl, f, txt){ document.querySelectorAll(`.ring.${cl} .fg`).forEach(c => c.style.strokeDashoffset = (100 - Math.max(0, Math.min(1, f)) * 100).toFixed(1));
+  document.querySelectorAll(`.${cl}-t`).forEach(b => b.textContent = txt); }
+function goTick(left){ const r = S.repos; if (r && left > 0) majRing("rep", (r.fin - Date.now()) / (r.dur || 60000), mmss(left)); }
+
+/* exo en temps : "30 sec / jambe" -> 30 s x 2 côtés ; null si c'est en répétitions ("5 sec x10") */
+function dureeExo(d){ const t = String(d || "").toLowerCase().replace(/^@\S+\s*/, "").split(/[·,]/)[0].trim();
+  if (!t || /x\s*\d|\d\s*x\b|[(+]/.test(t)) return null;
+  const [a, c = ""] = t.split("/").map(x => x.trim()); let m = a.match(/^(\d+)\s*(?:min|mn|')\s*(?:(\d+)\s*(?:s|sec|")?)?$/), sec;
+  if (m) sec = Number(m[1]) * 60 + Number(m[2] || 0); else if ((m = a.match(/^(\d+)\s*(?:s|sec|secondes?|")$/))) sec = Number(m[1]); else return null;
+  return sec >= 5 && sec <= 1800 ? {sec, sides: /^(c|côté|jambe|bras|main|pied)/.test(c) ? 2 : 1} : null; }
+/* chrono : 3 s pour se placer, l'effort, 5 s pour changer de côté, puis l'exo se coche tout seul */
+const chronoLbl = c => c.ph === "pret" ? "Mets-toi en place" : c.ph === "chg" ? "Change de côté" : c.sides > 1 ? `Côté ${c.side} / ${c.sides}` : "C'est parti";
+const chronoFrac = c => (c.fin - Date.now()) / (c.ph === "go" ? c.dur : c.ph === "chg" ? 5000 : 3000);
+const chronoTxt = c => { const l = Math.max(0, Math.ceil((c.fin - Date.now()) / 1000)); return l >= 60 ? mmss(l) : String(l); };
+function startChrono(sid, k){ const s = S.cur.seances[sid], x = s && etapes(s).find(y => y.k === k), t = x && dureeExo(x.e.d); if (!t) return;
+  if (S.repos) stopRepos(); audioOn();
+  S.chrono = {k, sid, mid: memberId(), dur: t.sec * 1000, fin: Date.now() + 3000, ph: "pret", side: 1, sides: t.sides, own: true, bip: 99};
+  chronoPartage(); tickChrono(); }
+function chronoPartage(){ const c = S.chrono; if (!c?.own || !S.db) return; c.at = Date.now();
+  S.db.doc(`members/${c.mid}/seances/${c.sid}`).update({chrono: {k: c.k, fin: c.fin, dur: c.dur, ph: c.ph, side: c.side, sides: c.sides}}).catch(() => {}); }
+function stopChrono(){ const c = S.chrono; S.chrono = null; clearInterval(S.chronoH); S.chronoH = null;
+  if (c && S.db) S.db.doc(`members/${c.mid}/seances/${c.sid}`).update({chrono: firebase.firestore.FieldValue.delete()}).catch(() => {}); }
+function tickChrono(){ const c = S.chrono; if (!c) { clearInterval(S.chronoH); S.chronoH = null; return; }
+  if (!S.chronoH) S.chronoH = setInterval(tickChrono, 200);
+  const ms = c.fin - Date.now(), left = Math.ceil(ms / 1000);
+  if (left > 0) { if (left <= 3 && left < c.bip) { c.bip = left; bip(false); } return majRing("chr", chronoFrac(c), chronoTxt(c)); }
+  if (!c.own) { majRing("chr", 0, "0"); if (ms < -4000) { S.chrono = null; render(); } return; }   /* l'autre appareil mène le chrono */
+  if (c.ph !== "go") { c.ph = "go"; c.fin = Date.now() + c.dur; }
+  else if (c.side < c.sides) { c.ph = "chg"; c.side++; c.fin = Date.now() + 5000; }
+  else { bip(true); const {sid, k} = c; stopChrono(); render(); return faireEtape(sid, k); }
+  bip(true); c.bip = 99; chronoPartage(); render(); }
+/* coche l'étape (téléphone ou écran projeté), puis passe à la suivante pas encore faite */
+async function faireEtape(sid, k){ if (S.goBusy) return; const s0 = S.cur.seances[sid], x = s0 && etapes(s0).find(y => y.k === k); if (!x || x.ok) return;
+  if (S.chrono?.k === k) stopChrono();
+  S.goBusy = true; try { await act(x.a, {v: sid, k}); } finally { S.goBusy = false; }
+  const s = S.cur.seances[sid]; if (!s) return; const st = etapes(s), i = st.findIndex(y => y.k === k);
+  const nx = st.findIndex((y, j) => j > i && !y.ok), first = st.findIndex(y => !y.ok), ni = first < 0 ? st.length - 1 : nx >= 0 ? nx : first;
+  if (S.go?.sid === sid) { S.go.i = ni; if (first < 0) S.go.fin = true; }
+  focusSur(sid, st[ni]?.k); render(); }
+const dev = () => S.dev || (S.dev = rid(8));
+function focusSur(sid, k){ if (!k) return; if (S.go?.sid === sid) S.go.focus = k;
+  if (S.db) S.db.doc(`members/${memberId()}/seances/${sid}`).update({focus: k, focusBy: dev()}).catch(() => {}); }
+/* repos et chrono partagés : le téléphone et l'écran projeté reprennent ce que l'autre a lancé */
+function syncLive(){ const sid = S.go?.sid || S.ecran?.sid, s = sid && S.cur.seances?.[sid]; if (!s) return; const now = Date.now(), r = s.repos, c = s.chrono, my = S.chrono;
+  if (r?.fin > now && (!S.repos || Math.abs(S.repos.fin - r.fin) > 900)) { S.repos = {fin: r.fin, lbl: r.lbl, dur: r.dur || r.fin - now, sid, mid: memberId(), at: now, bip: 99}; tickRepos(); }
+  else if (!r && S.repos?.sid === sid && now - (S.repos.at || 0) > 2500) { S.repos = null; clearInterval(S.reposH); S.reposH = null; $("repos").hidden = true; }
+  if (c?.fin > now - 1500) { if (!my || (!my.own && (my.k !== c.k || my.ph !== c.ph || Math.abs(my.fin - c.fin) > 900))) { S.chrono = {...c, sid, mid: memberId(), own: false, at: now, bip: 99}; tickChrono(); } }
+  else if (!c && my?.sid === sid && (!my.own || now - (my.at || 0) > 2500)) { S.chrono = null; clearInterval(S.chronoH); S.chronoH = null; } }
 
 /* accueil adhérent : prochaine séance + Commencer */
 function heroAdh(){
@@ -1254,36 +1360,47 @@ function heroCoach(){
 
 /* --- écran séparé (?ecran=sid) : suit la séance en direct, vidéo dans un carré --- */
 function renderEcran(){
-  const el = $("ecran"), E = S.ecran; if (!E) { el.hidden = true; return; }
+  const el = $("ecran"), E = S.ecran; document.body.classList.toggle("ecran-on", !!E); if (!E) { el.hidden = true; return; }
   el.hidden = false; document.body.style.overflow = "hidden";
   const s = S.cur?.seances?.[E.sid], prenom = S.cur?.member?.prenom || "";
-  if (!el.dataset.ok) { el.dataset.ok = 1; el.innerHTML = `<div class="e-top"><span class="e-nom"></span><span class="e-bloc"></span><span class="e-pct"></span></div><div class="e-main"></div><div class="e-side"></div><div class="e-bar"><i></i></div><div class="e-rest" hidden></div><button class="e-x" data-a="ecran-x">Quitter l'écran</button>`;
-    clearInterval(S.ecranH); S.ecranH = setInterval(ecranTick, 500);
+  if (!el.dataset.ok) { el.dataset.ok = 1; el.innerHTML = `<div class="e-top"><span class="e-nom"></span><span class="e-bloc"></span><span class="e-pct"></span></div><div class="e-main"></div><div class="e-side"></div><div class="e-ctl"></div><div class="e-bar"><i></i></div><div class="e-rest" hidden></div>`;
+    clearInterval(S.ecranH); S.ecranH = setInterval(ecranTick, 250);
     try { navigator.wakeLock?.request("screen").then(w => S.wake = w, () => {}); } catch (e) {} }
-  const q = c => el.querySelector(c);
-  q(".e-nom").textContent = prenom;
-  if (!s) { q(".e-main").innerHTML = `<div class="e-wait">Connexion à la séance…</div>`; return; }
+  const q = c => el.querySelector(c), quit = `<button class="e-quit" data-a="ecran-x">${E.local ? "✕ Fermer" : "✕"}</button>`;
+  q(".e-nom").textContent = [prenom, S.cur?.member?.nom].filter(Boolean).join(" ");
+  if (!s) { q(".e-main").innerHTML = `<div class="e-wait">Connexion à la séance…</div>`; q(".e-ctl").innerHTML = quit; return; }
   const st = etapes(s), fait = st.filter(y => y.ok).length;
   q(".e-bar i").style.width = (st.length ? Math.round(fait / st.length * 100) : 0) + "%";
-  q(".e-pct").textContent = st.length ? (fait === st.length ? "Terminé ✓" : `${fait} / ${st.length}`) : "";
-  if (st.length && fait === st.length) { q(".e-bloc").textContent = ""; q(".e-main").innerHTML = `<div class="e-fin" style="grid-row:auto">Séance terminée 🏆</div>`; q(".e-side").innerHTML = ""; E.vid = ""; q(".e-rest").hidden = true; return; }
+  if (st.length && fait === st.length) { q(".e-pct").textContent = "Terminé ✓"; q(".e-bloc").textContent = ""; q(".e-main").innerHTML = `<div class="e-fin">Séance terminée 🏆</div>`; q(".e-side").innerHTML = ""; E.vid = ""; q(".e-ctl").innerHTML = quit; ecranTick(); return; }
   const x = st.find(y => y.k === s.focus) || st.find(y => !y.ok) || st[0]; if (!x) return;
-  const b = x.b, e = x.e, suiv = st.slice(st.indexOf(x) + 1).find(y => !y.ok);
+  const b = x.b, e = x.e, i = st.indexOf(x), suiv = st.slice(i + 1).find(y => !y.ok), c = S.chrono?.sid === E.sid && S.chrono.k === x.k ? S.chrono : null, t = !x.ok && dureeExo(e.d);
+  q(".e-pct").textContent = `Étape ${i + 1} / ${st.length}`;
   q(".e-bloc").textContent = `${/^fin/i.test(b.code) ? "Finisher" : b.code}${b.nom ? " · " + b.nom : ""}`;
-  q(".e-main").innerHTML = `${x.n >= 2 ? `<div class="e-tours">${Array.from({length: x.n}, (_, i) => `<i class="${i < toursComplets(s, x.bi, b) ? "on" : ""}"></i>`).join("")}<span>Tour ${x.t} / ${x.n}</span></div>` : ""}
-    <div class="e-exo">${esc(e.n)}</div>${e.d ? `<div class="e-dose">${esc(e.d)}</div>` : ""}
+  q(".e-main").innerHTML = `<div class="e-now">${x.ok ? "✓ Déjà fait" : "Maintenant"}${x.n >= 2 ? `<span class="e-tours">${Array.from({length: x.n}, (_, j) => `<i class="${j < toursComplets(s, x.bi, b) ? "on" : ""} ${j + 1 === x.t ? "cur" : ""}"></i>`).join("")}Tour ${x.t} / ${x.n}</span>` : ""}</div>
+    <div class="e-exo">${esc(e.n)}</div>
+    ${c ? `<div class="e-chr ${c.ph}"><div class="e-ring">${ring("chr", chronoFrac(c))}<b class="chr-t">${chronoTxt(c)}</b></div><span>${chronoLbl(c)}</span></div>` : e.d ? `<div class="e-dose">${esc(e.d)}</div>` : ""}
     ${suiv ? `<div class="e-next">Ensuite : <b>${esc(suiv.e.n)}</b></div>` : ""}`;
+  q(".e-ctl").innerHTML = `${quit}<button class="e-nav" data-a="ecran-nav" data-v="-1" ${i <= 0 ? "disabled" : ""} aria-label="Précédent">‹</button>
+    ${x.ok ? `<button class="e-go deja" data-a="ecran-nav" data-v="1">Suivant ›</button>`
+      : c ? `<button class="e-go" data-a="go-fait" data-v="${E.sid}" data-k="${x.k}">✓ Terminé</button>`
+      : t ? `<button class="e-go chr" data-a="chrono-go" data-v="${E.sid}" data-k="${x.k}">▶ GO ${t.sec < 60 ? t.sec + " s" : mmss(t.sec)}${t.sides > 1 ? " ×2" : ""}</button>`
+      : `<button class="e-go" data-a="go-fait" data-v="${E.sid}" data-k="${x.k}">✓ C'est fait</button>`}
+    <button class="e-nav" data-a="ecran-nav" data-v="1" ${i >= st.length - 1 ? "disabled" : ""} aria-label="Suivant">›</button>`;
   const id = ytId(e.v);
   if (id !== E.vid) { E.vid = id;   /* on ne recharge la vidéo que si l'exo change */
     q(".e-side").innerHTML = id ? `<div class="vbox"><iframe src="${esc(ytEmbed(id, true))}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="Vidéo"></iframe></div><a class="e-yt" href="${esc(e.v)}" target="_blank" rel="noopener">Ouvrir sur YouTube ↗</a>`
       : `<div class="e-novid">PAS DE VIDÉO</div>`; }
-  E.repos = s.repos || null; E.suiv = x.ok ? (suiv?.e.n || "") : e.n; ecranTick();
+  E.suiv = x.ok ? (suiv?.e.n || "") : e.n; E.suivD = x.ok ? (suiv?.e.d || "") : e.d || ""; ecranTick();
 }
+/* repos sur l'écran projeté : plein écran, anneau, à suivre, +15 s / Passer */
 function ecranTick(){ const E = S.ecran, el = $("ecran"); if (!E || el.hidden) return; const box = el.querySelector(".e-rest"); if (!box) return;
-  const r = E.repos, left = r ? Math.ceil((r.fin - Date.now()) / 1000) : -99;
-  if (left < -2) { box.hidden = true; return; }
-  box.hidden = false; box.className = "e-rest" + (left <= 0 ? " go" : "");
-  box.innerHTML = `<div><span>${esc(left > 0 ? (r.lbl || "Repos") : "C'est reparti")}</span><b>${left > 0 ? mmss(left) : "GO"}</b>${E.suiv ? `<small>À suivre : ${esc(E.suiv)}</small>` : ""}</div>`; }
+  const r = S.repos?.sid === E.sid ? S.repos : null, left = r ? Math.ceil((r.fin - Date.now()) / 1000) : 0;
+  if (!r || left <= 0) { box.hidden = true; box.dataset.on = ""; return; }
+  if (box.dataset.on !== E.suiv + "|" + r.lbl) { box.dataset.on = E.suiv + "|" + r.lbl;
+    box.innerHTML = `<div class="in"><span class="lbl">${esc(r.lbl || "Repos")}</span><div class="e-ring">${ring("rep", 1)}<b class="rep-t"></b></div>
+      ${E.suiv ? `<div class="e-suiv">À suivre : <b>${esc(E.suiv)}</b>${E.suivD ? ` · ${esc(E.suivD)}` : ""}</div>` : ""}
+      <div class="e-rb"><button data-a="repos-plus">+15 s</button><button class="pass" data-a="repos-stop">Passer le repos ›</button></div></div>`; }
+  box.hidden = false; majRing("rep", (r.fin - Date.now()) / (r.dur || 60000), mmss(left)); }
 
 function blocsForm(s){
   const k = "bl." + s.id + ".";
@@ -1389,7 +1506,7 @@ async function act(a, ds){
     case "proj-close": closeProj(); return;
     case "board-open": await openBoard(); return;
     case "board-go": boardGo(); return;
-    case "repos-plus": if (S.repos) { S.repos.fin += 15000; S.repos.bip = 99; reposPartage(); tickRepos(); } return;
+    case "repos-plus": if (S.repos) { S.repos.fin += 15000; S.repos.dur = (S.repos.dur || 60000) + 15000; S.repos.at = Date.now(); S.repos.bip = 99; reposPartage(); tickRepos(); } return;
     case "repos-stop": stopRepos(); return;
     case "pickfor": { const ok = await claim(k, v); if (ok) { S.sheet = null; toast(`${S.members[v]?.prenom || "Adhérent"} placé·e ${fmtSlot(k)}`); const t = slotDate(k);
       setTimeout(() => assignSeance(v, S.team[v], S.members[v], k.split("_")[0], `${pad(t.getHours())}:${pad(t.getMinutes())}`, true, k, true), 1500); } return; }
@@ -1400,25 +1517,26 @@ async function act(a, ds){
     case "open-seance": S.sheet = {type:"seance", sid:v}; S.edit = false; S.confirmDel = null; return;
     case "close": S.sheet = null; S.edit = false; return;
     case "go": { const s = S.cur.seances[v]; if (!s) return; const st = etapes(s);
-      S.go = {sid: v, i: st.every(x => x.ok) ? 0 : st.findIndex(x => !x.ok)}; return; }
-    case "go-close": S.go = null; return;
-    case "ecran-x": { S.ecran = null; const el = $("ecran"); el.hidden = true; el.innerHTML = ""; delete el.dataset.ok; clearInterval(S.ecranH); document.body.style.overflow = "";
+      S.go = {sid: v, vu: s.focus, i: st.every(x => x.ok) ? 0 : st.findIndex(x => !x.ok)}; return; }
+    case "go-close": if (S.chrono?.own && !S.ecran) stopChrono(); S.go = null; return;
+    case "chrono-go": startChrono(v, k); return;
+    case "chrono-stop": stopChrono(); return;
+    case "ecran-nav": { const E = S.ecran, s = E && S.cur.seances[E.sid]; if (!s) return; const st = etapes(s), x = st.find(y => y.k === s.focus) || st.find(y => !y.ok) || st[0];
+      const j = Math.max(0, Math.min(st.length - 1, st.indexOf(x) + Number(v))); if (S.chrono?.k === x.k) stopChrono(); if (S.go?.sid === E.sid) S.go.i = j; focusSur(E.sid, st[j].k); return; }
+    case "ecran-x": { S.ecran = null; document.body.classList.remove("ecran-on");
+      try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) {} const el = $("ecran"); el.hidden = true; el.innerHTML = ""; delete el.dataset.ok; clearInterval(S.ecranH); document.body.style.overflow = "";
       const u = new URL(location.href); u.searchParams.delete("ecran"); history.replaceState(null, "", u.toString()); return; }
     case "go-panel": if (S.go) S.go.panel = true; return;
     case "go-panel-x": if (S.go) S.go.panel = false; return;
     case "go-vid": if (S.go) S.go.vid = v || null; return;
-    case "go-proj-ici": if (S.go) S.go.panel = false; return project("seance", v);
+    case "go-proj-ici": { if (S.go) S.go.panel = false; S.ecran = {sid: v, local: true};   /* plein écran ici, avec les mêmes boutons */
+      try { document.documentElement.requestFullscreen?.().catch(() => {}); } catch (e) {} return; }
     case "go-lien": try { if (navigator.share) await navigator.share({title: "Écran NN Coaching", url: v}); else { await navigator.clipboard.writeText(v); toast("Lien copié"); } } catch (e) {} return;
     case "go-team": S.tab = "adherents"; S.fiche = v; S.sheet = {type: "seance", sid: k}; S.edit = false; watch(v); S.go = {sid: k}; return;
-    case "go-nav": if (S.go) S.go.i = Math.max(0, (S.go.i || 0) + Number(v)); return;
+    case "go-nav": if (S.go) { if (S.chrono?.own) stopChrono(); S.go.i = Math.max(0, (S.go.i || 0) + Number(v)); } return;
     case "go-ressenti": { const sid = S.go?.sid; S.go = null; S.sheet = {type: "seance", sid}; S.edit = false;
       setTimeout(() => $("ressenti")?.scrollIntoView({behavior: "smooth", block: "start"}), 120); return; }
-    case "go-fait": { if (S.goBusy) return; S.goBusy = true;
-      try { await act(ds.f, {v, k}); } finally { S.goBusy = false; }
-      const s = S.cur.seances[v]; if (!s || !S.go) return; const st = etapes(s);
-      const nx = st.findIndex((x, i) => i > S.go.i && !x.ok), first = st.findIndex(x => !x.ok);
-      if (first < 0) { S.go.fin = true; S.go.i = st.length - 1; } else S.go.i = nx >= 0 ? nx : first;
-      return; }
+    case "go-fait": return faireEtape(v, k);
     case "edit-blocs": S.edit = true; return;
     case "copy-link": { const v2 = accessLink(S.cur.member?.code);
       try { await navigator.clipboard.writeText(v2); toast("Lien copié"); } catch (e) { const i = $("lk"); if (i) { i.focus(); i.select(); } toast("Sélectionne le lien et copie-le"); } return; }
@@ -1632,15 +1750,15 @@ function boardGo(){
 }
 /* --- minuteur de repos : démarre quand on coche un exercice --- */
 function reposPartage(){ const r = S.repos; if (!r?.sid || !S.db) return;
-  S.db.doc(`members/${r.mid}/seances/${r.sid}`).update({repos: {fin: r.fin, lbl: r.lbl}}).catch(() => {}); }
+  S.db.doc(`members/${r.mid}/seances/${r.sid}`).update({repos: {fin: r.fin, lbl: r.lbl, dur: r.dur || 60000}}).catch(() => {}); }
 function startRepos(b, sid){
   const sec = reposSec(b.tours) || (/^a/i.test(b.code) ? 30 : 60);
-  S.repos = {fin: Date.now() + sec * 1000, lbl: `Repos ${/^fin/i.test(b.code) ? "finisher" : b.code}`, sid, mid: sid ? memberId() : null}; reposPartage();
+  S.repos = {fin: Date.now() + sec * 1000, dur: sec * 1000, at: Date.now(), lbl: `Repos ${/^fin/i.test(b.code) ? "finisher" : b.code}`, sid, mid: sid ? memberId() : null}; reposPartage();
   try { localStorage.setItem("nn.repos", JSON.stringify(S.repos)); } catch (e) {}
   S.repos.bip = 99; audioOn(); tickRepos();
 }
 function stopRepos(){ const r = S.repos; if (r?.sid && S.db) S.db.doc(`members/${r.mid}/seances/${r.sid}`).update({repos: firebase.firestore.FieldValue.delete()}).catch(() => {});
-  S.repos = null; try { localStorage.removeItem("nn.repos"); } catch (e) {} clearInterval(S.reposH); S.reposH = null; const el = $("repos"); el.hidden = true; el.className = "repos"; if (S.go) renderGo(); }
+  S.repos = null; try { localStorage.removeItem("nn.repos"); } catch (e) {} clearInterval(S.reposH); S.reposH = null; const el = $("repos"); el.hidden = true; el.className = "repos"; if (S.go) renderGo(); ecranTick(); }
 /* --- sons (Web Audio, rien à télécharger) --- */
 function audioOn(){ try { S.ac = S.ac || new (window.AudioContext || window.webkitAudioContext)(); if (S.ac.state !== "running") S.ac.resume(); } catch (e) {} }
 function ton(f, t0, dur, vol = .3, type = "sine", f2){ const ac = S.ac; if (!ac) return; const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + t0;
@@ -1662,6 +1780,7 @@ function celebre(titre, sous, grand){
 function tickRepos(){
   const el = $("repos"), r = S.repos; if (!r) return stopRepos();
   const left = Math.ceil((r.fin - Date.now()) / 1000);
+  if (left <= 0 && (S.go || S.ecran)) { bip(true); return stopRepos(); }   /* séance guidée : l'exo suivant arrive tout seul */
   if (left <= 0) {
     if (!el.classList.contains("fini")) { el.className = "repos fini"; el.innerHTML = `<span class="l">Repos terminé : c'est reparti</span><button data-a="repos-stop">OK</button>`; bip(true); }
     if (left < -8) stopRepos(); }
