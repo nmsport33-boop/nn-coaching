@@ -1,0 +1,69 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Le coach : connecté avec Google, avec son adresse
+    function coach() {
+      return request.auth != null && request.auth.token.email == 'nmsport33@gmail.com' && request.auth.token.email_verified == true;
+    }
+    // Claude (accès accordé par Nathanael le 29/10/2026) : lit et modifie les fiches, séances et notes. Retirer cette ligne et les « || claude() » pour couper.
+    function claude() { return request.auth != null && request.auth.uid == 'WBs20NAKi8cygzivY4ccW1xNRDE2'; }
+    function linkDoc() { return get(/databases/$(database)/documents/links/$(request.auth.uid)).data; }
+    // Une adhérente : connectée par son lien perso, et ce lien est toujours valable
+    function linked() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/links/$(request.auth.uid))
+        && exists(/databases/$(database)/documents/codes/$(linkDoc().code));
+    }
+    function myCid() { return linkDoc().cid; }
+
+    match /codes/{code} {
+      allow get: if request.auth != null;
+      allow list, write: if coach();
+    }
+    match /links/{uid} {
+      allow get: if (request.auth != null && request.auth.uid == uid) || coach();
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && get(/databases/$(database)/documents/codes/$(request.resource.data.code)).data.cid == request.resource.data.cid;
+      allow delete, list: if coach();
+    }
+    // Créneaux : tout le monde voit s'ils sont pris (avec un identifiant anonyme), personne ne voit le suivi des autres
+    // Créneaux : 2 places maximum. Place 1 = slots/<clé>, place 2 = slots/<clé>~2.
+    // Tout le monde voit si les places sont prises (identifiant anonyme), personne ne voit le suivi des autres.
+    function seat(id) { return /databases/$(database)/documents/slots/$(id); }
+    match /slots/{k} {
+      allow read: if coach() || linked();
+      allow create: if coach() || (linked()
+        && k.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}([0-9]{2})?(~2)?$')
+        && request.resource.data.by == myCid() && request.resource.data.keys().hasOnly(['by', 'at'])
+        && ((k.matches('.*~2$') && exists(seat(k.replace('~2$', '')))
+              && get(seat(k.replace('~2$', ''))).data.get('by', '') != myCid()
+              && get(seat(k.replace('~2$', ''))).data.get('blocked', false) == false)
+          || (!k.matches('.*~2$') && (!exists(seat(k + '~2')) || get(seat(k + '~2')).data.get('by', '') != myCid()))));
+      allow delete: if coach() || (linked() && resource.data.by == myCid());
+      allow update: if coach();
+    }
+    // SMS d'encouragement : Claude écrit les textes, le raccourci iPhone de Nathanael les lit (adresse secrète, pas de liste possible)
+    match /envoi/{jeton} {
+      allow get: if true;
+      allow write: if coach() || claude();
+    }
+    match /members/{cid} {
+      allow read, write: if coach() || claude();
+      allow get: if linked() && myCid() == cid;
+      // Ses séances (coches, ressenti, date) et ses notes
+      // Ses séances : l'adhérent les lit et les met à jour (coches, ressenti, date), mais ne peut pas en créer ni en supprimer
+      match /seances/{sid} {
+        allow read, write: if coach() || claude();
+        allow read, update: if linked() && myCid() == cid;
+      }
+      // Ses notes : l'adhérent écrit et supprime les siennes, il ne peut pas toucher à celles du coach
+      match /notes/{nid} {
+        allow read, write: if coach() || claude();
+        allow read: if linked() && myCid() == cid;
+        allow create: if linked() && myCid() == cid && request.resource.data.auteur == 'adherent' && request.resource.data.get('texte', '').size() <= 4000;
+        allow update: if linked() && myCid() == cid && resource.data.auteur == 'adherent' && request.resource.data.get('auteur', 'adherent') == 'adherent';
+        allow delete: if linked() && myCid() == cid && resource.data.auteur == 'adherent';
+      }
+    }
+  }
+}
