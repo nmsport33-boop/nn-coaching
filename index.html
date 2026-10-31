@@ -542,7 +542,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-10-31c";
+const BUILD = "2026-10-31d";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -914,6 +914,7 @@ function planning(coach){
     <div class="days">${dayBtns}</div>
     <div class="eyebrow" style="margin-top:4px">${esc(fmtLong(dd))}</div>
     ${HOURS[dd.getDay()] ? `<div class="eyebrow" style="margin-top:2px">${coach ? "Créneaux en salle" : "Avec Nathanael, en salle"}</div>` : ""}
+    ${!coach && HOURS[dd.getDay()] && sansCoaching() ? `<p class="small muted" style="margin:0">Ta formule est en autonomie / à distance : les créneaux en salle ne sont pas réservables. Programme ta séance plus bas, à l'heure que tu veux.</p>` : ""}
     <div class="list">${slots}</div>
     ${coach ? teamDay(S.day) : S.day >= today && S.cur.member ? autoCard(S.day) : ""}
     ${coach && S.day >= today ? `<button class="btn ghost" data-a="custom-open">+ Rendez-vous à une autre heure</button>` : ""}
@@ -971,6 +972,7 @@ function slotCard(k, coach){
       who = `${jauge} ${n === 1 ? "Personne d'autre pour l'instant" : "Une autre personne sera là"}`;
       foot = `<div class="foot"><span>✓ Réservé</span><a class="btn sm link" href="${esc(gcalSlot(k))}" target="_blank" rel="noopener">+ Google Agenda</a>${canCancel ? `<button class="btn sm link" data-a="cancel" data-k="${k}">Annuler</button>` : `<span class="small">${past ? "" : "moins de 24 h"}</span>`}</div>`; }
     else if (full || s.blocked) { cls = "taken"; right = `<span class="chip">${s.blocked ? "Indisponible" : "Complet"}</span>`; }
+    else if (!past && sansCoaching()) { cls = "taken"; right = `<span class="chip">Formule coachée</span>`; }
     else if (!past) right = `<button class="btn sm" data-a="book" data-k="${k}" ${S.writeBlocked?"disabled":""}>+ Réserver</button>`;
   }
   if (past && !foot && !n) cls += " off";
@@ -1648,8 +1650,11 @@ async function claim(k, mid){
   }
   toast(`Ce créneau est complet (${CAPACITY} personnes maximum).`); return false;
 }
+/* forfait à distance / en autonomie : pas de réservation des créneaux coachés (le coach peut toujours placer quelqu'un) */
+const sansCoaching = () => (!S.owner || S.asMember) && optionOf(S.cur.member, S.cur.seances) === "distance";
 async function book(k){
   if (slotDate(k) < new Date()) return;
+  if (sansCoaching()) { toast("Les créneaux en salle sont réservés à la formule coachée. Touche « Ça m'intéresse » pour en parler avec Nathanael."); return; }
   const e = aboEtat(S.cur.member);
   if (e.fin && slotDate(k) >= new Date(e.fin.getFullYear(), e.fin.getMonth(), e.fin.getDate() + 1)) {
     toast(e.expire ? "Ton mois est terminé : vois avec Nathanael pour continuer." : `Ton mois se termine le ${finAbo(e.fin)} : renouvelle-le avec Nathanael pour réserver après.`); return; }
