@@ -392,6 +392,48 @@ input[type=text],input[type=date],input[type=number],input[type=time],input[type
 .repos{background:rgba(10,12,24,.92);border-color:#22e3ff;box-shadow:0 0 24px rgba(34,227,255,.35)}
 .toast{background:#22e3ff;color:#05060d}
 .banner{border:1px solid var(--line)}
+/* vidéo dans un carré */
+.vbox{width:100%;aspect-ratio:1/1;max-height:46vh;border-radius:18px;overflow:hidden;background:#000;border:1px solid rgba(34,227,255,.3);box-shadow:0 0 24px rgba(34,227,255,.15)}
+.vbox iframe{width:100%;height:100%;border:0;display:block}
+.vrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.vrow a,.vrow button{font-size:13.5px;font-weight:700;border-radius:99px;padding:9px 14px;text-decoration:none;border:1px solid rgba(34,227,255,.35);background:rgba(255,255,255,.05);color:#7df3ff}
+.vrow .vid{border:0;color:#fff}
+.go-top .go-x.ecr{font-size:18px}
+.go-panel{position:fixed;inset:0;z-index:52;background:rgba(3,4,10,.86);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:grid;place-items:center;padding:20px}
+.go-panel .in2{width:100%;max-width:420px;background:rgba(20,24,44,.95);border:1px solid rgba(34,227,255,.35);border-radius:26px;padding:22px;display:flex;flex-direction:column;gap:14px;text-align:center;color:#e9f1ff;box-shadow:0 0 40px rgba(34,227,255,.2)}
+.go-panel h3{font-family:var(--display);font-size:18px;letter-spacing:.1em;text-transform:uppercase}
+.go-panel p{margin:0;font-size:14px;color:#8a94b4}
+.go-panel .qr{align-self:center;background:#fff;padding:10px;border-radius:14px;width:200px;height:200px}
+.go-panel .qr svg{width:180px;height:180px;display:block}
+.go-panel .lien{font-size:12px;word-break:break-all;color:#7df3ff;background:rgba(255,255,255,.05);border-radius:10px;padding:8px}
+/* écran séparé (télé, ordi, tablette) qui suit le téléphone en direct */
+#ecran{position:fixed;inset:0;z-index:65;color:#e9f1ff;overflow:hidden;background:radial-gradient(70% 55% at 30% 0%,rgba(123,92,255,.22),transparent 70%),linear-gradient(rgba(120,170,255,.04) 1px,transparent 1px) 0 0/48px 48px,linear-gradient(90deg,rgba(120,170,255,.04) 1px,transparent 1px) 0 0/48px 48px,#04050b;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;gap:3vh 3vw;padding:4vh 4vw}
+#ecran[hidden]{display:none}
+#ecran .e-top{grid-column:1 / -1;display:flex;align-items:center;gap:2vw}
+#ecran .e-nom{font-family:var(--display);font-size:clamp(20px,4.2vh,52px);letter-spacing:.1em;text-transform:uppercase;text-shadow:0 0 22px rgba(34,227,255,.5)}
+#ecran .e-bloc{font-family:var(--display);font-size:clamp(14px,2.6vh,30px);letter-spacing:.14em;color:#22e3ff;text-transform:uppercase}
+#ecran .e-pct{margin-left:auto;font-family:var(--display);font-size:clamp(14px,2.6vh,30px);color:#7df3ff}
+#ecran .e-main{display:flex;flex-direction:column;justify-content:center;gap:3vh;min-width:0}
+#ecran .e-tours{display:flex;gap:1vh;align-items:center}
+#ecran .e-tours i{width:2.2vh;height:2.2vh;border-radius:50%;border:3px solid #22e3ff}#ecran .e-tours i.on{background:#22e3ff;box-shadow:0 0 12px #22e3ff}#ecran .e-tours span{font-family:var(--display);font-size:clamp(14px,2.8vh,32px);margin-left:1vh;color:#cfd8f0}
+#ecran .e-exo{font-family:var(--display);font-size:clamp(28px,8vh,110px);line-height:1.04;text-transform:uppercase;letter-spacing:.03em;overflow-wrap:anywhere}
+#ecran .e-dose{font-family:var(--display);font-size:clamp(28px,9vh,120px);color:#7df3ff;text-shadow:0 0 30px rgba(34,227,255,.6);line-height:1}
+#ecran .e-next{font-size:clamp(14px,2.8vh,30px);color:#8a94b4}#ecran .e-next b{color:#e9f1ff}
+#ecran .e-side{display:flex;flex-direction:column;justify-content:center;gap:2vh;min-width:0}
+#ecran .vbox{max-height:none;width:min(100%,62vh);align-self:center;border-radius:2.4vh}
+#ecran .e-yt{align-self:center;font-size:clamp(12px,2vh,22px);color:#7df3ff;text-decoration:none;border:1px solid rgba(34,227,255,.35);border-radius:99px;padding:.6vh 1.6vh}
+#ecran .e-novid{align-self:center;width:min(100%,62vh);aspect-ratio:1;border-radius:2.4vh;border:1px dashed rgba(120,170,255,.25);display:grid;place-items:center;color:#56607c;font-family:var(--display);letter-spacing:.2em}
+#ecran .e-bar{grid-column:1 / -1;height:1vh;min-height:6px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+#ecran .e-bar i{display:block;height:100%;background:linear-gradient(90deg,#7b5cff,#22e3ff);box-shadow:0 0 14px #22e3ff;transition:width .6s}
+#ecran .e-rest{position:absolute;inset:0;z-index:2;display:grid;place-items:center;background:rgba(4,5,11,.82);backdrop-filter:blur(6px);text-align:center}
+#ecran .e-rest span{display:block;font-family:var(--display);font-size:clamp(18px,4vh,44px);letter-spacing:.3em;color:#22e3ff;text-transform:uppercase}
+#ecran .e-rest b{display:block;font-family:var(--display);font-size:clamp(80px,30vh,340px);line-height:1;text-shadow:0 0 50px rgba(34,227,255,.7);font-variant-numeric:tabular-nums}
+#ecran .e-rest small{display:block;font-size:clamp(14px,3vh,34px);color:#8a94b4;margin-top:2vh}
+#ecran .e-rest.go b{color:#2dffb0;text-shadow:0 0 50px rgba(45,255,176,.7)}
+#ecran .e-fin{grid-column:1 / -1;grid-row:2;display:grid;place-items:center;text-align:center;font-family:var(--display);font-size:clamp(30px,9vh,110px);text-transform:uppercase;text-shadow:0 0 40px rgba(45,255,176,.6);color:#2dffb0}
+#ecran .e-wait{grid-column:1 / -1;grid-row:2;display:grid;place-items:center;color:#8a94b4;font-size:3vh}
+#ecran .e-x{position:fixed;right:12px;bottom:10px;z-index:3;background:rgba(255,255,255,.06);color:#8a94b4;border:1px solid rgba(120,170,255,.2);border-radius:99px;padding:6px 12px;font-size:13px;opacity:.6}
+@media (max-aspect-ratio: 1/1){ #ecran{grid-template-columns:1fr;grid-template-rows:auto auto minmax(0,1fr) auto} #ecran .vbox,#ecran .e-novid{width:min(100%,38vh)} }
 /* écran de projection : néon, épuré, lisible de loin */
 .proj{background:radial-gradient(70% 50% at 50% 0%,rgba(123,92,255,.18),transparent 70%),linear-gradient(rgba(120,170,255,.04) 1px,transparent 1px) 0 0/40px 40px,linear-gradient(90deg,rgba(120,170,255,.04) 1px,transparent 1px) 0 0/40px 40px,#04050b;font-family:var(--body);color:#e9f1ff}
 .proj .side{font-family:var(--display);color:#22e3ff;letter-spacing:.18em;font-size:clamp(16px,3vh,40px);text-shadow:0 0 18px rgba(34,227,255,.6)}
@@ -443,6 +485,7 @@ input[type=text],input[type=date],input[type=number],input[type=time],input[type
 <div class="proj" id="proj" hidden></div>
 <div class="repos" id="repos" hidden></div>
 <div id="go" hidden></div>
+<div id="ecran" hidden></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -451,7 +494,7 @@ input[type=text],input[type=date],input[type=number],input[type=time],input[type
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-10-30m";
+const BUILD = "2026-10-31a";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -748,6 +791,7 @@ function render(force){
   renderTabs();
   renderSheet();
   renderGo();
+  renderEcran();
 }
 document.addEventListener("focusout", () => { if (pending) setTimeout(() => { if (pending) render(); }, 450); });
 
@@ -1141,10 +1185,11 @@ function renderGo(){
   if (!g || !s) { el.hidden = true; el.innerHTML = ""; document.body.classList.remove("going"); return; }
   document.body.classList.add("going");
   const st = etapes(s), fait = st.filter(x => x.ok).length, pct = st.length ? Math.round(fait / st.length * 100) : 0;
-  const top = `<div class="go-top"><button class="go-x" data-a="go-close" aria-label="Quitter">✕</button><div class="go-prog"><i style="width:${pct}%"></i></div><span class="go-cnt">${fait} / ${st.length}</span></div>`;
+  const top = `<div class="go-top"><button class="go-x" data-a="go-close" aria-label="Quitter">✕</button><div class="go-prog"><i style="width:${pct}%"></i></div><span class="go-cnt">${fait} / ${st.length}</span><button class="go-x ecr" data-a="go-panel" aria-label="Projeter">📺</button></div>`;
+  const panel = g.panel ? panneauEcran(g.sid) : "";
   if (g.i == null || g.i >= st.length) g.i = Math.max(0, st.findIndex(x => !x.ok));
   if (fait === st.length && g.fin) {
-    el.innerHTML = `<div class="in">${top}<div class="go-fin"><div style="font-size:64px">🏆</div><h3>Séance terminée !</h3><p>Énorme. Dis à Nathanael comment ça s'est passé : 30 secondes, et il ajuste la suite.</p>
+    el.innerHTML = `${panel}<div class="in">${top}<div class="go-fin"><div style="font-size:64px">🏆</div><h3>Séance terminée !</h3><p>Énorme. Dis à Nathanael comment ça s'est passé : 30 secondes, et il ajuste la suite.</p>
       <button class="btn xl gold" data-a="go-ressenti">Donner mon ressenti</button><button class="btn link" data-a="go-close" style="color:#bdbbb2">Fermer</button></div></div>`;
     el.hidden = false; return; }
   const x = st[g.i], b = x.b, e = x.e, r = S.repos, left = r ? Math.ceil((r.fin - Date.now()) / 1000) : 0;
@@ -1152,19 +1197,38 @@ function renderGo(){
   const tours = x.n >= 2 ? `<div class="go-tours">${Array.from({length: x.n}, (_, i) => `<i class="${i + 1 < x.t || toursComplets(s, x.bi, b) > i ? "on" : ""} ${i + 1 === x.t ? "cur" : ""}"></i>`).join("")}<span>Tour ${x.t} / ${x.n}</span></div>` : "";
   const repos = r ? `<div class="go-repos ${left <= 0 ? "fini" : ""}" id="goR"><span>${left <= 0 ? "C'est reparti" : esc(r.lbl || "Repos")}</span><b id="goT">${left <= 0 ? "GO" : mmss(left)}</b>
     <div class="row">${left > 0 ? `<button data-a="repos-plus">+15 s</button>` : ""}<button data-a="repos-stop">${left > 0 ? "Passer le repos" : "OK"}</button></div></div>` : "";
-  el.innerHTML = `<div class="in">${top}
+  if (g.focus !== x.k && S.db) { g.focus = x.k; S.db.doc(`members/${memberId()}/seances/${g.sid}`).update({focus: x.k}).catch(() => {}); }
+  el.innerHTML = `${panel}<div class="in">${top}
     <div class="go-bloc"><span class="code">${esc(/^fin/i.test(b.code) ? "Finisher" : b.code)}${b.nom ? " · " + esc(b.nom) : ""}</span>${tours}</div>
     ${repos}
     <div class="go-card" ${r ? `style="opacity:.85"` : ""}>${r ? `<span class="eyebrow" style="color:#bdbbb2">À suivre</span>` : ""}<h3>${esc(e.n)}</h3>${e.d ? `<div class="go-dose">${esc(e.d)}</div>` : ""}
-      ${/^https:\/\//.test(e.v || "") ? `<a class="vid" href="${esc(e.v)}" target="_blank" rel="noopener">▶ Voir la vidéo</a>` : ""}
+      ${ytId(e.v) ? (g.vid === x.k ? `<div class="vbox"><iframe src="${esc(ytEmbed(ytId(e.v), true))}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="Vidéo ${esc(e.n)}"></iframe></div>` : "")
+        + `<div class="vrow">${g.vid === x.k ? `<button data-a="go-vid" data-v="">Masquer la vidéo</button>` : `<button class="vid" data-a="go-vid" data-v="${x.k}">▶ Vidéo ici</button>`}<a href="${esc(e.v)}" target="_blank" rel="noopener">YouTube ↗</a></div>`
+        : /^https:\/\//.test(e.v || "") ? `<a class="vid" href="${esc(e.v)}" target="_blank" rel="noopener">▶ Voir la vidéo</a>` : ""}
       ${e.c ? `<details><summary>Comment faire ›</summary><p>${esc(e.c)}</p></details>` : ""}
       ${chargeRow(s, g.sid, x.bi, x.ei, e)}${remarqueRow(s, g.sid, x.bi, x.ei)}</div>
     ${suiv && !r ? `<div class="go-next">Ensuite : <b>${esc(suiv.e.n)}</b>${suiv.n >= 2 && suiv.t !== x.t ? ` · tour ${suiv.t}` : ""}</div>` : ""}
     <div class="go-bas"><button class="go-nav" data-a="go-nav" data-v="-1" ${g.i <= 0 ? "disabled" : ""} aria-label="Exo précédent">‹</button>
       ${x.ok ? `<button class="go-fait deja" data-a="go-nav" data-v="1"><b>✓</b>Déjà fait</button>` : `<button class="go-fait" data-a="go-fait" data-v="${g.sid}" data-k="${x.k}" data-f="${x.a}"><b>✓</b>C'est fait</button>`}
       <button class="go-nav" data-a="go-nav" data-v="1" ${g.i >= st.length - 1 ? "disabled" : ""} aria-label="Exo suivant">›</button></div></div>`;
-  el.hidden = false;
+  el.hidden = false; if (g.panel) chargerQR(() => { const q = $("qrE"); if (q && !q.firstChild) try { const c = qrcode(0, "M"); c.addData(lienEcran(g.sid)); c.make(); q.innerHTML = c.createSvgTag({cellSize: 4, margin: 0, scalable: true}); } catch (e) {} });
 }
+/* vidéos YouTube : identifiant, lecteur intégré (carré), lien YouTube */
+const ytId = u => { const m = String(u || "").match(/(?:youtu\.be\/|[?&]v=|\/shorts\/|\/embed\/)([\w-]{11})/); return m ? m[1] : ""; };
+const ytEmbed = (id, auto) => `https://www.youtube-nocookie.com/embed/${id}?playsinline=1&rel=0&modestbranding=1&loop=1&playlist=${id}${auto ? "&autoplay=1&mute=1" : ""}`;
+/* lien pour ouvrir l'écran séparé sur la télé ou l'ordi : il suit ce téléphone en direct */
+function lienEcran(sid){ const base = location.origin + location.pathname, mid = memberId();
+  const code = S.owner ? (S.members[mid]?.code || S.cur.member?.code) : (() => { try { return localStorage.getItem("nn.code"); } catch (e) { return ""; } })() || new URL(location.href).searchParams.get("c");
+  return code ? `${base}?c=${encodeURIComponent(code)}&ecran=${encodeURIComponent(sid)}` : `${base}?coach&ecran=${encodeURIComponent(mid + "~" + sid)}`; }
+function chargerQR(cb){ if (window.qrcode) return cb(); const s = document.createElement("script"); s.src = "qrcode.js"; s.onload = cb; s.onerror = () => {}; document.head.appendChild(s); }
+function panneauEcran(sid){ const u = lienEcran(sid);
+  return `<div class="go-panel"><div class="in2"><h3>Projeter</h3>
+    <button class="btn xl" data-a="go-proj-ici" data-v="${sid}">📺 Plein écran sur cet appareil</button>
+    <p><b style="color:#e9f1ff">Sur une télé, un ordi ou une tablette</b> : scanne ce code ou ouvre ce lien sur l'écran. Il suit ton téléphone en direct (exo, tours, repos, vidéo) et tu gardes la séance en main ici.</p>
+    <div class="qr" id="qrE"></div><div class="lien">${esc(u)}</div>
+    <div class="vrow"><button data-a="go-lien" data-v="${esc(u)}">Copier / partager le lien</button></div>
+    <button class="btn link" data-a="go-panel-x" style="color:#8a94b4">Fermer</button></div></div>`; }
+
 /* minuteur dans la séance guidée : on ne change que les chiffres */
 function goTick(left){ const t = $("goT"), box = $("goR"); if (!t) return;
   if (left > 0) t.textContent = mmss(left); else if (!box.classList.contains("fini")) renderGo(); }
@@ -1187,6 +1251,39 @@ function heroCoach(){
       return `<div class="hero-r"><span class="av">${esc(initials(S.members[x.mid]?.prenom))}</span><span class="m"><b>${esc(S.members[x.mid]?.prenom || "")} · ${esc(x.titre || "Séance")}</b><span>${esc(lieuLbl(x))}${esc(heureLbl(x.heure))}${f ? ` · ${f}/${st.length}` : ""}</span></span>
         <button class="go ${x.statut === "faite" ? "fait" : ""}" data-a="go-team" data-v="${esc(x.mid)}" data-k="${esc(x.id)}">${x.statut === "faite" ? "✓ Faite" : f ? "▶ Reprendre" : "▶ Lancer"}</button></div>`; }).join("")}</div>` : `<span class="meta">Le planning de la semaine est juste en dessous.</span>`}</section>`;
 }
+
+/* --- écran séparé (?ecran=sid) : suit la séance en direct, vidéo dans un carré --- */
+function renderEcran(){
+  const el = $("ecran"), E = S.ecran; if (!E) { el.hidden = true; return; }
+  el.hidden = false; document.body.style.overflow = "hidden";
+  const s = S.cur?.seances?.[E.sid], prenom = S.cur?.member?.prenom || "";
+  if (!el.dataset.ok) { el.dataset.ok = 1; el.innerHTML = `<div class="e-top"><span class="e-nom"></span><span class="e-bloc"></span><span class="e-pct"></span></div><div class="e-main"></div><div class="e-side"></div><div class="e-bar"><i></i></div><div class="e-rest" hidden></div><button class="e-x" data-a="ecran-x">Quitter l'écran</button>`;
+    clearInterval(S.ecranH); S.ecranH = setInterval(ecranTick, 500);
+    try { navigator.wakeLock?.request("screen").then(w => S.wake = w, () => {}); } catch (e) {} }
+  const q = c => el.querySelector(c);
+  q(".e-nom").textContent = prenom;
+  if (!s) { q(".e-main").innerHTML = `<div class="e-wait">Connexion à la séance…</div>`; return; }
+  const st = etapes(s), fait = st.filter(y => y.ok).length;
+  q(".e-bar i").style.width = (st.length ? Math.round(fait / st.length * 100) : 0) + "%";
+  q(".e-pct").textContent = st.length ? (fait === st.length ? "Terminé ✓" : `${fait} / ${st.length}`) : "";
+  if (st.length && fait === st.length) { q(".e-bloc").textContent = ""; q(".e-main").innerHTML = `<div class="e-fin" style="grid-row:auto">Séance terminée 🏆</div>`; q(".e-side").innerHTML = ""; E.vid = ""; q(".e-rest").hidden = true; return; }
+  const x = st.find(y => y.k === s.focus) || st.find(y => !y.ok) || st[0]; if (!x) return;
+  const b = x.b, e = x.e, suiv = st.slice(st.indexOf(x) + 1).find(y => !y.ok);
+  q(".e-bloc").textContent = `${/^fin/i.test(b.code) ? "Finisher" : b.code}${b.nom ? " · " + b.nom : ""}`;
+  q(".e-main").innerHTML = `${x.n >= 2 ? `<div class="e-tours">${Array.from({length: x.n}, (_, i) => `<i class="${i < toursComplets(s, x.bi, b) ? "on" : ""}"></i>`).join("")}<span>Tour ${x.t} / ${x.n}</span></div>` : ""}
+    <div class="e-exo">${esc(e.n)}</div>${e.d ? `<div class="e-dose">${esc(e.d)}</div>` : ""}
+    ${suiv ? `<div class="e-next">Ensuite : <b>${esc(suiv.e.n)}</b></div>` : ""}`;
+  const id = ytId(e.v);
+  if (id !== E.vid) { E.vid = id;   /* on ne recharge la vidéo que si l'exo change */
+    q(".e-side").innerHTML = id ? `<div class="vbox"><iframe src="${esc(ytEmbed(id, true))}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="Vidéo"></iframe></div><a class="e-yt" href="${esc(e.v)}" target="_blank" rel="noopener">Ouvrir sur YouTube ↗</a>`
+      : `<div class="e-novid">PAS DE VIDÉO</div>`; }
+  E.repos = s.repos || null; E.suiv = x.ok ? (suiv?.e.n || "") : e.n; ecranTick();
+}
+function ecranTick(){ const E = S.ecran, el = $("ecran"); if (!E || el.hidden) return; const box = el.querySelector(".e-rest"); if (!box) return;
+  const r = E.repos, left = r ? Math.ceil((r.fin - Date.now()) / 1000) : -99;
+  if (left < -2) { box.hidden = true; return; }
+  box.hidden = false; box.className = "e-rest" + (left <= 0 ? " go" : "");
+  box.innerHTML = `<div><span>${esc(left > 0 ? (r.lbl || "Repos") : "C'est reparti")}</span><b>${left > 0 ? mmss(left) : "GO"}</b>${E.suiv ? `<small>À suivre : ${esc(E.suiv)}</small>` : ""}</div>`; }
 
 function blocsForm(s){
   const k = "bl." + s.id + ".";
@@ -1305,6 +1402,13 @@ async function act(a, ds){
     case "go": { const s = S.cur.seances[v]; if (!s) return; const st = etapes(s);
       S.go = {sid: v, i: st.every(x => x.ok) ? 0 : st.findIndex(x => !x.ok)}; return; }
     case "go-close": S.go = null; return;
+    case "ecran-x": { S.ecran = null; const el = $("ecran"); el.hidden = true; el.innerHTML = ""; delete el.dataset.ok; clearInterval(S.ecranH); document.body.style.overflow = "";
+      const u = new URL(location.href); u.searchParams.delete("ecran"); history.replaceState(null, "", u.toString()); return; }
+    case "go-panel": if (S.go) S.go.panel = true; return;
+    case "go-panel-x": if (S.go) S.go.panel = false; return;
+    case "go-vid": if (S.go) S.go.vid = v || null; return;
+    case "go-proj-ici": if (S.go) S.go.panel = false; return project("seance", v);
+    case "go-lien": try { if (navigator.share) await navigator.share({title: "Écran NN Coaching", url: v}); else { await navigator.clipboard.writeText(v); toast("Lien copié"); } } catch (e) {} return;
     case "go-team": S.tab = "adherents"; S.fiche = v; S.sheet = {type: "seance", sid: k}; S.edit = false; watch(v); S.go = {sid: k}; return;
     case "go-nav": if (S.go) S.go.i = Math.max(0, (S.go.i || 0) + Number(v)); return;
     case "go-ressenti": { const sid = S.go?.sid; S.go = null; S.sheet = {type: "seance", sid}; S.edit = false;
@@ -1781,6 +1885,7 @@ function startData(isCoach, cid){
   try { S.db.enablePersistence({synchronizeTabs:true}).catch(() => {}); } catch (e) {}
   const url = new URL(location.href);
   let code = url.searchParams.get("c");
+  const ec = url.searchParams.get("ecran"); if (ec) S.ecran = {sid: ec.split("~").pop(), mid: ec.includes("~") ? ec.split("~")[0] : null};
   /* ?coach : l'espace coach, même si un lien d'adhérente a déjà été ouvert sur cet appareil */
   if (url.searchParams.has("coach")) { code = null; try { localStorage.removeItem("nn.code"); } catch (e) {} }
   else try { if (code) localStorage.setItem("nn.code", code); else code = localStorage.getItem("nn.code"); } catch (e) {}
@@ -1790,6 +1895,7 @@ function startData(isCoach, cid){
     if (started) return;
     const isCoach = !!u && !u.isAnonymous && (u.email || "").toLowerCase() === String(window.COACH_EMAIL).toLowerCase();
     if (isCoach) { started = true; startData(true);
+      if (S.ecran?.mid) { S.fiche = S.ecran.mid; S.tab = "adherents"; watch(S.fiche); }
       /* le coach qui ouvre le lien d'une adhérente : on lui montre l'appli de cette adhérente */
       const cc = url.searchParams.get("c");
       if (cc) { try { const c = await S.db.doc("codes/" + cc).get(); if (c.exists) { S.fiche = c.data().cid; watch(S.fiche); S.asMember = S.fiche; S.tab = "seances"; toast("Tu vois l'appli de ton adhérente (aperçu coach)"); render(true); } } catch (e) {} }
