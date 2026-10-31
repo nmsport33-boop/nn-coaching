@@ -90,8 +90,8 @@ function synchroniser() {
       const m = membres[id] || {}; if (id === 'coach-perso' || (pour.indexOf('tous') < 0 && pour.indexOf(m.option) < 0)) return;
       liste.forEach(d => {
         const s = d.f; if (!s.date || !/^\d{1,2}:\d{2}/.test(s.heure || '') || s.slot || s.statut === 'faite' || s.visible === false) return;
-        const debut = debutAuto_(s.date, s.heure); if (debut < maintenant) return;
-        const cle = 'auto|' + id + '|' + d.id + '|' + s.date + '|' + s.heure; vus[cle] = true;
+        const tz = m.tz || 'Europe/Paris', debut = debutAuto_(s.date, s.heure, tz); if (debut < maintenant) return;
+        const cle = 'auto|' + id + '|' + d.id + '|' + s.date + '|' + s.heure + (m.tz ? '|' + m.tz : ''); vus[cle] = true;
         if (deja[cle]) return;
         const prenom = m.prenom || 'Adhérent·e', titre = s.titre || 'Séance';
         const opts = { description: titre + ' (' + (s.lieu || 'En autonomie') + '), programmée dans l\'appli NN Coaching.\n' + APPLI };
@@ -108,7 +108,7 @@ function synchroniser() {
     // annulations : la réservation n'existe plus (ou la séance a changé de jour / d'heure) → on supprime l'événement
     Object.entries(deja).forEach(([cle, evId]) => {
       if (vus[cle] || /^(prog|abo)\|/.test(cle)) return;
-      const k = cle.split('|'), debut = k[0] === 'auto' ? debutAuto_(k[3], k[4]) : debut_(k[0]);
+      const k = cle.split('|'), debut = k[0] === 'auto' ? debutAuto_(k[3], k[4], k[5]) : debut_(k[0]);
       if (debut > maintenant) { try { const ev = cal.getEventById(evId); if (ev) ev.deleteEvent(); } catch (e) {} }
       props.deleteProperty(cle);
     });
@@ -124,9 +124,9 @@ function rappel_(titre, texte) {
   ev.removeAllReminders(); ev.addPopupReminder(0);
 }
 
-function debutAuto_(jour, heure) {
-  const [a, m, j] = jour.split('-').map(Number), [h, mi] = heure.split(':').map(Number);
-  return new Date(a, m - 1, j, h, mi);
+// heure de la séance dans le fuseau de l'adhérent (ex. Audrey en Martinique), convertie pour ton agenda
+function debutAuto_(jour, heure, tz) {
+  return Utilities.parseDate(jour + ' ' + heure.slice(0, 5), tz || 'Europe/Paris', 'yyyy-MM-dd HH:mm');
 }
 function quand_(debut) {
   const J = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'], M = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
