@@ -51,11 +51,18 @@ service cloud.firestore {
       allow read, write: if coach() || claude();
       allow get: if linked() && myCid() == cid;
       // Ses séances (coches, ressenti, date) et ses notes
+      // Ses séances : l'adhérent les lit et les met à jour (coches, ressenti, date), mais ne peut pas en créer ni en supprimer
       match /seances/{sid} {
-        allow read, write: if coach() || claude() || (linked() && myCid() == cid);
+        allow read, write: if coach() || claude();
+        allow read, update: if linked() && myCid() == cid;
       }
+      // Ses notes : l'adhérent écrit et supprime les siennes, il ne peut pas toucher à celles du coach
       match /notes/{nid} {
-        allow read, write: if coach() || claude() || (linked() && myCid() == cid);
+        allow read, write: if coach() || claude();
+        allow read: if linked() && myCid() == cid;
+        allow create: if linked() && myCid() == cid && request.resource.data.auteur == 'adherent' && request.resource.data.get('texte', '').size() <= 4000;
+        allow update: if linked() && myCid() == cid && resource.data.auteur == 'adherent' && request.resource.data.get('auteur', 'adherent') == 'adherent';
+        allow delete: if linked() && myCid() == cid && resource.data.auteur == 'adherent';
       }
     }
   }

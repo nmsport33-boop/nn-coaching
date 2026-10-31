@@ -1,10 +1,13 @@
 <!doctype html>
+<!-- © 2026 Nathanael Neuville, NN Coaching. Tous droits réservés. Copie, reproduction ou réutilisation interdites sans autorisation écrite (voir LICENSE). -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>NN Coaching</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="copyright" content="© 2026 Nathanael Neuville, NN Coaching. Tous droits réservés.">
 <meta name="theme-color" content="#05060d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -601,7 +604,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-10-31h";
+const BUILD = "2026-10-31i";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
