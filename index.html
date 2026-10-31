@@ -604,7 +604,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-10-31i";
+const BUILD = "2026-10-31j";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -801,9 +801,9 @@ function chargeRow(s, sid, bi, ei, e){
   return `<div class="chg"><label for="ch-${sid}-${k}">Ma charge</label><input id="ch-${sid}-${k}" data-charge="${sid}" data-k="${k}" inputmode="text" autocomplete="off" placeholder="${esc(prev ? prev.v : "ex. 30 kg")}" value="${esc(v)}">${prev ? `<span class="small muted">Dernière fois : <b>${esc(prev.v)}</b></span>` : ""}</div>`;
 }
 /* nombre de tours du bloc : « 3 tours », « 4 séries », « 3-4 tours » (on prend le plus petit) */
-const nbTours = t => { t = String(t || ""); const m = t.match(/(\d+)(?:\s*(?:-|à)\s*\d+)?\s*(?:tours?|séries?)\b/i) || t.match(/(\d+)(?:-\d+)?\s*[TS]\b/); return m ? Math.min(Number(m[1]), 12) : 0; };
+const nbTours = t => { t = String(t || ""); const m = t.match(/(\d+)(?:\s*(?:-|à)\s*\d+)?\s*(?:tours?|séries?|fois|cycles?|rounds?)\b/i) || t.match(/(\d+)(?:-\d+)?\s*[TS]\b/); return m ? Math.min(Number(m[1]), 12) : 0; };
 /* un rond par tour sur chaque exo : coches["bloc-exo-tN"] ; les anciens toursFaits comptent comme cochés */
-const rondOn = (s, bi, ei, t) => { const v = (s.coches || {})[`${bi}-${ei}-t${t}`]; return v === undefined ? t <= ((s.toursFaits || {})[bi] || 0) : !!v; };
+const rondOn = (s, bi, ei, t) => { const c = s.coches || {}, v = c[`${bi}-${ei}-t${t}`]; return v === undefined ? c[`${bi}-${ei}`] === true || t <= ((s.toursFaits || {})[bi] || 0) : !!v; };
 const exoFait = (s, bi, ei, b) => { const n = nbTours(b.tours); return n >= 2 ? Array.from({length: n}, (_, i) => rondOn(s, bi, ei, i + 1)).every(Boolean) : !!(s.coches || {})[bi + "-" + ei]; };
 /* tours complets d'un bloc = tours dont tous les exos sont cochés, dans l'ordre */
 const toursComplets = (s, bi, b) => { const n = nbTours(b.tours), ex = b.exos || []; let f = 0; while (f < n && ex.every((_, ei) => rondOn(s, bi, ei, f + 1))) f++; return f; };
@@ -1366,7 +1366,7 @@ function renderGo(){
       <div class="go-ring">${ring("chr", chronoFrac(c))}<b class="chr-t">${chronoTxt(c)}</b></div>
       <div class="go-rbtn"><button data-a="chrono-stop">Annuler</button><button class="pass" data-a="go-fait" data-v="${g.sid}" data-k="${x.k}">✓ Terminé</button></div></div></div>`;
     el.hidden = false; return; }
-  const t = !x.ok && dureeExo(e.d);
+  const t = !x.ok && dureeExo(e.d, e.n);
   el.innerHTML = `${panel}<div class="in">${top}${bloc}
     <div class="go-card"><h3>${esc(e.n)}</h3>${e.d ? `<div class="go-dose">${esc(e.d)}</div>` : ""}
       ${ytId(e.v) ? (g.vid === x.k ? `<div class="vbox"><iframe src="${esc(ytEmbed(ytId(e.v), true))}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="Vidéo ${esc(e.n)}"></iframe></div>` : "")
@@ -1419,16 +1419,20 @@ function majRing(cl, f, txt){ document.querySelectorAll(`.ring.${cl} .fg`).forEa
 function goTick(left){ const r = S.repos; if (r && left > 0) majRing("rep", (r.fin - Date.now()) / (r.dur || 60000), mmss(left)); }
 
 /* exo en temps : "30 sec / jambe" -> 30 s x 2 côtés ; null si c'est en répétitions ("5 sec x10") */
-function dureeExo(d){ const t = String(d || "").toLowerCase().replace(/^@\S+\s*/, "").split(/[·,]/)[0].trim();
-  if (!t || /x\s*\d|\d\s*x\b|[(+]/.test(t)) return null;
-  const [a, c = ""] = t.split("/").map(x => x.trim()); let m = a.match(/^(\d+)\s*(?:min|mn|')\s*(?:(\d+)\s*(?:s|sec|")?)?$/), sec;
+const COTE_RE = /\/\s*(c\b|côtés?|jambes?|bras|mains?|pieds?)|\b(par|chaque|de chaque|pour chaque)\s+(côté|jambe|bras|main|pied)s?|\bd\s*\+\s*g\b|droite\s+(et|puis|\/)\s+gauche|gauche\s+(et|puis|\/)\s+droite/;
+const COTE_NOM = /(chaque côté|par côté|une jambe|un bras|unilatéral|unipodal|sur un pied|gainage latéral|planche latérale|side plank|à droite et à gauche)/;
+function dureeExo(d, nom){ const brut = String(d || "").toLowerCase().replace(/^@\S+\s*/, ""), t = brut.split(/[·,]/)[0].trim();
+  if (!t || /x\s*\d|\d\s*x\b|[(+]/.test(t.replace(/\bd\s*\+\s*g\b/, ""))) return null;
+  const a = t.split("/")[0].replace(/\b(par|chaque|de chaque|pour chaque)\s+(côté|jambe|bras|main|pied)s?|\bd\s*\+\s*g\b|(de\s+)?(droite|gauche).*$/g, "").trim();
+  let m = a.match(/^(\d+)\s*(?:min|mn|')\s*(?:(\d+)\s*(?:s|sec|")?)?$/), sec;
   if (m) sec = Number(m[1]) * 60 + Number(m[2] || 0); else if ((m = a.match(/^(\d+)\s*(?:s|sec|secondes?|")$/))) sec = Number(m[1]); else return null;
-  return sec >= 5 && sec <= 1800 ? {sec, sides: /^(c|côté|jambe|bras|main|pied)/.test(c) ? 2 : 1} : null; }
+  const sides = COTE_RE.test(brut) || COTE_NOM.test(String(nom || "").toLowerCase()) ? 2 : 1;
+  return sec >= 5 && sec <= 1800 ? {sec, sides} : null; }
 /* chrono : 3 s pour se placer, l'effort, 5 s pour changer de côté, puis l'exo se coche tout seul */
 const chronoLbl = c => c.ph === "pret" ? "Mets-toi en place" : c.ph === "chg" ? "Change de côté" : c.sides > 1 ? `Côté ${c.side} / ${c.sides}` : "C'est parti";
 const chronoFrac = c => (c.fin - Date.now()) / (c.ph === "go" ? c.dur : c.ph === "chg" ? 5000 : 3000);
 const chronoTxt = c => { const l = Math.max(0, Math.ceil((c.fin - Date.now()) / 1000)); return l >= 60 ? mmss(l) : String(l); };
-function startChrono(sid, k){ const s = S.cur.seances[sid], x = s && etapes(s).find(y => y.k === k), t = x && dureeExo(x.e.d); if (!t) return;
+function startChrono(sid, k){ const s = S.cur.seances[sid], x = s && etapes(s).find(y => y.k === k), t = x && dureeExo(x.e.d, x.e.n); if (!t) return;
   if (S.repos) stopRepos(); audioOn();
   S.chrono = {k, sid, mid: memberId(), dur: t.sec * 1000, fin: Date.now() + 3000, ph: "pret", side: 1, sides: t.sides, own: true, bip: 99};
   chronoPartage(); tickChrono(); }
@@ -1497,7 +1501,7 @@ function renderEcran(){
   q(".e-bar i").style.width = (st.length ? Math.round(fait / st.length * 100) : 0) + "%";
   if (st.length && fait === st.length) { q(".e-pct").textContent = "Terminé ✓"; q(".e-bloc").textContent = ""; q(".e-main").innerHTML = `<div class="e-fin">Séance terminée 🏆</div>`; q(".e-side").innerHTML = ""; E.vid = ""; q(".e-ctl").innerHTML = quit; ecranTick(); return; }
   const x = st.find(y => y.k === s.focus) || st.find(y => !y.ok) || st[0]; if (!x) return;
-  const b = x.b, e = x.e, i = st.indexOf(x), suiv = st.slice(i + 1).find(y => !y.ok), c = S.chrono?.sid === E.sid && S.chrono.k === x.k ? S.chrono : null, t = !x.ok && dureeExo(e.d);
+  const b = x.b, e = x.e, i = st.indexOf(x), suiv = st.slice(i + 1).find(y => !y.ok), c = S.chrono?.sid === E.sid && S.chrono.k === x.k ? S.chrono : null, t = !x.ok && dureeExo(e.d, e.n);
   q(".e-pct").textContent = `Étape ${i + 1} / ${st.length}`;
   q(".e-bloc").textContent = `${/^fin/i.test(b.code) ? "Finisher" : b.code}${b.nom ? " · " + b.nom : ""}`;
   q(".e-main").innerHTML = `<div class="e-now">${x.ok ? "✓ Déjà fait" : "Maintenant"}${x.n >= 2 ? `<span class="e-tours">${Array.from({length: x.n}, (_, j) => `<i class="${j < toursComplets(s, x.bi, b) ? "on" : ""} ${j + 1 === x.t ? "cur" : ""}"></i>`).join("")}Tour ${x.t} / ${x.n}</span>` : ""}</div>
