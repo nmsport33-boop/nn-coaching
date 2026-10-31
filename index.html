@@ -405,6 +405,10 @@ input[type=text],input[type=date],input[type=number],input[type=time],input[type
 .go-panel p{margin:0;font-size:14px;color:#8a94b4}
 .go-panel .qr{align-self:center;background:#fff;padding:10px;border-radius:14px;width:200px;height:200px}
 .go-panel .qr svg{width:180px;height:180px;display:block}
+.go-panel h3{display:flex;align-items:center;justify-content:center;gap:10px;margin:0}
+.go-panel .etapes{text-align:left;background:rgba(255,255,255,.05);border:1px solid rgba(34,227,255,.2);border-radius:16px;padding:12px 14px;font-size:14px;color:#cfd8f0}
+.go-panel .etapes ol{margin:8px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.go-panel .autre{text-align:left;font-size:14px}.go-panel .autre summary{color:#7df3ff;font-weight:700;cursor:pointer;text-align:center}.go-panel .autre[open]{display:flex;flex-direction:column;gap:10px}
 .go-panel .lien{font-size:12px;word-break:break-all;color:#7df3ff;background:rgba(255,255,255,.05);border-radius:10px;padding:8px}
 /* écran séparé (télé, ordi, tablette) qui suit le téléphone en direct */
 #ecran{position:fixed;inset:0;z-index:65;color:#e9f1ff;overflow:hidden;background:radial-gradient(70% 55% at 30% 0%,rgba(123,92,255,.22),transparent 70%),linear-gradient(rgba(120,170,255,.04) 1px,transparent 1px) 0 0/48px 48px,linear-gradient(90deg,rgba(120,170,255,.04) 1px,transparent 1px) 0 0/48px 48px,#04050b;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;gap:3vh 3vw;padding:4vh 4vw}
@@ -538,7 +542,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-10-31b";
+const BUILD = "2026-10-31c";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -1229,7 +1233,7 @@ function renderGo(){
   if (!g || !s) { el.hidden = true; el.innerHTML = ""; document.body.classList.remove("going"); return; }
   document.body.classList.add("going");
   const st = etapes(s), fait = st.filter(x => x.ok).length, pct = st.length ? Math.round(fait / st.length * 100) : 0;
-  const top = `<div class="go-top"><button class="go-x" data-a="go-close" aria-label="Quitter">✕</button><div class="go-prog"><i style="width:${pct}%"></i></div><span class="go-cnt">${fait} / ${st.length}</span><button class="go-x ecr" data-a="go-panel" aria-label="Projeter">📺</button></div>`;
+  const top = `<div class="go-top"><button class="go-x" data-a="go-close" aria-label="Quitter">✕</button><div class="go-prog"><i style="width:${pct}%"></i></div><span class="go-cnt">${fait} / ${st.length}</span><button class="go-x ecr" data-a="go-cast" data-v="${g.sid}" aria-label="Projeter sur une télé">${CAST}</button></div>`;
   const panel = g.panel ? panneauEcran(g.sid) : "";
   if (s.focus && s.focus !== g.vu) { g.vu = s.focus;   /* l'écran projeté a avancé : le téléphone suit */
     if (s.focusBy && s.focusBy !== dev()) { const j = st.findIndex(y => y.k === s.focus); if (j >= 0) { g.i = j; g.focus = s.focus; } } }
@@ -1280,12 +1284,25 @@ function lienEcran(sid){ const base = location.origin + location.pathname, mid =
   const code = S.owner ? (S.members[mid]?.code || S.cur.member?.code) : (() => { try { return localStorage.getItem("nn.code"); } catch (e) { return ""; } })() || new URL(location.href).searchParams.get("c");
   return code ? `${base}?c=${encodeURIComponent(code)}&ecran=${encodeURIComponent(sid)}` : `${base}?coach&ecran=${encodeURIComponent(mid + "~" + sid)}`; }
 function chargerQR(cb){ if (window.qrcode) return cb(); const s = document.createElement("script"); s.src = "qrcode.js"; s.onload = cb; s.onerror = () => {}; document.head.appendChild(s); }
-function panneauEcran(sid){ const u = lienEcran(sid);
-  return `<div class="go-panel"><div class="in2"><h3>Projeter</h3>
-    <button class="btn xl" data-a="go-proj-ici" data-v="${sid}">📺 Plein écran sur cet appareil</button>
-    <p><b style="color:#e9f1ff">Sur une télé, un ordi ou une tablette</b> : scanne ce code ou ouvre ce lien sur l'écran. Il suit ton téléphone en direct (exo, tours, repos, vidéo) et tu gardes la séance en main ici.</p>
-    <div class="qr" id="qrE"></div><div class="lien">${esc(u)}</div>
-    <div class="vrow"><button data-a="go-lien" data-v="${esc(u)}">Copier / partager le lien</button></div>
+/* icône « projeter » (la même que YouTube et les autres applis) */
+const CAST = `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 9V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"/><path d="M3 13a7 7 0 0 1 7 7M3 17a3 3 0 0 1 3 3"/><circle cx="3.2" cy="20" r=".6" fill="currentColor"/></svg>`;
+const estApple = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && "ontouchend" in document);
+/* Chromecast / télé connectée (Chrome) : la télé ouvre directement l'écran de la séance ; sinon le panneau AirPlay / QR */
+async function castEcran(sid){
+  if (window.PresentationRequest && !estApple()) {
+    try { S.castCx = await new PresentationRequest([lienEcran(sid)]).start(); toast("Séance projetée sur la télé"); return; }
+    catch (e) { if (e?.name === "NotAllowedError" || e?.name === "AbortError") return; } }
+  if (S.go) S.go.panel = true; }
+function panneauEcran(sid){ const u = lienEcran(sid), apple = estApple();
+  return `<div class="go-panel"><div class="in2"><h3>${CAST} Projeter</h3>
+    ${apple ? `<div class="etapes"><b>AirPlay (Apple TV, télé AirPlay)</b><ol><li>Ouvre le <b>Centre de contrôle</b> (glisse depuis le coin en haut à droite)</li><li>Touche <b>Recopie de l'écran</b> ▭▭ et choisis ta télé</li><li>Reviens ici, touche le bouton ci-dessous et tourne le téléphone à l'horizontale</li></ol></div>`
+      : window.PresentationRequest ? `<button class="btn xl" data-a="go-cast2" data-v="${sid}">${CAST} Chromecast / télé connectée</button>` : ""}
+    <button class="btn xl" data-a="go-proj-ici" data-v="${sid}">📺 Vue télé ${apple ? "(à recopier)" : "sur cet appareil"}</button>
+    <p class="small">Tu gardes les boutons sur le téléphone : C'est fait, GO, Passer le repos.</p>
+    <details class="autre"><summary>Autre écran : ordi, tablette, télé avec navigateur</summary>
+      <p>Scanne ce code ou ouvre ce lien sur l'écran. Il suit ton téléphone en direct (exo, tours, repos, chrono, vidéo) et tu gardes la séance en main ici.</p>
+      <div class="qr" id="qrE"></div><div class="lien">${esc(u)}</div>
+      <div class="vrow"><button data-a="go-lien" data-v="${esc(u)}">Copier / partager le lien</button></div></details>
     <button class="btn link" data-a="go-panel-x" style="color:#8a94b4">Fermer</button></div></div>`; }
 
 /* minuteur dans la séance guidée : on ne change que les chiffres */
@@ -1527,6 +1544,8 @@ async function act(a, ds){
       try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) {} const el = $("ecran"); el.hidden = true; el.innerHTML = ""; delete el.dataset.ok; clearInterval(S.ecranH); document.body.style.overflow = "";
       const u = new URL(location.href); u.searchParams.delete("ecran"); history.replaceState(null, "", u.toString()); return; }
     case "go-panel": if (S.go) S.go.panel = true; return;
+    case "go-cast": return castEcran(v);
+    case "go-cast2": { if (S.go) S.go.panel = false; try { S.castCx = await new PresentationRequest([lienEcran(v)]).start(); toast("Séance projetée sur la télé"); } catch (e) { if (S.go && e?.name !== "NotAllowedError" && e?.name !== "AbortError") { S.go.panel = true; toast("Aucune télé trouvée sur le wifi"); } } return; }
     case "go-panel-x": if (S.go) S.go.panel = false; return;
     case "go-vid": if (S.go) S.go.vid = v || null; return;
     case "go-proj-ici": { if (S.go) S.go.panel = false; S.ecran = {sid: v, local: true};   /* plein écran ici, avec les mêmes boutons */
