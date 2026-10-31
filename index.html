@@ -542,7 +542,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-10-31d";
+const BUILD = "2026-10-31e";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -897,7 +897,7 @@ function planning(coach){
     const booked = ks.reduce((n, k) => n + seatsOf(S.slots[k]).length, 0);
     const coachDay = !!HOURS[x.getDay()], planned = plannedOn(iso(x), coach);
     const info = iso(x) < today ? "" : coach ? (booked + planned.length ? `${booked + planned.length} séance${booked + planned.length > 1 ? "s" : ""}` : "")
-      : planned.length || ks.some(k => hasBy(S.slots[k], memberId())) ? "✓ prévu" : coachDay ? (free ? "coach" : "complet") : "auto";
+      : planned.length || ks.some(k => hasBy(S.slots[k], memberId())) ? "✓ prévu" : coachDay && !sansCoaching() ? (free ? "coach" : "complet") : "auto";
     const auCls = !coach && iso(x) >= today && !coachDay && !planned.length ? "au" : "";
     return `<button class="day ${iso(x)===S.day?"on":""} ${iso(x)<today?"past":""}" data-a="day" data-v="${iso(x)}">
       <span class="dn">${x.toLocaleDateString("fr-FR",{weekday:"short"}).replace(".","")}</span>
@@ -913,10 +913,10 @@ function planning(coach){
       <button class="iconbtn" data-a="week" data-v="1" ${S.week>=WEEKS_AHEAD?"disabled":""} aria-label="Semaine suivante">›</button></div>
     <div class="days">${dayBtns}</div>
     <div class="eyebrow" style="margin-top:4px">${esc(fmtLong(dd))}</div>
-    ${HOURS[dd.getDay()] ? `<div class="eyebrow" style="margin-top:2px">${coach ? "Créneaux en salle" : "Avec Nathanael, en salle"}</div>` : ""}
-    ${!coach && HOURS[dd.getDay()] && sansCoaching() ? `<p class="small muted" style="margin:0">Ta formule est en autonomie / à distance : les créneaux en salle ne sont pas réservables. Programme ta séance plus bas, à l'heure que tu veux.</p>` : ""}
-    <div class="list">${slots}</div>
-    ${coach ? teamDay(S.day) : S.day >= today && S.cur.member ? autoCard(S.day) : ""}
+    ${!coach && sansCoaching() && S.day >= today && S.cur.member ? autoCard(S.day) : ""}
+    ${!coach && sansCoaching() ? "" : `${HOURS[dd.getDay()] ? `<div class="eyebrow" style="margin-top:2px">${coach ? "Créneaux en salle" : "Avec Nathanael, en salle"}</div>` : ""}
+    <div class="list">${slots}</div>`}
+    ${coach ? teamDay(S.day) : S.day >= today && S.cur.member && !sansCoaching() ? autoCard(S.day) : ""}
     ${coach && S.day >= today ? `<button class="btn ghost" data-a="custom-open">+ Rendez-vous à une autre heure</button>` : ""}
     ${coach ? "" : `<p class="small muted" style="margin:0">Annulation possible jusqu'à ${CANCEL_HOURS} h avant la séance. Après, préviens Nathanael directement.</p>`}
   </section>`;
@@ -931,7 +931,7 @@ function autoCard(day){
   const coachDay = !!HOURS[parseIso(day).getDay()], mine = plannedOn(day, false);
   const p = pickSeance(S.cur.seances, S.cur.member, day, false, false);
   const deja = mine.map(x => `<button class="sline" data-a="open-seance" data-v="${x.id}"><span class="snum">✓</span><span class="m"><b>${esc(x.titre || "Séance")}</b><span>${esc(lieuLbl(x))}${esc(heureLbl(x.heure))}</span></span></button>`).join("");
-  return `<div class="eyebrow" style="margin-top:6px">${coachDay ? "Sans Nathanael (autre heure)" : "Ce jour-là : en autonomie ou à distance"}</div>
+  return `<div class="eyebrow" style="margin-top:6px">${sansCoaching() ? "Ta séance : le jour et l'heure que tu veux, 24 h/24, 7 j/7" : coachDay ? "Sans Nathanael (autre heure)" : "Ce jour-là : en autonomie ou à distance"}</div>
     ${deja ? `<div class="list">${deja}</div>` : ""}
     <div class="card"><b>Séance en autonomie${S.cur.member?.option === "distance" ? " / à distance" : ""}</b>
       ${p.s ? `<span class="small">Ta séance ce jour-là : <b>${esc(p.s.titre || "Séance")}</b>${isAuto(p.s) ? "" : " (faite seule, sans Nathanael)"}</span>` : `<span class="small muted">${esc(p.why)}</span>`}
@@ -1507,6 +1507,7 @@ async function act(a, ds){
     case "day": S.day = v; break;
     case "book": return book(k);
     case "plan-day": { const h = S.drafts["pa.heure"] || "";
+      if (!/^\d{1,2}:\d{2}/.test(h)) { toast("Choisis l'heure de ta séance : elle part dans l'agenda de Nathanael."); $("pa-h")?.focus(); return; }
       if (await assignSeance(memberId(), S.cur.seances, S.cur.member, S.day, h, false, null, S.owner)) clearDrafts("pa.");
       return; }
     case "cancel": {
