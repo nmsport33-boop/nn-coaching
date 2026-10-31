@@ -601,7 +601,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-10-31g";
+const BUILD = "2026-10-31h";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -913,7 +913,7 @@ async function unlinkSlot(mid, obj, k){
   const e = Object.entries(obj || {}).find(([,x]) => x.slot === k && x.statut !== "faite"); if (!e) return;
   await run(S.db.doc(`members/${mid}/seances/${e[0]}`).update({date: null, heure: "", slot: firebase.firestore.FieldValue.delete()}));
 }
-function hasAlert(s){ const r = s.ressenti || {}; return (r.pendant ?? 0) > 3 || (r.lendemain ?? 0) > 3 || r.gonfle; }
+function hasAlert(s){ const r = s.ressenti || {}; return (r.pendant ?? 0) > 3 || (r.lendemain ?? 0) > 3 || (r.fondPendant ?? 0) > 4 || ((r.fondPendant ?? 0) - (r.fondDebut ?? r.fondPendant ?? 0)) >= 2 || r.gonfle; }
 function phaseOf(cycle, num){ return (cycle?.phases || []).findIndex(p => num >= p.de && num <= p.a); }
 
 function watch(mid){
@@ -1283,7 +1283,7 @@ function seanceBody(sid, s){
     const r = prev.ressenti || {};
     out += `<section class="sec"><div class="banner ${hasAlert(prev)?"warn":""}" style="flex-direction:column;align-items:flex-start">
       <b>À prendre en compte (séance ${prev.num})</b>
-      ${hasAlert(prev) ? `<span>Ressenti : douleur anormale ${r.pendant ?? "–"}/10 pendant, ${r.lendemain ?? "–"}/10 le lendemain${r.ou ? " (" + esc(r.ou) + ")" : ""}${r.gonfle ? ", genou gonflé" : ""}. Règle : 3/10 max, sinon on réduit l'amplitude ou on reprend la séance d'avant.</span>` : ""}
+      ${hasAlert(prev) ? `<span>Ressenti : ${r.fondPendant != null ? `douleur de fond ${r.fondDebut ?? "–"} → ${r.fondPendant}/10, ` : ""}douleur anormale ${r.pendant ?? "–"}/10 pendant, ${r.lendemain ?? "–"}/10 le lendemain${r.ou ? " (" + esc(r.ou) + ")" : ""}${r.gonfle ? ", genou gonflé" : ""}. Règle : 3/10 max, sinon on réduit l'amplitude ou on reprend la séance d'avant.</span>` : ""}
       ${prevNotes.map(n => `<span>« ${esc(n.texte)} » <span class="muted small">(${n.auteur==="coach"?"coach":esc(m.prenom||"adhérent")})</span></span>`).join("")}</div></section>`;
   }
   if (!(S.edit && coach)) out += `<section class="sec">${goBtn(sid, s)}</section>`;
@@ -1299,12 +1299,15 @@ function seanceBody(sid, s){
   }
   // ressenti
   const r = s.ressenti || {}, k = "rs." + sid + ".";
-  const sc = (f, hot) => `<div class="scale">${Array.from({length:11},(_,i) => `<button class="${d(k+f, r[f])===i?"on":""} ${hot&&i>3?"hot":""}" data-a="scale" data-f="${k+f}" data-v="${i}">${i}</button>`).join("")}</div>`;
+  const sc = (f, hot) => `<div class="scale">${Array.from({length:11},(_,i) => `<button class="${d(k+f, r[f])===i?"on":""} ${hot&&i>(hot===true?3:hot)?"hot":""}" data-a="scale" data-f="${k+f}" data-v="${i}">${i}</button>`).join("")}</div>`;
   out += `<section class="sec" id="ressenti"><h2>Ressenti</h2><div class="card">
     <label class="f">Forme en début de séance (0 = épuisé, 10 = au top)</label>${sc("formeDebut")}
     <label class="f">Effort ressenti (0 = rien, 10 = maximal)</label>${sc("rpe")}
     <label class="f">Forme en fin d'entraînement (0 = vidé, 10 = au top)</label>${sc("formeFin")}
-    <p class="small muted" style="margin:4px 0 0"><b>Douleur anormale</b> : pas les courbatures ni la brûlure du muscle qui travaille. Une douleur dans une articulation, qui pique, qui lance, ou qui ne ressemble pas à l'effort.</p>
+    <p class="small muted" style="margin:4px 0 0"><b>Douleur de fond</b> : celle que tu as déjà avant de commencer (genou, dos…), qui ne bouge pas ou peu pendant la séance. Note-la ici, ce n'est pas une alerte.</p>
+    <label class="f">Douleur de fond au départ /10</label>${sc("fondDebut")}
+    <label class="f">Douleur de fond pendant la séance /10</label>${sc("fondPendant", 4)}
+    <p class="small muted" style="margin:4px 0 0"><b>Douleur anormale</b> : une douleur nouvelle ou qui augmente pendant l'effort (articulation qui pique, qui lance, qui ne ressemble pas à l'effort). Pas les courbatures, ni la brûlure du muscle qui travaille, ni ta douleur de fond habituelle. Si tu n'en as pas : 0.</p>
     <label class="f">Douleur anormale pendant la séance /10</label>${sc("pendant", true)}
     <label class="f">Douleur anormale le lendemain matin /10</label>${sc("lendemain", true)}
     <label class="f">Où ? (si douleur anormale)<input id="ou-${sid}" data-d="${k}ou" maxlength="120" placeholder="Ex. genou gauche en descente" value="${esc(d(k+"ou", r.ou || ""))}"></label>
@@ -1703,7 +1706,7 @@ async function act(a, ds){
     case "scale": S.drafts[ds.f] = Number(v); return;
     case "save-ressenti": {
       const p = "rs." + v + ".", r = {...(S.cur.seances[v]?.ressenti || {})};
-      for (const f of ["formeDebut","rpe","formeFin","pendant","lendemain","ou","gonfle"]) if ((p+f) in S.drafts) r[f] = S.drafts[p+f];
+      for (const f of ["formeDebut","rpe","formeFin","fondDebut","fondPendant","pendant","lendemain","ou","gonfle"]) if ((p+f) in S.drafts) r[f] = S.drafts[p+f];
       r.at = Date.now(); r.par = S.owner ? "coach" : "adherent";
       if (await run(db.doc(`members/${memberId()}/seances/${v}`).update({ressenti:r}), "Ressenti enregistré")) clearDrafts(p);
       return; }
