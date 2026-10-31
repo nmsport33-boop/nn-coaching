@@ -542,7 +542,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-10-31e";
+const BUILD = "2026-10-31f";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -683,6 +683,23 @@ function gcalSlot(k){ const u = new URL(gcal("Coaching privé avec Nathanael", s
 function gcalSeance(x){ if (!x.date) return null; const st = parseIso(x.date); let all = true;
   if (x.heure) { const [h,mi] = x.heure.split(":").map(Number); st.setHours(h, mi||0); all = false; }
   return gcal(`${x.titre || "Séance"} (${lieuLbl(x).toLowerCase()})`, st, all, "Le programme et les vidéos sont dans l'appli NN Coaching."); }
+/* fichier .ics : iPhone (Calendrier), Outlook, Samsung… ; avec un rappel 30 min avant */
+function icsHref(title, start, allDay, lieu, details){
+  const f = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`, ft = d => `${f(d)}T${pad(d.getHours())}${pad(d.getMinutes())}00`;
+  const end = new Date(start); if (allDay) end.setDate(end.getDate()+1); else end.setHours(end.getHours()+1);
+  const e = t => String(t || "").replace(/([,;\\])/g, "\\$1").replace(/\n/g, "\\n");
+  const ics = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//NN Coaching//FR","BEGIN:VEVENT",`UID:${ft(start)}-${rid(8)}@nn-coaching`,`DTSTAMP:${ft(new Date())}`,
+    allDay ? `DTSTART;VALUE=DATE:${f(start)}` : `DTSTART;TZID=Europe/Paris:${ft(start)}`, allDay ? `DTEND;VALUE=DATE:${f(end)}` : `DTEND;TZID=Europe/Paris:${ft(end)}`,
+    `SUMMARY:${e(title)}`, lieu ? `LOCATION:${e(lieu)}` : "", `DESCRIPTION:${e(details)}`,
+    "BEGIN:VALARM","TRIGGER:-PT30M","ACTION:DISPLAY",`DESCRIPTION:${e(title)}`,"END:VALARM","END:VEVENT","END:VCALENDAR"].filter(Boolean).join("\r\n");
+  return "data:text/calendar;charset=utf-8," + encodeURIComponent(ics); }
+/* les deux boutons « ajouter à mon agenda » : Google, et iPhone / Outlook / autres */
+function agendaBtns(x, k){
+  if (k) { const t = slotDate(k), titre = "Coaching privé avec Nathanael", det = "Séance d'une heure. Pour annuler : dans l'appli, jusqu'à 24 h avant.";
+    return `<a class="btn sm link" href="${esc(gcalSlot(k))}" target="_blank" rel="noopener">+ Google Agenda</a><a class="btn sm link" href="${esc(icsHref(titre, t, false, SALLE, det))}" download="seance-nn-coaching.ics">+ iPhone / Outlook</a>`; }
+  if (!x?.date) return ""; const st = parseIso(x.date), all = !x.heure; if (x.heure) { const [hh, mi] = x.heure.split(":").map(Number); st.setHours(hh, mi || 0); }
+  const titre = `${x.titre || "Séance"} (${lieuLbl(x).toLowerCase()})`, det = "Le programme et les vidéos sont dans l'appli NN Coaching : " + location.origin + location.pathname;
+  return `<a class="btn sm ghost" href="${esc(gcalSeance(x))}" target="_blank" rel="noopener">+ Google Agenda</a><a class="btn sm ghost" href="${esc(icsHref(titre, st, all, x.lieu === "Salle" ? SALLE : "", det))}" download="seance-nn-coaching.ics">+ iPhone / Outlook</a>`; }
 const hiddenFor = s => isAuto(s) && !s.visible;
 /* charge notée par l'adhérent : seances.charges {"bloc-exo": "32 kg"} ; reprise à la séance suivante où l'exercice revient */
 const nomExo = n => String(n || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
@@ -930,7 +947,7 @@ function plannedOn(day, coach){
 function autoCard(day){
   const coachDay = !!HOURS[parseIso(day).getDay()], mine = plannedOn(day, false);
   const p = pickSeance(S.cur.seances, S.cur.member, day, false, false);
-  const deja = mine.map(x => `<button class="sline" data-a="open-seance" data-v="${x.id}"><span class="snum">✓</span><span class="m"><b>${esc(x.titre || "Séance")}</b><span>${esc(lieuLbl(x))}${esc(heureLbl(x.heure))}</span></span></button>`).join("");
+  const deja = mine.map(x => `<button class="sline" data-a="open-seance" data-v="${x.id}"><span class="snum">✓</span><span class="m"><b>${esc(x.titre || "Séance")}</b><span>${esc(lieuLbl(x))}${esc(heureLbl(x.heure))}</span></span></button><div class="row" style="justify-content:center">${agendaBtns(x)}</div>`).join("");
   return `<div class="eyebrow" style="margin-top:6px">${sansCoaching() ? "Ta séance : le jour et l'heure que tu veux, 24 h/24, 7 j/7" : coachDay ? "Sans Nathanael (autre heure)" : "Ce jour-là : en autonomie ou à distance"}</div>
     ${deja ? `<div class="list">${deja}</div>` : ""}
     <div class="card"><b>Séance en autonomie${S.cur.member?.option === "distance" ? " / à distance" : ""}</b>
@@ -970,7 +987,7 @@ function slotCard(k, coach){
     if (!s.blocked) who = `${jauge} ${n === 0 ? "Personne pour l'instant" : n === 1 ? "1 personne inscrite" : "Complet"}`;
     if (hasBy(s, me)) { cls = "mine"; const canCancel = (t - new Date()) / 36e5 > CANCEL_HOURS;
       who = `${jauge} ${n === 1 ? "Personne d'autre pour l'instant" : "Une autre personne sera là"}`;
-      foot = `<div class="foot"><span>✓ Réservé</span><a class="btn sm link" href="${esc(gcalSlot(k))}" target="_blank" rel="noopener">+ Google Agenda</a>${canCancel ? `<button class="btn sm link" data-a="cancel" data-k="${k}">Annuler</button>` : `<span class="small">${past ? "" : "moins de 24 h"}</span>`}</div>`; }
+      foot = `<div class="foot"><span>✓ Réservé</span>${agendaBtns(null, k)}${canCancel ? `<button class="btn sm link" data-a="cancel" data-k="${k}">Annuler</button>` : `<span class="small">${past ? "" : "moins de 24 h"}</span>`}</div>`; }
     else if (full || s.blocked) { cls = "taken"; right = `<span class="chip">${s.blocked ? "Indisponible" : "Complet"}</span>`; }
     else if (!past && sansCoaching()) { cls = "taken"; right = `<span class="chip">Formule coachée</span>`; }
     else if (!past) right = `<button class="btn sm" data-a="book" data-k="${k}" ${S.writeBlocked?"disabled":""}>+ Réserver</button>`;
@@ -1179,7 +1196,7 @@ function seanceBody(sid, s){
       <div class="grid3"><label class="f" style="grid-column:span 2">Jour<input type="date" id="pd-${sid}" data-d="${pk}date" value="${esc(d(pk+"date", s.date||""))}"></label>
       <label class="f">Heure<input type="time" id="ph-${sid}" data-d="${pk}heure" value="${esc(d(pk+"heure", s.heure||""))}"></label></div>
       <div class="row"><button class="btn solid" data-a="plan" data-v="${sid}" ${S.writeBlocked?"disabled":""}>${s.date ? "Changer la date" : "Programmer"}</button>
-      ${gcalSeance(s) ? `<a class="btn ghost" href="${esc(gcalSeance(s))}" target="_blank" rel="noopener">+ Google Agenda</a>` : ""}</div></div></section>`; }
+      ${agendaBtns(s)}</div></div></section>`; }
   if (prev && (prevNotes.length || hasAlert(prev))) {
     const r = prev.ressenti || {};
     out += `<section class="sec"><div class="banner ${hasAlert(prev)?"warn":""}" style="flex-direction:column;align-items:flex-start">

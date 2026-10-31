@@ -3,7 +3,7 @@
  * Toutes les 5 minutes : chaque réservation de l'appli est ajoutée à l'agenda de Nathanael
  * (rappels la veille et 2 h avant). Si l'adhérente a un e-mail dans sa fiche, elle reçoit l'invitation.
  * Une annulation dans l'appli supprime l'événement.
- * Séances en autonomie des adhérents à distance (jour et heure choisis dans l'appli, 24 h/24) : même chose,
+ * Séances en autonomie de tous les adhérents (jour et heure choisis dans l'appli, 24 h/24) : même chose,
  * avec un rappel 30 min avant ; e-mail (et SMS si FREE_USER est rempli) dès qu'elles sont programmées.
  * Rappels pour Nathanael (e-mail + notification d'agenda sur le téléphone) :
  *  - quand une adhérente n'a plus qu'une séance programmée (ou plus aucune) : « fais le programme de … » ;
@@ -15,7 +15,8 @@ const RAPPELS_MIN = [24 * 60, 120]; // la veille, et 2 h avant
 const INVITER_ADHERENTES = true;
 const APPLI = 'https://nmsport33-boop.github.io/nn-coaching/';
 const RAPPELS_AUTO_MIN = [30];          // séance en autonomie : rappel 30 min avant
-const AUTONOMIE_POUR = ['distance'];    // formules concernées (members.option)
+const AUTONOMIE_POUR = ['tous'];        // formules concernées (members.option) ; 'tous' = tout le monde
+// Claude peut changer ces réglages sans toucher au script : champ members/coach-perso.agenda {autonomiePour, rappelsAutoMin}
 // SMS sur ton téléphone (Free Mobile : Mon compte → Mes options → Notifications par SMS). Laisse vide sinon.
 const FREE_USER = '', FREE_PASS = '';
 
@@ -84,8 +85,9 @@ function synchroniser() {
         prenom + ' s\'est inscrite au créneau du ' + quand + '.\nC\'est dans ton Google Agenda, avec un rappel la veille et 2 h avant.\n\n' + APPLI);
     });
     // séances en autonomie (formule à distance) : jour + heure choisis par l'adhérent
+    const cfg = (membres['coach-perso'] || {}).agenda || {}, pour = cfg.autonomiePour || AUTONOMIE_POUR, rappelsAuto = cfg.rappelsAutoMin || RAPPELS_AUTO_MIN;
     Object.entries(seances).forEach(([id, liste]) => {
-      const m = membres[id] || {}; if (AUTONOMIE_POUR.indexOf(m.option) < 0) return;
+      const m = membres[id] || {}; if (id === 'coach-perso' || (pour.indexOf('tous') < 0 && pour.indexOf(m.option) < 0)) return;
       liste.forEach(d => {
         const s = d.f; if (!s.date || !/^\d{1,2}:\d{2}/.test(s.heure || '') || s.slot || s.statut === 'faite' || s.visible === false) return;
         const debut = debutAuto_(s.date, s.heure); if (debut < maintenant) return;
@@ -95,11 +97,11 @@ function synchroniser() {
         const opts = { description: titre + ' (' + (s.lieu || 'En autonomie') + '), programmée dans l\'appli NN Coaching.\n' + APPLI };
         if (INVITER_ADHERENTES && m.email) { opts.guests = m.email; opts.sendInvites = true; }
         const ev = cal.createEvent('Autonomie · ' + prenom + ' · ' + titre, debut, new Date(debut.getTime() + 3600e3), opts);
-        ev.removeAllReminders(); RAPPELS_AUTO_MIN.forEach(n => ev.addPopupReminder(n));
+        ev.removeAllReminders(); rappelsAuto.forEach(n => ev.addPopupReminder(n));
         props.setProperty(cle, ev.getId());
         const quand = quand_(debut);
         MailApp.sendEmail(Session.getEffectiveUser().getEmail(), '🗓️ ' + prenom + ' a programmé sa séance : ' + quand,
-          prenom + ' fera « ' + titre + ' » ' + quand + ' (' + (s.lieu || 'en autonomie') + ').\nC\'est dans ton Google Agenda, avec un rappel 30 min avant.\n\n' + APPLI);
+          prenom + ' fera « ' + titre + ' » ' + quand + ' (' + (s.lieu || 'en autonomie') + ').\nC\'est dans ton Google Agenda, avec un rappel ' + rappelsAuto[0] + ' min avant.\n\n' + APPLI);
         sms_(prenom + ' a programme sa seance ' + quand + ' : ' + titre);
       });
     });
