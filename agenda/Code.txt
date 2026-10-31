@@ -1,0 +1,169 @@
+/**
+ * NN Coaching → Google Agenda
+ * Toutes les 5 minutes : chaque réservation de l'appli est ajoutée à l'agenda de Nathanael
+ * (rappels la veille et 2 h avant). Si l'adhérente a un e-mail dans sa fiche, elle reçoit l'invitation.
+ * Une annulation dans l'appli supprime l'événement.
+ * Séances en autonomie des adhérents à distance (jour et heure choisis dans l'appli, 24 h/24) : même chose,
+ * avec un rappel 30 min avant ; e-mail (et SMS si FREE_USER est rempli) dès qu'elles sont programmées.
+ * Rappels pour Nathanael (e-mail + notification d'agenda sur le téléphone) :
+ *  - quand une adhérente n'a plus qu'une séance programmée (ou plus aucune) : « fais le programme de … » ;
+ *  - 7 jours avant la fin d'un abonnement payé (ex. Flo) : penser à lui faire recharger ; elle reçoit aussi un e-mail si sa fiche en a un.
+ */
+const PROJET = 'nn-coaching-bd311';
+const SALLE = 'Salle de coaching, Saint-Médard-en-Jalles';
+const RAPPELS_MIN = [24 * 60, 120]; // la veille, et 2 h avant
+const INVITER_ADHERENTES = true;
+const APPLI = 'https://nmsport33-boop.github.io/nn-coaching/';
+const RAPPELS_AUTO_MIN = [30];          // séance en autonomie : rappel 30 min avant
+const AUTONOMIE_POUR = ['distance'];    // formules concernées (members.option)
+// SMS sur ton téléphone (Free Mobile : Mon compte → Mes options → Notifications par SMS). Laisse vide sinon.
+const FREE_USER = '', FREE_PASS = '';
+
+function installer() {
+  ScriptApp.getProjectTriggers().forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('synchroniser').timeBased().everyMinutes(5).create();
+  synchroniser();
+}
+
+function lireCollection_(nom) {
+  const base = `https://firestore.googleapis.com/v1/projects/${PROJET}/databases/(default)/documents/${nom}?pageSize=300`;
+  const docs = []; let page = '';
+  do {
+    const r = UrlFetchApp.fetch(base + (page ? '&pageToken=' + page : ''), {
+      headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, muteHttpExceptions: true });
+    if (r.getResponseCode() !== 200) throw new Error('Firestore ' + r.getResponseCode() + ' : ' + r.getContentText().slice(0, 300));
+    const j = JSON.parse(r.getContentText());
+    (j.documents || []).forEach(d => {
+      docs.push({ id: d.name.split('/').pop(), f: champs_(d.fields) });
+    });
+    page = j.nextPageToken || '';
+  } while (page);
+  return docs;
+}
+
+function valeur_(v) {
+  if (!v) return null;
+  if ('mapValue' in v) return champs_(v.mapValue.fields);
+  if ('arrayValue' in v) return (v.arrayValue.values || []).map(valeur_);
+  if ('integerValue' in v) return Number(v.integerValue);
+  if ('nullValue' in v) return null;
+  return Object.values(v)[0];
+}
+function champs_(f) { const o = {}; Object.entries(f || {}).forEach(([k, v]) => o[k] = valeur_(v)); return o; }
+
+// clé 2026-11-02_14 ou 2026-11-02_1415 (~2 = 2e place)
+function debut_(id) {
+  const [jour, h] = id.split('~')[0].split('_'); const [a, m, j] = jour.split('-').map(Number);
+  return new Date(a, m - 1, j, Number(h.slice(0, 2)), Number(h.slice(2) || 0));
+}
+
+function synchroniser() {
+  const lock = LockService.getScriptLock(); if (!lock.tryLock(1000)) return;
+  try {
+    const cal = CalendarApp.getDefaultCalendar(), props = PropertiesService.getScriptProperties();
+    const deja = props.getProperties(), maintenant = new Date();
+    const membres = {}; lireCollection_('members').forEach(d => membres[d.id] = d.f);
+    const vus = {}, seances = {};
+    Object.keys(membres).forEach(id => seances[id] = lireCollection_('members/' + id + '/seances'));
+    lireCollection_('slots').forEach(d => {
+      if (!d.f.by) return;
+      const debut = debut_(d.id); if (debut < maintenant) return;
+      const cle = d.id + '|' + d.f.by; vus[cle] = true;
+      if (deja[cle]) return;
+      const m = membres[d.f.by] || {}, prenom = m.prenom || 'Adhérent·e';
+      const fin = new Date(debut.getTime() + 3600e3);
+      const opts = { location: SALLE, description: 'Réservé dans l\'appli NN Coaching.' };
+      if (INVITER_ADHERENTES && m.email) { opts.guests = m.email; opts.sendInvites = true; }
+      const ev = cal.createEvent('Coaching · ' + prenom, debut, fin, opts);
+      ev.removeAllReminders(); RAPPELS_MIN.forEach(n => ev.addPopupReminder(n));
+      props.setProperty(cle, ev.getId());
+      // notification immédiate sur le téléphone (e-mail Gmail)
+      const J = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'], M = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+      const quand = J[debut.getDay()] + ' ' + debut.getDate() + ' ' + M[debut.getMonth()] + ' à ' + debut.getHours() + 'h' + (debut.getMinutes() ? String(debut.getMinutes()).padStart(2, '0') : '');
+      MailApp.sendEmail(Session.getEffectiveUser().getEmail(), '✅ ' + prenom + ' a réservé : ' + quand,
+        prenom + ' s\'est inscrite au créneau du ' + quand + '.\nC\'est dans ton Google Agenda, avec un rappel la veille et 2 h avant.\n\n' + APPLI);
+    });
+    // séances en autonomie (formule à distance) : jour + heure choisis par l'adhérent
+    Object.entries(seances).forEach(([id, liste]) => {
+      const m = membres[id] || {}; if (AUTONOMIE_POUR.indexOf(m.option) < 0) return;
+      liste.forEach(d => {
+        const s = d.f; if (!s.date || !/^\d{1,2}:\d{2}/.test(s.heure || '') || s.slot || s.statut === 'faite' || s.visible === false) return;
+        const debut = debutAuto_(s.date, s.heure); if (debut < maintenant) return;
+        const cle = 'auto|' + id + '|' + d.id + '|' + s.date + '|' + s.heure; vus[cle] = true;
+        if (deja[cle]) return;
+        const prenom = m.prenom || 'Adhérent·e', titre = s.titre || 'Séance';
+        const opts = { description: titre + ' (' + (s.lieu || 'En autonomie') + '), programmée dans l\'appli NN Coaching.\n' + APPLI };
+        if (INVITER_ADHERENTES && m.email) { opts.guests = m.email; opts.sendInvites = true; }
+        const ev = cal.createEvent('Autonomie · ' + prenom + ' · ' + titre, debut, new Date(debut.getTime() + 3600e3), opts);
+        ev.removeAllReminders(); RAPPELS_AUTO_MIN.forEach(n => ev.addPopupReminder(n));
+        props.setProperty(cle, ev.getId());
+        const quand = quand_(debut);
+        MailApp.sendEmail(Session.getEffectiveUser().getEmail(), '🗓️ ' + prenom + ' a programmé sa séance : ' + quand,
+          prenom + ' fera « ' + titre + ' » ' + quand + ' (' + (s.lieu || 'en autonomie') + ').\nC\'est dans ton Google Agenda, avec un rappel 30 min avant.\n\n' + APPLI);
+        sms_(prenom + ' a programme sa seance ' + quand + ' : ' + titre);
+      });
+    });
+    // annulations : la réservation n'existe plus (ou la séance a changé de jour / d'heure) → on supprime l'événement
+    Object.entries(deja).forEach(([cle, evId]) => {
+      if (vus[cle] || /^(prog|abo)\|/.test(cle)) return;
+      const k = cle.split('|'), debut = k[0] === 'auto' ? debutAuto_(k[3], k[4]) : debut_(k[0]);
+      if (debut > maintenant) { try { const ev = cal.getEventById(evId); if (ev) ev.deleteEvent(); } catch (e) {} }
+      props.deleteProperty(cle);
+    });
+    verifierProgrammes_(membres, props, seances);
+  } finally { lock.releaseLock(); }
+}
+
+/* rappel sur le téléphone : un e-mail + un petit événement d'agenda avec notification immédiate */
+function rappel_(titre, texte) {
+  MailApp.sendEmail(Session.getEffectiveUser().getEmail(), titre, texte + '\n\nOuvrir l\'appli : ' + APPLI);
+  const debut = new Date(Date.now() + 5 * 60e3);
+  const ev = CalendarApp.getDefaultCalendar().createEvent('⚠️ ' + titre, debut, new Date(debut.getTime() + 15 * 60e3), { description: texte + '\n' + APPLI });
+  ev.removeAllReminders(); ev.addPopupReminder(0);
+}
+
+function debutAuto_(jour, heure) {
+  const [a, m, j] = jour.split('-').map(Number), [h, mi] = heure.split(':').map(Number);
+  return new Date(a, m - 1, j, h, mi);
+}
+function quand_(debut) {
+  const J = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'], M = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  return J[debut.getDay()] + ' ' + debut.getDate() + ' ' + M[debut.getMonth()] + ' à ' + debut.getHours() + 'h' + (debut.getMinutes() ? String(debut.getMinutes()).padStart(2, '0') : '');
+}
+/* SMS sur ton propre téléphone via l'option gratuite de Free Mobile (rien ne part si FREE_USER est vide) */
+function sms_(texte) {
+  if (!FREE_USER) return;
+  try { UrlFetchApp.fetch('https://smsapi.free-mobile.fr/sendmsg?user=' + encodeURIComponent(FREE_USER) + '&pass=' + encodeURIComponent(FREE_PASS) + '&msg=' + encodeURIComponent(texte), { muteHttpExceptions: true }); } catch (e) {}
+}
+
+function verifierProgrammes_(membres, props, toutes) {
+  const deja = props.getProperties(), aujourdhui = new Date(); aujourdhui.setHours(0, 0, 0, 0);
+  Object.entries(membres).forEach(([id, m]) => {
+    const prenom = m.prenom || 'Adhérente';
+    // 1) séances programmées bientôt toutes faites
+    const seances = (toutes[id] || []).map(d => d.f);
+    if (seances.length) {
+      const reste = seances.filter(s => s.statut !== 'faite').length, cle = 'prog|' + id + '|' + seances.length;
+      if (reste <= 1 && !deja[cle]) {
+        rappel_('Fais le programme de ' + prenom,
+          (reste ? 'Il ne reste plus qu\'une séance programmée à ' : 'Toutes les séances programmées sont faites pour ') + prenom + '.\n' +
+          'Prépare les prochaines séances. Tes consignes : ' + (m.consignes ? '« ' + m.consignes + ' »' : 'aucune (on continue la progression).'));
+        props.setProperty(cle, '1');
+      }
+    }
+    // 2) fin d'abonnement payé dans 7 jours ou moins
+    const a = m.abo || {};
+    if (a.fin) {
+      const [y, mo, j] = String(a.fin).split('-').map(Number), fin = new Date(y, mo - 1, j);
+      const jours = Math.round((fin - aujourdhui) / 864e5), cle = 'abo|' + id + '|' + a.fin;
+      if (jours >= 0 && jours <= 7 && !deja[cle]) {
+        const date = Utilities.formatDate(fin, 'Europe/Paris', 'dd/MM');
+        rappel_('Renouvellement de ' + prenom, 'Le mois de coaching de ' + prenom + ' se termine le ' + date + '. Pense à lui proposer de recharger ses séances.');
+        if (m.email) MailApp.sendEmail(m.email, 'Ton coaching avec Nathanael',
+          'Coucou ' + prenom + ' !\n\nTon mois de coaching se termine le ' + date + '. Pense à recharger tes séances si tu veux qu\'on continue ensemble 💪\n\nNathanael\n' + APPLI,
+          { name: 'Nathanael · NN Coaching' });
+        props.setProperty(cle, '1');
+      }
+    }
+  });
+}
