@@ -674,7 +674,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-01e";
+const BUILD = "2026-11-01f";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -1068,6 +1068,17 @@ const BQ = {
   sante: [["coeur","Problème cardiaque"],["tension","Tension trop haute"],["malaise","Malaise, vertige ou douleur à la poitrine à l'effort"],["souffle","Asthme ou essoufflement anormal"],["diabete","Diabète"],["operation","Opération ou fracture il y a moins d'1 an"],["dos","Hernie ou problème de dos"],["articulation","Problème articulaire (genou, épaule…)"],["grossesse","Enceinte ou accouchement il y a moins d'1 an"],["traitement","Traitement médical en cours"],["aucune","Rien de tout ça"]],
   medecin: [["oui","Oui, il est d'accord"],["pasvu","Pas vu, mais rien de spécial"],["reserve","Non, ou avec des réserves"]],
   sport: [["actuel","En ce moment"],["mois","Il y a quelques mois"],["an","Il y a plus d'un an"],["jamais","Jamais vraiment"]],
+  /* niveau sportif : questions simples, chaque réponse vaut 0 à 3 points (l'ordre compte) */
+  niv: {
+    freq: ["Ton activité sportive en ce moment", [["0","Aucune"],["1","1 fois / semaine"],["2","2 fois / semaine"],["3","3 fois ou plus"]]],
+    muscu: ["Depuis combien de temps tu fais de la muscu ?", [["jamais","Jamais"],["6m","Moins de 6 mois"],["2a","6 mois à 2 ans"],["plus","Plus de 2 ans"]]],
+    gestes: ["Squat, soulevé de terre, développé : tu connais ?", [["non","Pas du tout"],["vu","J'en ai déjà fait"],["ok","Je les fais bien"],["charge","Je les maîtrise avec des charges"]]],
+    pompes: ["Pompes d'affilée (bien faites, sur les pieds)", [["0","0"],["5","1 à 5"],["15","6 à 15"],["30","16 ou plus"]]],
+    planche: ["Planche (gainage sur les avant-bras) tenue", [["20","Moins de 20 sec"],["45","20 à 45 sec"],["90","45 sec à 1 min 30"],["plus","Plus de 1 min 30"]]],
+    squats: ["Squats au poids du corps d'affilée", [["10","Moins de 10"],["20","10 à 20"],["40","20 à 40"],["plus","Plus de 40"]]],
+    tractions: ["Tractions (barre, menton au-dessus)", [["0","0"],["3","1 à 3"],["8","4 à 8"],["plus","9 ou plus"]]],
+    cardio: ["Courir 20 min sans t'arrêter", [["non","Impossible"],["dur","Difficilement"],["oui","Oui"],["facile","Facilement"]]]
+  },
   jours: ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"],
   ciblesObj: ["Fessiers","Cuisses","Ventre / taille","Bras","Dos","Pectoraux","Épaules","Tout le corps"]
 };
@@ -1170,6 +1181,10 @@ function objectifsCard(){
     <label class="f">Ton médecin est d'accord pour que tu fasses du sport ?</label><div class="opts">${BQ.medecin.map(([v, l]) => opt(k, "medecin", v, l, false, v === "reserve")).join("")}</div>
     <label class="f">Ta dernière activité sportive régulière</label><div class="opts">${BQ.sport.map(([v, l]) => opt(k, "sport", v, l)).join("")}</div>
     <label class="f">Quels sports tu as pratiqués ? (facultatif)<input type="text" maxlength="200" data-d="${k}sports" value="${esc(d(k + "sports", ""))}" placeholder="Ex. foot 5 ans, muscu un peu, rien…"></label>
+    <span class="eyebrow" style="margin-top:12px">Ton niveau</span>
+    <span class="small muted">Réponds au plus juste, sans te sous-estimer ni te surestimer : c'est ce qui règle tes charges. Si tu ne sais pas, essaie maintenant, ça prend 2 minutes.</span>
+    ${Object.entries(BQ.niv).map(([f, [q, os]]) => `<label class="f">${esc(q)}</label><div class="opts">${os.map(([v, l]) => opt(k, "niv_" + f, v, l)).join("")}</div>`).join("")}
+    <label class="f">Tes charges en salle, si tu les connais (facultatif)<input type="text" maxlength="200" data-d="${k}charges" value="${esc(d(k + "charges", ""))}" placeholder="Ex. squat 60 kg x8, soulevé de terre 80 kg x5, développé couché 50 kg x8"></label>
     <span class="eyebrow" style="margin-top:12px">Tes objectifs</span>
     <label class="f">1. Ce que tu veux (3 maximum)</label><div class="opts">${BQ.buts.map(b => opt(k, "buts", b, b, true)).join("")}</div>
     ${buts.length > 1 ? `<label class="f">Le plus important pour toi ?</label><div class="opts">${buts.map(b => opt(k, "principal", b, b)).join("")}</div>` : ""}
@@ -1186,17 +1201,23 @@ async function saveObjectifs(){
   const k = "obj.", g = f => S.drafts[k + f], m = S.cur.member;
   const r = {buts: [...(g("buts") || [])], principal: g("principal") || (g("buts") || [])[0] || "", cibles: [...(g("cibles") || [])], rythme: g("rythme") || "", douleurs: String(g("douleurs") || "").trim().slice(0, 300), lieu: g("lieu") || "", materiel: String(g("materiel") || "").trim().slice(0, 300), jours: [...(g("jours") || [])],
     age: Number(g("age")) || null, taille: Number(g("taille")) || null, poids: Number(g("poids")) || null, quotidien: g("quotidien") || "",
+    charges: String(g("charges") || "").trim().slice(0, 200),
+    niveauTests: Object.fromEntries(Object.keys(BQ.niv).map(f => [f, g("niv_" + f) || ""])),
     sante: [...(g("sante") || [])], santeDetail: String(g("santeDetail") || "").trim().slice(0, 400), medecin: g("medecin") || "", sport: g("sport") || "", sports: String(g("sports") || "").trim().slice(0, 200), autre: String(g("autre") || "").trim().slice(0, 500)};
   if (!r.age || !r.poids) return toast("Indique ton âge et ton poids.");
   if (!r.sante.length) return toast("Santé : coche ce qui te concerne, ou « Rien de tout ça ».");
   if (!r.medecin) return toast("Dis si ton médecin est d'accord pour le sport.");
   if (!r.sport) return toast("Dis quand tu as fait du sport régulièrement pour la dernière fois.");
+  const nivManque = Object.keys(BQ.niv).find(f => !r.niveauTests[f]);
+  if (nivManque) return toast("Ton niveau : réponds à « " + BQ.niv[nivManque][0] + " ».");
+  r.niveauScore = Object.entries(r.niveauTests).reduce((t, [f, v]) => t + BQ.niv[f][1].findIndex(x => x[0] === v), 0);   // 0 à 24
+  r.niveau = r.niveauScore <= 6 ? "debutant" : r.niveauScore <= 12 ? "debutant+" : r.niveauScore <= 18 ? "intermediaire" : "confirme";
   if (!r.buts.length) return toast("Choisis au moins un objectif.");
   if (!r.rythme) return toast("Dis combien de séances par semaine tu peux faire.");
   if (!r.lieu) return toast("Dis où tu vas faire tes séances (salle ou maison).");
   if (!r.douleurs) return toast("Question 4 : écris « rien » si tu n'as pas de douleur.");
   const lab = (L, v) => (BQ[L].find(x => x[0] === v) || [, v])[1];
-  const texte = `Profil : ${r.age} ans${r.taille ? `, ${r.taille} cm` : ""}, ${r.poids} kg${r.quotidien ? `, ${lab("quotidien", r.quotidien)}` : ""} · santé : ${r.sante.map(v => lab("sante", v)).join(", ")}${r.santeDetail ? ` (${r.santeDetail})` : ""} · médecin : ${lab("medecin", r.medecin)} · sport : ${lab("sport", r.sport)}${r.sports ? ` (${r.sports})` : ""}\nObjectifs (${objCle(m)}) : ${r.buts.join(", ")}${r.principal ? ` · priorité : ${r.principal}` : ""}${r.cibles.length ? ` · zones : ${r.cibles.join(", ")}` : ""} · ${r.rythme} séance(s)/semaine · lieu : ${(BQ.lieux.find(x => x[0] === r.lieu) || [, r.lieu])[1]}${r.materiel ? ` (matériel : ${r.materiel})` : ""}${r.jours.length ? ` · jours : ${r.jours.join(", ")}` : ""} · douleur : ${r.douleurs}${r.autre ? ` · ${r.autre}` : ""}`;
+  const texte = `Profil : ${r.age} ans${r.taille ? `, ${r.taille} cm` : ""}, ${r.poids} kg${r.quotidien ? `, ${lab("quotidien", r.quotidien)}` : ""} · santé : ${r.sante.map(v => lab("sante", v)).join(", ")}${r.santeDetail ? ` (${r.santeDetail})` : ""} · médecin : ${lab("medecin", r.medecin)} · sport : ${lab("sport", r.sport)}${r.sports ? ` (${r.sports})` : ""}\nNiveau : ${({"debutant": "débutant", "debutant+": "débutant avancé", "intermediaire": "intermédiaire", "confirme": "confirmé"})[r.niveau]} (${r.niveauScore}/24) · ${Object.entries(r.niveauTests).map(([f, v]) => `${BQ.niv[f][0]} : ${BQ.niv[f][1].find(x => x[0] === v)[1]}`).join(" · ")}${r.charges ? ` · charges : ${r.charges}` : ""}\nObjectifs (${objCle(m)}) : ${r.buts.join(", ")}${r.principal ? ` · priorité : ${r.principal}` : ""}${r.cibles.length ? ` · zones : ${r.cibles.join(", ")}` : ""} · ${r.rythme} séance(s)/semaine · lieu : ${(BQ.lieux.find(x => x[0] === r.lieu) || [, r.lieu])[1]}${r.materiel ? ` (matériel : ${r.materiel})` : ""}${r.jours.length ? ` · jours : ${r.jours.join(", ")}` : ""} · douleur : ${r.douleurs}${r.autre ? ` · ${r.autre}` : ""}`;
   if (await run(S.db.collection(`members/${memberId()}/notes`).add({seance: null, auteur: S.owner ? "coach" : "adherent", type: "objectifs", cycle: objCle(m), reponses: r, texte: texte.slice(0, 4000), at: Date.now(), suivante: false}), "Merci ! Tes objectifs sont envoyés 💪")) clearDrafts(k);
 }
 function phaseOf(cycle, num){ return (cycle?.phases || []).findIndex(p => num >= p.de && num <= p.a); }
