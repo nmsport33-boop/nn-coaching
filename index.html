@@ -674,7 +674,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-01b";
+const BUILD = "2026-11-01c";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -1049,6 +1049,8 @@ const BQ = {
   fatigue: [["0","Pas fatigué·e"],["1","Normale"],["2","Très fatigué·e"],["3","Épuisé·e"]],
   alertes: [["nuit","Douleur la nuit ou au repos"],["bloque","Articulation qui se bloque"],["gonfle","Gonflement"],["derobe","Genou qui se dérobe"],["fourmis","Fourmis, perte de force"]],
   buts: ["Perdre du poids","Prendre des fessiers","Prendre du muscle","Me tonifier","Gagner en force","Être plus souple / mobile","Avoir moins mal (dos, genou, épaule…)","Améliorer mon cardio","Me remettre en forme","Préparer un sport ou une épreuve"],
+  lieux: [["salle","En salle avec Nathanael"],["club","Dans une salle de sport"],["maison","À la maison"],["mixte","Un peu des deux"]],
+  niveaux: [["debutant","Je débute"],["reprise","Je reprends après une pause"],["regulier","Je m'entraîne déjà"]],
   ciblesObj: ["Fessiers","Cuisses","Ventre / taille","Bras","Dos","Pectoraux","Épaules","Tout le corps"]
 };
 const lblOf = (arr, v) => (arr.find(x => x[0] === v) || [, v])[1];
@@ -1143,17 +1145,21 @@ function objectifsCard(){
     ${buts.length > 1 ? `<label class="f">Le plus important pour toi ?</label><div class="opts">${buts.map(b => opt(k, "principal", b, b)).join("")}</div>` : ""}
     <label class="f">2. Les zones à travailler en priorité</label><div class="opts">${BQ.ciblesObj.map(c => opt(k, "cibles", c, c, true)).join("")}</div>
     <label class="f">3. Combien de séances par semaine tu peux faire ?</label><div class="opts">${["1","2","3","4","5"].map(n => opt(k, "rythme", n, n)).join("")}</div>
+    <label class="f">Où tu vas faire tes séances ?</label><div class="opts">${BQ.lieux.map(([v, l]) => opt(k, "lieu", v, l)).join("")}</div>
+    ${["maison","mixte"].includes(d(k + "lieu", "")) ? `<label class="f">Ton matériel à la maison<textarea rows="2" maxlength="300" data-d="${k}materiel" placeholder="Ex. rien, un tapis, 2 haltères de 5 kg, des élastiques…">${esc(d(k + "materiel", ""))}</textarea></label>` : ""}
+    <label class="f">Ton niveau en ce moment</label><div class="opts">${BQ.niveaux.map(([v, l]) => opt(k, "niveau", v, l)).join("")}</div>
     <label class="f">4. Une douleur ou une blessure en ce moment ?<textarea rows="2" maxlength="300" data-d="${k}douleurs" placeholder="Ex. genou gauche en descente d'escalier, rien…">${esc(d(k + "douleurs", ""))}</textarea></label>
     <label class="f">5. Autre chose à dire ? (facultatif)<textarea rows="2" maxlength="500" data-d="${k}autre" placeholder="Ex. un mariage en juin, je déteste les burpees…">${esc(d(k + "autre", ""))}</textarea></label>
     <button class="btn solid" data-a="save-obj" ${S.writeBlocked ? "disabled" : ""}>Envoyer</button></div></section>`;
 }
 async function saveObjectifs(){
   const k = "obj.", g = f => S.drafts[k + f], m = S.cur.member;
-  const r = {buts: [...(g("buts") || [])], principal: g("principal") || (g("buts") || [])[0] || "", cibles: [...(g("cibles") || [])], rythme: g("rythme") || "", douleurs: String(g("douleurs") || "").trim().slice(0, 300), autre: String(g("autre") || "").trim().slice(0, 500)};
+  const r = {buts: [...(g("buts") || [])], principal: g("principal") || (g("buts") || [])[0] || "", cibles: [...(g("cibles") || [])], rythme: g("rythme") || "", douleurs: String(g("douleurs") || "").trim().slice(0, 300), lieu: g("lieu") || "", materiel: String(g("materiel") || "").trim().slice(0, 300), niveau: g("niveau") || "", autre: String(g("autre") || "").trim().slice(0, 500)};
   if (!r.buts.length) return toast("Choisis au moins un objectif.");
   if (!r.rythme) return toast("Dis combien de séances par semaine tu peux faire.");
+  if (!r.lieu) return toast("Dis où tu vas faire tes séances (salle ou maison).");
   if (!r.douleurs) return toast("Question 4 : écris « rien » si tu n'as pas de douleur.");
-  const texte = `Objectifs (${objCle(m)}) : ${r.buts.join(", ")}${r.principal ? ` · priorité : ${r.principal}` : ""}${r.cibles.length ? ` · zones : ${r.cibles.join(", ")}` : ""} · ${r.rythme} séance(s)/semaine · douleur : ${r.douleurs}${r.autre ? ` · ${r.autre}` : ""}`;
+  const texte = `Objectifs (${objCle(m)}) : ${r.buts.join(", ")}${r.principal ? ` · priorité : ${r.principal}` : ""}${r.cibles.length ? ` · zones : ${r.cibles.join(", ")}` : ""} · ${r.rythme} séance(s)/semaine · lieu : ${(BQ.lieux.find(x => x[0] === r.lieu) || [, r.lieu])[1]}${r.materiel ? ` (matériel : ${r.materiel})` : ""}${r.niveau ? ` · niveau : ${(BQ.niveaux.find(x => x[0] === r.niveau) || [, r.niveau])[1]}` : ""} · douleur : ${r.douleurs}${r.autre ? ` · ${r.autre}` : ""}`;
   if (await run(S.db.collection(`members/${memberId()}/notes`).add({seance: null, auteur: S.owner ? "coach" : "adherent", type: "objectifs", cycle: objCle(m), reponses: r, texte: texte.slice(0, 4000), at: Date.now(), suivante: false}), "Merci ! Tes objectifs sont envoyés 💪")) clearDrafts(k);
 }
 function phaseOf(cycle, num){ return (cycle?.phases || []).findIndex(p => num >= p.de && num <= p.a); }
