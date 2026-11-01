@@ -253,6 +253,10 @@ textarea{min-height:84px;resize:vertical}
 .scale button{width:30px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:13px;font-variant-numeric:tabular-nums}
 .scale button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .scale button.hot.on{background:var(--warn);border-color:var(--warn);color:#fff}
+.opts{display:flex;gap:6px;flex-wrap:wrap}
+.opts button{min-height:38px;padding:7px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-weight:600;font-size:14px}
+.opts button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.opts button.hot.on{background:var(--warn);border-color:var(--warn);color:#fff}
 
 /* barre d'onglets */
 .tabs{position:fixed;left:0;right:0;bottom:0;z-index:5;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));padding-top:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:linear-gradient(to top,var(--bg) 70%,transparent)}
@@ -438,6 +442,9 @@ input[type=text],input[type=date],input[type=number],input[type=time],input[type
 .vid{background:linear-gradient(135deg,var(--a3),var(--a2))}
 .scale button{background:rgba(var(--ov),.04);border-color:var(--line);color:var(--ink)}
 .scale button.on{background:var(--a1);color:var(--on-a1);border-color:var(--a1)}
+.opts button{background:rgba(var(--ov),.04);border-color:var(--line);color:var(--ink)}
+.opts button.on{background:var(--a1);color:var(--on-a1);border-color:var(--a1)}
+.opts button.hot.on{background:var(--warn);border-color:var(--warn);color:#fff}
 .hero{background:linear-gradient(160deg,rgba(var(--a2r),.28),rgba(var(--sr),.85) 45%,rgba(var(--a1r),.12));border:1px solid rgba(var(--a1r),.35);box-shadow:0 0 40px rgba(var(--a1r),.15),inset 0 1px 0 rgba(var(--ov),.08)}
 .hero h2{font-family:var(--display);font-size:clamp(18px,5.4vw,24px);letter-spacing:.05em;text-transform:uppercase}
 #go{background:radial-gradient(90% 60% at 50% 0%,rgba(var(--a2r),.35),transparent 70%),linear-gradient(rgba(var(--gr),.05) 1px,transparent 1px) 0 0/28px 28px,linear-gradient(90deg,rgba(var(--gr),.05) 1px,transparent 1px) 0 0/28px 28px,var(--b0)}
@@ -604,7 +611,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-10-31j";
+const BUILD = "2026-11-01a";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -785,7 +792,8 @@ function agendaBtns(x, k){
   if (!x?.date) return ""; const st = parseIso(x.date), all = !x.heure; if (x.heure) { const [hh, mi] = x.heure.split(":").map(Number); st.setHours(hh, mi || 0); }
   const titre = `${x.titre || "Séance"} (${lieuLbl(x).toLowerCase()})`, det = "Le programme et les vidéos sont dans l'appli NN Coaching : " + location.origin + location.pathname;
   return `<a class="btn sm ghost" href="${esc(gcalSeance(x))}" target="_blank" rel="noopener">+ Google Agenda</a><a class="btn sm ghost" href="${esc(icsHref(titre, st, all, x.lieu === "Salle" ? SALLE : "", det))}" download="seance-nn-coaching.ics">+ iPhone / Outlook</a>`; }
-const hiddenFor = s => isAuto(s) && !s.visible;
+/* séance cachée : en autonomie tant qu'elle n'est pas débloquée, ou toute séance marquée visible: false (déblocage au fur et à mesure) */
+const hiddenFor = s => isAuto(s) ? !s.visible : s.visible === false;
 /* charge notée par l'adhérent : seances.charges {"bloc-exo": "32 kg"} ; reprise à la séance suivante où l'exercice revient */
 const nomExo = n => String(n || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 function derniereCharge(s, nom){
@@ -842,7 +850,7 @@ const dayGap = (a, b) => Math.round((parseIso(a) - parseIso(b)) / 864e5);
 const seqOf = obj => Object.entries(obj || {}).map(([id,v]) => ({id, ...v})).sort((a,b) => a.num - b.num);
 function pickSeance(obj, m, day, coachee, asCoach){
   const today = iso(new Date()), seq = seqOf(obj);
-  const libre = s => s.statut !== "faite" && !s.slot && (!s.date || s.date >= today) && s.date !== day && (asCoach || !hiddenFor(s));
+  const libre = s => s.statut !== "faite" && !s.slot && (!s.date || s.date >= today) && s.date !== day && (asCoach || coachee || !hiddenFor(s));
   const ok = s => libre(s) && (coachee ? !isAuto(s) : (isAuto(s) || m?.planLibre));
   /* d'abord les séances sans date ; une séance déjà datée n'est déplacée que s'il n'en reste aucune */
   const sans = seq.filter(s => ok(s) && !s.date), cands = sans.length ? sans : seq.filter(ok);
@@ -916,7 +924,121 @@ async function unlinkSlot(mid, obj, k){
   const e = Object.entries(obj || {}).find(([,x]) => x.slot === k && x.statut !== "faite"); if (!e) return;
   await run(S.db.doc(`members/${mid}/seances/${e[0]}`).update({date: null, heure: "", slot: firebase.firestore.FieldValue.delete()}));
 }
-function hasAlert(s){ const r = s.ressenti || {}; return (r.pendant ?? 0) > 3 || (r.lendemain ?? 0) > 3 || (r.fondPendant ?? 0) > 4 || ((r.fondPendant ?? 0) - (r.fondDebut ?? r.fondPendant ?? 0)) >= 2 || r.gonfle; }
+function hasAlert(s){ const r = s.ressenti || {}; return (r.pendant ?? 0) > 3 || (r.lendemain ?? 0) > 3 || (r.fondPendant ?? 0) > 4 || ((r.fondPendant ?? 0) - (r.fondDebut ?? r.fondPendant ?? 0)) >= 2 || r.gonfle || bilanAlerte(s); }
+/* ---------- questionnaires : santé après chaque séance (obligatoire pour débloquer la suivante), contrôle avant de commencer, objectifs en début de cycle ---------- */
+const BQ = {
+  zones: ["Genou gauche","Genou droit","Épaule gauche","Épaule droite","Bas du dos","Nuque / haut du dos","Hanche","Cheville / pied","Poignet / coude","Autre"],
+  sensation: [["top","😀 Très bien"],["bien","🙂 Bien"],["moyen","😐 Moyen"],["dur","😣 Difficile"]],
+  fatigue: [["0","Pas fatigué·e"],["1","Normale"],["2","Très fatigué·e"],["3","Épuisé·e"]],
+  alertes: [["nuit","Douleur la nuit ou au repos"],["bloque","Articulation qui se bloque"],["gonfle","Gonflement"],["derobe","Genou qui se dérobe"],["fourmis","Fourmis, perte de force"]],
+  buts: ["Perdre du poids","Prendre des fessiers","Prendre du muscle","Me tonifier","Gagner en force","Être plus souple / mobile","Avoir moins mal (dos, genou, épaule…)","Améliorer mon cardio","Me remettre en forme","Préparer un sport ou une épreuve"],
+  ciblesObj: ["Fessiers","Cuisses","Ventre / taille","Bras","Dos","Pectoraux","Épaules","Tout le corps"]
+};
+const lblOf = (arr, v) => (arr.find(x => x[0] === v) || [, v])[1];
+const bilanFait = s => !!s?.bilan?.at;
+const alertesOf = b => (b?.alertes || []).filter(x => x !== "aucune");
+const bilanAlerte = s => { const b = s?.bilan, a = s?.avant; return !!(alertesOf(b).length || (b?.douleur === "oui" && (b.intensite ?? 0) > 3) || alertesOf(a).length || (a?.douleur === "oui" && (a.intensite ?? 0) > 3)); };
+/* séance « commencée ou finie » : on peut répondre au questionnaire */
+const seanceEntamee = s => s.statut === "faite" || !!s.ressenti?.at || !!s.bilan?.at || (Object.values(s.coches || {}).some(Boolean) && (s.date || "") <= iso(new Date()));
+/* la dernière séance faite avant celle-ci */
+const derniereFaite = (num) => allSeances().filter(x => x.num < num && seanceEntamee(x)).pop() || null;
+const opt = (k, f, v, l, multi, hot) => { const cur = d(k + f, undefined), on = multi ? (cur || []).includes(v) : cur === v;
+  return `<button type="button" class="${on ? "on" : ""} ${hot ? "hot" : ""}" data-a="${multi ? "bq-tog" : "bq-pick"}" data-f="${k + f}" data-v="${esc(v)}" aria-pressed="${on}">${esc(l)}</button>`; };
+const scale10 = (k, f, hot) => `<div class="scale">${Array.from({length: 11}, (_, i) => `<button type="button" class="${d(k + f) === i ? "on" : ""} ${hot && i > 3 ? "hot" : ""}" data-a="scale" data-f="${k + f}" data-v="${i}">${i}</button>`).join("")}</div>`;
+/* brouillon pré-rempli avec ce qui est déjà enregistré */
+function bqInit(k, b){ if (S.drafts[k + "init"]) return; S.drafts[k + "init"] = true;
+  for (const f of ["douleur","zones","intensite","sensation","fatigue","alertes","comm"]) if (b?.[f] !== undefined && !((k + f) in S.drafts)) S.drafts[k + f] = Array.isArray(b[f]) ? [...b[f]] : b[f]; }
+function bilanResume(b){
+  if (!b) return "";
+  const al = alertesOf(b).map(x => lblOf(BQ.alertes, x));
+  return `<span>${b.douleur === "oui" ? `Douleur <b>${b.intensite ?? "?"}/10</b> : ${esc((b.zones || []).join(", "))}` : "Pas de douleur anormale"} · ${esc(lblOf(BQ.sensation, b.sensation))} · fatigue ${esc(lblOf(BQ.fatigue, b.fatigue).toLowerCase())}</span>
+    ${al.length ? `<span style="color:var(--warn);font-weight:700">⚠ ${esc(al.join(", "))}</span>` : ""}${b.comm ? `<span>« ${esc(b.comm)} »</span>` : ""}`;
+}
+function bilanSection(sid, s){
+  const coach = S.owner, b = s.bilan, k = "bq." + sid + ".";
+  if (!seanceEntamee(s) && !b) return coach ? "" : `<section class="sec" id="bilan"><div class="banner" style="flex-direction:column;align-items:flex-start">
+    <b>Après ta séance : questionnaire santé (30 secondes)</b><span class="small">Il est obligatoire : c'est grâce à lui que ta séance suivante est préparée et débloquée.</span><button class="btn ink" data-a="toggle-faite" data-v="${sid}">J'ai terminé ma séance</button></div></section>`;
+  if (b && !S.drafts[k + "edit"]) return `<section class="sec" id="bilan"><div class="banner ${bilanAlerte(s) ? "warn" : ""}" style="flex-direction:column;align-items:flex-start">
+    <b>Questionnaire santé ${bilanAlerte(s) ? "· à surveiller" : "✓"}</b>${bilanResume(b)}
+    ${!coach && bilanAlerte(s) ? `<span class="small">Nathanael est prévenu et revient vers toi avant ta prochaine séance. Si la douleur est forte ou empire, consulte un médecin.</span>` : !coach ? `<span class="small muted">Merci ! Ta séance suivante est préparée à partir de tes réponses.</span>` : ""}
+    <button class="btn sm ghost" data-a="bq-edit" data-v="${sid}">Modifier</button></div></section>`;
+  if (coach && !b) return `<section class="sec" id="bilan"><div class="banner"><span>Questionnaire santé pas encore rempli : la séance suivante reste bloquée.</span></div></section>`;
+  bqInit(k, b);
+  const dl = d(k + "douleur");
+  return `<section class="sec" id="bilan"><h2>Questionnaire santé</h2><div class="card">
+    <span class="small muted">Obligatoire, 30 secondes. Sans lui, ta séance suivante ne peut pas être débloquée.</span>
+    <label class="f">1. Pendant ou après la séance, une douleur anormale ?</label>
+    <span class="small muted">Pas les courbatures, ni la brûlure du muscle qui travaille, ni ta douleur de fond habituelle.</span>
+    <div class="opts">${opt(k, "douleur", "non", "Non")}${opt(k, "douleur", "oui", "Oui", false, true)}</div>
+    ${dl === "oui" ? `<label class="f">Où ?</label><div class="opts">${BQ.zones.map(z => opt(k, "zones", z, z, true)).join("")}</div>
+      <label class="f">Combien sur 10 ?</label>${scale10(k, "intensite", true)}` : ""}
+    <label class="f">2. Comment tu t'es senti·e ?</label><div class="opts">${BQ.sensation.map(([v, l]) => opt(k, "sensation", v, l)).join("")}</div>
+    <label class="f">3. Ta fatigue maintenant ?</label><div class="opts">${BQ.fatigue.map(([v, l]) => opt(k, "fatigue", v, l)).join("")}</div>
+    <label class="f">4. Un de ces signes ?</label><div class="opts">${BQ.alertes.map(([v, l]) => opt(k, "alertes", v, l, true, true)).join("")}${opt(k, "alertes", "aucune", "Aucun", true)}</div>
+    <label class="f">Un mot pour Nathanael ? (facultatif)<textarea rows="2" maxlength="300" data-d="${k}comm" placeholder="Ex. le squat m'a gêné au genou, trop facile, trop long…">${esc(d(k + "comm", ""))}</textarea></label>
+    <button class="btn solid" data-a="save-bilan" data-v="${sid}" ${S.writeBlocked ? "disabled" : ""}>Envoyer mes réponses</button></div></section>`;
+}
+async function saveBilan(sid){
+  const k = "bq." + sid + ".", g = f => S.drafts[k + f], s = S.cur.seances[sid]; if (!s) return;
+  const b = {douleur: g("douleur"), sensation: g("sensation"), fatigue: g("fatigue"), alertes: [...(g("alertes") || [])], comm: String(g("comm") || "").trim().slice(0, 300)};
+  if (!b.douleur) return toast("Réponds à la question 1 (douleur).");
+  if (b.douleur === "oui") { b.zones = [...(g("zones") || [])]; b.intensite = g("intensite");
+    if (!b.zones.length) return toast("Indique où tu as eu mal."); if (b.intensite === undefined) return toast("Indique ta douleur sur 10."); }
+  if (!b.sensation) return toast("Réponds à la question 2."); if (!b.fatigue) return toast("Réponds à la question 3.");
+  if (!b.alertes.length) return toast("Question 4 : coche « Aucun » si tu n'as aucun de ces signes.");
+  b.at = Date.now(); b.par = S.owner ? "coach" : "adherent";
+  const maj = {bilan: b}; if (s.statut !== "faite") maj.statut = "faite";
+  if (await run(S.db.doc(`members/${memberId()}/seances/${sid}`).update(maj), bilanAlerte({bilan: b}) ? "Réponses envoyées. Nathanael est prévenu." : "Merci ! Réponses envoyées 👍")) clearDrafts(k);
+}
+/* contrôle avant de commencer : une douleur depuis la dernière séance ? */
+function avantCheck(g, s){
+  const k = "av." + g.sid + ".", dl = d(k + "douleur");
+  return `<div class="go-fin" style="text-align:left;align-items:stretch"><h3 style="text-align:center">Avant de commencer</h3>
+    <label class="f">Depuis ta dernière séance, une douleur anormale ?</label>
+    <div class="opts">${opt(k, "douleur", "non", "Non, ça va")}${opt(k, "douleur", "oui", "Oui", false, true)}</div>
+    ${dl === "oui" ? `<label class="f">Où ?</label><div class="opts">${BQ.zones.map(z => opt(k, "zones", z, z, true)).join("")}</div><label class="f">Combien sur 10 ?</label>${scale10(k, "intensite", true)}` : ""}
+    <label class="f">Un de ces signes ?</label><div class="opts">${BQ.alertes.map(([v, l]) => opt(k, "alertes", v, l, true, true)).join("")}${opt(k, "alertes", "aucune", "Aucun", true)}</div>
+    <button class="btn xl gold" data-a="save-avant" data-v="${g.sid}">C'est parti</button><button class="btn link" data-a="go-close" style="color:var(--muted)">Plus tard</button></div>`;
+}
+async function saveAvant(sid){
+  const k = "av." + sid + ".", g = f => S.drafts[k + f];
+  const a = {douleur: g("douleur"), alertes: [...(g("alertes") || [])]};
+  if (!a.douleur) return toast("Dis-nous si tu as une douleur.");
+  if (a.douleur === "oui") { a.zones = [...(g("zones") || [])]; a.intensite = g("intensite"); if (!a.zones.length || a.intensite === undefined) return toast("Indique où et combien sur 10."); }
+  if (!a.alertes.length) return toast("Coche « Aucun » si tu n'as aucun de ces signes.");
+  a.at = Date.now();
+  if (!(await run(S.db.doc(`members/${memberId()}/seances/${sid}`).update({avant: a})))) return;
+  clearDrafts(k);
+  if (bilanAlerte({avant: a})) { S.go = {sid, stop: true}; return; }
+  if (S.go) S.go.check = false;
+}
+/* objectifs : demandés au début de chaque cycle (clé = members.objectifsCle, sinon le nom du cycle) */
+const objCle = m => String(m?.objectifsCle || m?.cycle?.nom || "cycle-1");
+const objNote = () => S.cur.notes.filter(n => n.type === "objectifs" && n.cycle === objCle(S.cur.member)).pop() || null;
+function objectifsCard(){
+  const m = S.cur.member; if (!m || S.owner || objNote()) return "";
+  const k = "obj.", buts = d(k + "buts", []);
+  if (!S.drafts[k + "open"]) return `<section class="sec"><button class="card tap" data-a="obj-open" style="border:2px solid var(--a1)">
+    <span class="eyebrow">Nouveau cycle · 1 minute</span><b>Quels sont tes objectifs ?</b><span class="small">Perdre du poids, prendre des fessiers, du muscle… Nathanael construit tes séances à partir de tes réponses.</span>
+    <span class="small" style="color:var(--mag);font-weight:700">Répondre ›</span></button></section>`;
+  return `<section class="sec" id="objectifs"><h2>Tes objectifs pour ce cycle</h2><div class="card">
+    <label class="f">1. Ce que tu veux (3 maximum)</label><div class="opts">${BQ.buts.map(b => opt(k, "buts", b, b, true)).join("")}</div>
+    ${buts.length > 1 ? `<label class="f">Le plus important pour toi ?</label><div class="opts">${buts.map(b => opt(k, "principal", b, b)).join("")}</div>` : ""}
+    <label class="f">2. Les zones à travailler en priorité</label><div class="opts">${BQ.ciblesObj.map(c => opt(k, "cibles", c, c, true)).join("")}</div>
+    <label class="f">3. Combien de séances par semaine tu peux faire ?</label><div class="opts">${["1","2","3","4","5"].map(n => opt(k, "rythme", n, n)).join("")}</div>
+    <label class="f">4. Une douleur ou une blessure en ce moment ?<textarea rows="2" maxlength="300" data-d="${k}douleurs" placeholder="Ex. genou gauche en descente d'escalier, rien…">${esc(d(k + "douleurs", ""))}</textarea></label>
+    <label class="f">5. Autre chose à dire ? (facultatif)<textarea rows="2" maxlength="500" data-d="${k}autre" placeholder="Ex. un mariage en juin, je déteste les burpees…">${esc(d(k + "autre", ""))}</textarea></label>
+    <button class="btn solid" data-a="save-obj" ${S.writeBlocked ? "disabled" : ""}>Envoyer</button></div></section>`;
+}
+async function saveObjectifs(){
+  const k = "obj.", g = f => S.drafts[k + f], m = S.cur.member;
+  const r = {buts: [...(g("buts") || [])], principal: g("principal") || (g("buts") || [])[0] || "", cibles: [...(g("cibles") || [])], rythme: g("rythme") || "", douleurs: String(g("douleurs") || "").trim().slice(0, 300), autre: String(g("autre") || "").trim().slice(0, 500)};
+  if (!r.buts.length) return toast("Choisis au moins un objectif.");
+  if (!r.rythme) return toast("Dis combien de séances par semaine tu peux faire.");
+  if (!r.douleurs) return toast("Question 4 : écris « rien » si tu n'as pas de douleur.");
+  const texte = `Objectifs (${objCle(m)}) : ${r.buts.join(", ")}${r.principal ? ` · priorité : ${r.principal}` : ""}${r.cibles.length ? ` · zones : ${r.cibles.join(", ")}` : ""} · ${r.rythme} séance(s)/semaine · douleur : ${r.douleurs}${r.autre ? ` · ${r.autre}` : ""}`;
+  if (await run(S.db.collection(`members/${memberId()}/notes`).add({seance: null, auteur: S.owner ? "coach" : "adherent", type: "objectifs", cycle: objCle(m), reponses: r, texte: texte.slice(0, 4000), at: Date.now(), suivante: false}), "Merci ! Tes objectifs sont envoyés 💪")) clearDrafts(k);
+}
 function phaseOf(cycle, num){ return (cycle?.phases || []).findIndex(p => num >= p.de && num <= p.a); }
 
 function watch(mid){
@@ -967,8 +1089,8 @@ function view(){
   if (S.cur.member === null) return pre + onboarding();
   const abo = `<section class="sec">${aboCard(S.cur.member, false)}</section>`;
   const fo = formuleCard(S.cur.member);
-  if (S.tab === "reserver") return pre + heroAdh() + abo + fo + mesRdv() + planning(false);
-  if (S.tab === "seances") return pre + heroAdh() + abo + (optionOf(S.cur.member, S.cur.seances) === "coache" ? fo + seancesView() : seancesView() + fo);
+  if (S.tab === "reserver") return pre + objectifsCard() + rappelBilan() + heroAdh() + abo + fo + mesRdv() + planning(false);
+  if (S.tab === "seances") return pre + objectifsCard() + rappelBilan() + heroAdh() + abo + (optionOf(S.cur.member, S.cur.seances) === "coache" ? fo + seancesView() : seancesView() + fo);
   if (S.tab === "cycle") return pre + cycleView(S.cur.member, true);
   return pre;
 }
@@ -1154,8 +1276,7 @@ function onboarding(){
 
 function seancesView(){
   const list = seancesSorted(), nx = nextSeance(list), m = S.cur.member, nxAll = nextSeance(allSeances());
-  const waiting = nxAll && hiddenFor(nxAll) ? `<div class="card" style="border:2px dashed var(--line)"><span class="eyebrow">Séance ${nxAll.num} · en autonomie</span>
-    <span>Elle sera disponible ici après ta séance avec Nathanael : vous faites le point ensemble, puis il l'ajuste pour toi.</span></div>` : "";
+  const waiting = nxAll && hiddenFor(nxAll) ? waitingCard(nxAll) : "";
   if (!list.length && waiting) return `<section class="sec"><h2>Mes séances</h2>${waiting}</section>`;
   if (!list.length) return `<section class="sec"><h2>Mes séances</h2><div class="empty">Nathanael prépare ton programme. Tes séances apparaîtront ici.</div></section>`;
   return `<section class="sec"><h2>Mes séances</h2>${waiting}
@@ -1166,12 +1287,29 @@ function seancesView(){
     <div class="list">${list.map(s => sline(s, nx, m)).join("")}</div></section>`;
 }
 
+/* séance suivante pas encore débloquée : ce qu'il manque */
+function waitingCard(nx){
+  const p = derniereFaite(nx.num), manque = p && !bilanFait(p);
+  return `<div class="card" style="border:2px dashed var(--line)"><span class="eyebrow">Séance ${Number.isInteger(nx.num) ? nx.num + " · " : ""}${esc(lieuLbl(nx))}${nx.date ? " · " + esc(fmtDay(parseIso(nx.date)) + heureLbl(nx.heure)) : ""}</span>
+    ${manque ? `<span><b>Réponds au questionnaire santé de ta dernière séance</b> pour débloquer celle-ci.</span><button class="btn solid" data-a="open-bilan" data-v="${p.id}">Répondre (30 secondes)</button>`
+      : p && bilanAlerte(p) ? `<span>Tu as signalé une douleur ou un signe à surveiller. Nathanael revient vers toi avant de débloquer la suite.</span>`
+      : `<span>Nathanael prépare cette séance à partir de tes réponses. Elle apparaît ici dans la journée.</span>`}</div>`;
+}
+/* rappel : dernière séance faite sans questionnaire (7 derniers jours) */
+function rappelBilan(){
+  if (S.owner) return ""; const lim = iso(new Date(Date.now() - 7 * 864e5));
+  const p = allSeances().filter(x => seanceEntamee(x)).pop();
+  if (!p || bilanFait(p) || (p.date && p.date < lim)) return "";
+  const nx = nextSeance(allSeances()); if (nx && hiddenFor(nx)) return "";   /* la carte « séance suivante » le dit déjà */
+  return `<section class="sec"><button class="card tap" data-a="open-bilan" data-v="${p.id}" style="border:2px solid var(--warn)"><span class="eyebrow">Séance ${Number.isInteger(p.num) ? p.num : ""} · questionnaire santé</span>
+    <b>30 secondes pour dire comment ça s'est passé</b><span class="small">Obligatoire pour débloquer ta séance suivante.</span><span class="small" style="color:var(--mag);font-weight:700">Répondre ›</span></button></section>`;
+}
 function sline(s, nx, m){
   const pi = phaseOf(m?.cycle, s.num);
   return `<button class="sline ${s.statut==="faite"?"done":""} ${nx&&nx.id===s.id?"next":""}" data-a="open-seance" data-v="${s.id}">
     <span class="snum">${Number.isInteger(s.num) ? s.num : "+"}</span><span class="m"><b>${esc(s.titre || "Séance " + s.num)}</b>
     <span>${esc(lieuLbl(s))}${s.date ? " · " + esc(fmtDay(parseIso(s.date)) + heureLbl(s.heure)) : s.semaine ? " · sem. " + s.semaine : ""}${pi>=0 ? " · " + esc(m.cycle.phases[pi].nom) : ""}</span></span>
-    ${hasAlert(s) ? `<span class="chip warn">À adapter</span>` : s.statut==="faite" ? `<span class="chip ok">Faite</span>` : isCoachUI() && isAuto(s) ? (s.visible ? `<span class="chip mag">Débloquée</span>` : `<span class="chip">Cachée</span>`) : ""}</button>`;
+    ${hasAlert(s) ? `<span class="chip warn">À adapter</span>` : s.statut==="faite" ? `<span class="chip ok">Faite</span>` : isCoachUI() && (isAuto(s) || s.visible === false) ? (!hiddenFor(s) ? `<span class="chip mag">Débloquée</span>` : `<span class="chip">Cachée</span>`) : ""}</button>`;
 }
 
 /* --- macro-cycle --- */
@@ -1266,9 +1404,9 @@ function seanceBody(sid, s){
     <h2 style="font-size:28px">${esc(s.titre || "Séance " + s.num)}</h2>
     <div class="row"><span class="chip">${esc(lieuLbl(s))}</span>${s.date ? `<span class="chip">${esc(fmtLong(parseIso(s.date)) + heureLbl(s.heure))}</span>` : s.semaine ? `<span class="chip">Semaine ${s.semaine}</span>` : ""}
       ${s.statut==="faite" ? `<span class="chip ok">Faite</span>` : `<span class="chip gold">Prévue</span>`}</div></section>`;
-  if (coach && isAuto(s) && !s.visible) out += `<section class="sec"><div class="banner ${s.visible ? "" : "mag"}" style="flex-direction:column;align-items:flex-start">
+  if (coach && hiddenFor(s)) out += `<section class="sec"><div class="banner ${s.visible ? "" : "mag"}" style="flex-direction:column;align-items:flex-start">
     ${s.visible ? `<span><b>${esc(m.prenom || "L'adhérent")} voit cette séance</b> depuis son appli et peut cocher ses exercices.</span>`
-      : `<span><b>${esc(m.prenom || "L'adhérent")} ne voit pas encore cette séance.</b> Après votre séance et le compte rendu, ajuste-la puis débloque-la.</span>`}
+      : `<span><b>${esc(m.prenom || "L'adhérent")} ne voit pas encore cette séance.</b> Elle est adaptée puis débloquée automatiquement dès le questionnaire santé de la séance d'avant (sauf signe d'alerte : tu es prévenu).</span>`}
     <div class="row">${s.visible ? `<button class="btn sm ghost" data-a="visible" data-v="${sid}" data-k="0">Cacher à nouveau</button>`
       : `<button class="btn sm ghost" data-a="edit-blocs">Ajuster</button><button class="btn sm solid" data-a="visible" data-v="${sid}" data-k="1">Débloquer pour ${esc(m.prenom || "l'adhérent")}</button>`}</div></div></section>`;
   if (coach && !isAuto(s)) { const nxt = allSeances().find(x => x.num > s.num);
@@ -1300,10 +1438,11 @@ function seanceBody(sid, s){
       ${(s.blocs||[]).map((b,bi) => `<div class="bloc"><div class="bloc-h"><b>${esc(b.code)}${b.nom ? " · " + esc(b.nom) : ""}</b><span>${esc(b.tours||"")}</span></div>${tourBar(s, sid, b, bi)}
         ${(b.exos||[]).length ? b.exos.map((e,ei) => `<div class="ex ${exoFait(s,bi,ei,b)?"done":""} ${nbTours(b.tours)>=2?"multi":""}">${nbTours(b.tours)>=2 ? "" : `<button class="tick ${co[bi+"-"+ei]?"on":""}" data-a="coche" data-v="${sid}" data-k="${bi}-${ei}" aria-label="Cocher ${esc(e.n)}" aria-pressed="${co[bi+"-"+ei]?"true":"false"}">✓</button>`}<span class="n">${esc(e.n)}</span><span class="d">${esc(e.d||"")}</span>${/^https:\/\//.test(e.v||"") ? `<a class="vid" href="${esc(e.v)}" target="_blank" rel="noopener">VIDÉO</a>` : ""}${nbTours(b.tours)>=2 ? rondsExo(s, sid, b, bi, ei) : ""}</div>${chargeRow(s, sid, bi, ei, e)}<div class="exbas">${e.c ? `<details class="how"><summary>Comment faire</summary><p>${esc(e.c)}</p></details>` : ""}${remarqueRow(s, sid, bi, ei)}</div>`).join("") : `<div class="ex"><span class="n muted">À compléter</span></div>`}</div>`).join("")}</section>`;
   }
+  out += bilanSection(sid, s);
   // ressenti
   const r = s.ressenti || {}, k = "rs." + sid + ".";
   const sc = (f, hot) => `<div class="scale">${Array.from({length:11},(_,i) => `<button class="${d(k+f, r[f])===i?"on":""} ${hot&&i>(hot===true?3:hot)?"hot":""}" data-a="scale" data-f="${k+f}" data-v="${i}">${i}</button>`).join("")}</div>`;
-  out += `<section class="sec" id="ressenti"><h2>Ressenti</h2><div class="card">
+  out += `<section class="sec" id="ressenti">${coach ? "<h2>Ressenti</h2>" : `<details ${s.ressenti?.at ? "open" : ""}><summary class="small"><b>Ressenti détaillé (facultatif)</b> : forme, effort, douleur de fond</summary>`}<div class="card">
     <label class="f">Forme en début de séance (0 = épuisé, 10 = au top)</label>${sc("formeDebut")}
     <label class="f">Effort ressenti (0 = rien, 10 = maximal)</label>${sc("rpe")}
     <label class="f">Forme en fin d'entraînement (0 = vidé, 10 = au top)</label>${sc("formeFin")}
@@ -1318,7 +1457,7 @@ function seanceBody(sid, s){
     <p class="small muted" style="margin:0">Règle : 3/10 maximum pendant l'effort, et pas plus mal le lendemain. Si le genou gonfle, se bloque ou se dérobe plus souvent : avis médical.</p>
     <div class="row"><button class="btn solid" data-a="save-ressenti" data-v="${sid}" ${S.writeBlocked?"disabled":""}>Enregistrer le ressenti</button>
     ${coach ? `<button class="btn ${s.statut==="faite"?"ghost":"ink"}" data-a="toggle-faite" data-v="${sid}">${s.statut==="faite" ? "Remettre en prévue" : "Marquer comme faite"}</button>`
-      : s.statut !== "faite" ? `<button class="btn ink" data-a="toggle-faite" data-v="${sid}">J'ai terminé ma séance</button>` : ""}</div></div></section>`;
+      : ""}</div></div>${coach ? "" : "</details>"}</section>`;
   const notes = S.cur.notes.filter(n => n.seance === sid);
   out += `<section class="sec"><h2>Notes</h2>${notes.map(noteHtml).join("") || `<p class="small muted" style="margin:0">Pas encore de note sur cette séance.</p>`}${noteForm(sid)}</section>`;
   if (coach) out += `<section class="sec"><button class="btn ghost" data-a="del-seance" data-v="${sid}">${S.confirmDel===sid ? "Confirmer la suppression" : "Supprimer cette séance"}</button></section>`;
@@ -1345,9 +1484,13 @@ function renderGo(){
   if (s.focus && s.focus !== g.vu) { g.vu = s.focus;   /* l'écran projeté a avancé : le téléphone suit */
     if (s.focusBy && s.focusBy !== dev()) { const j = st.findIndex(y => y.k === s.focus); if (j >= 0) { g.i = j; g.focus = s.focus; } } }
   if (g.i == null || g.i >= st.length) g.i = Math.max(0, st.findIndex(x => !x.ok));
+  if (g.stop) { el.innerHTML = `${panel}<div class="in">${top}<div class="go-fin"><div style="font-size:56px">🛑</div><h3>On ne force pas aujourd'hui</h3>
+      <p>Merci de l'avoir signalé. Nathanael est prévenu et adapte ta séance avant que tu la fasses. Si la douleur est forte, augmente ou te réveille la nuit, consulte un médecin.</p>
+      <button class="btn xl gold" data-a="go-close">Compris</button></div></div>`; el.hidden = false; return; }
+  if (g.check) { el.innerHTML = `${panel}<div class="in">${top}${avantCheck(g, s)}</div>`; el.hidden = false; return; }
   if (fait === st.length && g.fin) {
-    el.innerHTML = `${panel}<div class="in">${top}<div class="go-fin"><div style="font-size:64px">🏆</div><h3>Séance terminée !</h3><p>Énorme. Dis à Nathanael comment ça s'est passé : 30 secondes, et il ajuste la suite.</p>
-      <button class="btn xl gold" data-a="go-ressenti">Donner mon ressenti</button><button class="btn link" data-a="go-close" style="color:var(--muted)">Fermer</button></div></div>`;
+    el.innerHTML = `${panel}<div class="in">${top}<div class="go-fin"><div style="font-size:64px">🏆</div><h3>Séance terminée !</h3><p>Énorme. Réponds au questionnaire santé : 30 secondes, et ta séance suivante est préparée puis débloquée.</p>
+      <button class="btn xl gold" data-a="go-ressenti">Questionnaire santé</button><button class="btn link" data-a="go-close" style="color:var(--muted)">Fermer</button></div></div>`;
     el.hidden = false; return; }
   const x = st[g.i], b = x.b, e = x.e, r = S.repos, left = r ? Math.ceil((r.fin - Date.now()) / 1000) : 0;
   const suiv = st.slice(g.i + 1).find(y => !y.ok);
@@ -1646,7 +1789,21 @@ async function act(a, ds){
     case "open-seance": S.sheet = {type:"seance", sid:v}; S.edit = false; S.confirmDel = null; return;
     case "close": S.sheet = null; S.edit = false; return;
     case "go": { const s = S.cur.seances[v]; if (!s) return; const st = etapes(s);
-      S.go = {sid: v, vu: s.focus, i: st.every(x => x.ok) ? 0 : st.findIndex(x => !x.ok)}; return; }
+      S.go = {sid: v, vu: s.focus, i: st.every(x => x.ok) ? 0 : st.findIndex(x => !x.ok)};
+      /* avant la 1re étape : une douleur depuis la dernière séance ? (adhérent seulement) */
+      if (!S.owner && !s.avant && !st.some(x => x.ok) && derniereFaite(s.num)) S.go.check = true;
+      if (!S.owner && bilanAlerte({avant: s.avant})) S.go.stop = true; return; }
+    case "bq-pick": S.drafts[ds.f] = v; return;
+    case "bq-tog": { let a2 = [...(S.drafts[ds.f] || [])];
+      if (a2.includes(v)) a2 = a2.filter(x => x !== v); else if (v === "aucune") a2 = ["aucune"]; else { a2 = a2.filter(x => x !== "aucune"); a2.push(v); }
+      if (/\.buts$/.test(ds.f) && a2.length > 3) { toast("3 objectifs maximum."); return; }
+      S.drafts[ds.f] = a2; return; }
+    case "save-bilan": return saveBilan(v);
+    case "bq-edit": S.drafts["bq." + v + ".edit"] = true; return;
+    case "open-bilan": S.sheet = {type: "seance", sid: v}; S.edit = false; setTimeout(() => $("bilan")?.scrollIntoView({behavior: "smooth", block: "start"}), 150); return;
+    case "save-avant": return saveAvant(v);
+    case "obj-open": S.drafts["obj.open"] = true; return;
+    case "save-obj": return saveObjectifs();
     case "go-close": if (S.chrono?.own && !S.ecran) stopChrono(); S.go = null; return;
     case "chrono-go": startChrono(v, k); return;
     case "chrono-stop": stopChrono(); return;
@@ -1666,7 +1823,7 @@ async function act(a, ds){
     case "go-team": S.tab = "adherents"; S.fiche = v; S.sheet = {type: "seance", sid: k}; S.edit = false; watch(v); S.go = {sid: k}; return;
     case "go-nav": if (S.go) { if (S.chrono?.own) stopChrono(); S.go.i = Math.max(0, (S.go.i || 0) + Number(v)); } return;
     case "go-ressenti": { const sid = S.go?.sid; S.go = null; S.sheet = {type: "seance", sid}; S.edit = false;
-      setTimeout(() => $("ressenti")?.scrollIntoView({behavior: "smooth", block: "start"}), 120); return; }
+      setTimeout(() => $("bilan")?.scrollIntoView({behavior: "smooth", block: "start"}), 120); return; }
     case "go-fait": return faireEtape(v, k);
     case "edit-blocs": S.edit = true; return;
     case "copy-link": { const v2 = accessLink(S.cur.member?.code);
@@ -1717,7 +1874,7 @@ async function act(a, ds){
       r.at = Date.now(); r.par = S.owner ? "coach" : "adherent";
       if (await run(db.doc(`members/${memberId()}/seances/${v}`).update({ressenti:r}), "Ressenti enregistré")) clearDrafts(p);
       return; }
-    case "toggle-faite": { const s = S.cur.seances[v]; if (s.statut !== "faite") { stopRepos(); finSeance(); }
+    case "toggle-faite": { const s = S.cur.seances[v]; if (s.statut !== "faite") { stopRepos(); finSeance(); if (!S.owner) setTimeout(() => $("bilan")?.scrollIntoView({behavior: "smooth", block: "start"}), 400); }
       await run(db.doc(`members/${memberId()}/seances/${v}`).update({statut: s.statut === "faite" ? "prevue" : "faite"}), s.statut === "faite" ? "Séance remise en prévue" : "Séance marquée comme faite"); return; }
     case "del-seance": if (S.confirmDel !== v) { S.confirmDel = v; return; }
       if (await run(db.doc(`members/${memberId()}/seances/${v}`).delete(), "Séance supprimée")) { S.sheet = null; S.confirmDel = null; } return;
