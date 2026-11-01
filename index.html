@@ -674,7 +674,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-01b";
+const BUILD = "2026-11-01d";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -763,12 +763,26 @@ function weekDays(off){
   m.setDate(m.getDate() - ((m.getDay()+6)%7) + off*7);
   return [0,1,2,3,4,5,6].map(i => { const x = new Date(m); x.setDate(m.getDate()+i); return x; });
 }
+/* adhérent : si une écriture est refusée, on refait le lien (links/<uid>) avec le code de son lien perso, puis il renvoie */
+async function relink(){
+  try {
+    const u = firebase.auth().currentUser; if (!u || !u.isAnonymous) return false;
+    let code = new URL(location.href).searchParams.get("c"); try { code = code || localStorage.getItem("nn.code"); } catch (e) {}
+    if (!code) return false;
+    const c = await S.db.doc("codes/" + code).get(); if (!c.exists) return false;
+    const l = await S.db.doc("links/" + u.uid).get();
+    if (l.exists && l.data().code === code && l.data().cid === c.data().cid) return false;  /* lien en ordre : le refus vient d'ailleurs (créneau pris…) */
+    await S.db.doc("links/" + u.uid).set({code, cid: c.data().cid, at: Date.now()});
+    return true;
+  } catch (e) { console.warn("relink", e); return false; }
+}
 function toast(msg){ const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, 2600); }
 async function run(p, ok){
   try { await p; if (ok) toast(ok); return true; }
   catch (e) {
     const c = e && e.code;
-    if (c === "permission-denied") toast("Action refusée : créneau déjà pris, ou lien d'accès plus valable.");
+    if (c === "permission-denied" && !S.owner && await relink()) toast("Connexion rafraîchie : appuie encore une fois sur le bouton, tes réponses sont gardées.");
+    else if (c === "permission-denied") toast(S.owner ? "Action refusée : créneau déjà pris." : "Action refusée : créneau déjà pris, ou lien d'accès plus valable (redemande ton lien à Nathanael).");
     else if (c === "resource-exhausted") toast("Stockage plein : supprime d'anciennes notes.");
     else toast("Pas de connexion pour l'instant, réessaie dans un moment.");
     return false;
