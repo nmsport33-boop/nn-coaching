@@ -939,7 +939,7 @@ const bilanFait = s => !!s?.bilan?.at;
 const alertesOf = b => (b?.alertes || []).filter(x => x !== "aucune");
 const bilanAlerte = s => { const b = s?.bilan, a = s?.avant; return !!(alertesOf(b).length || (b?.douleur === "oui" && (b.intensite ?? 0) > 3) || alertesOf(a).length || (a?.douleur === "oui" && (a.intensite ?? 0) > 3)); };
 /* séance « commencée ou finie » : on peut répondre au questionnaire */
-const seanceEntamee = s => s.statut === "faite" || Object.values(s.coches || {}).some(Boolean) || !!s.ressenti?.at;
+const seanceEntamee = s => s.statut === "faite" || !!s.ressenti?.at || !!s.bilan?.at || (Object.values(s.coches || {}).some(Boolean) && (s.date || "") <= iso(new Date()));
 /* la dernière séance faite avant celle-ci */
 const derniereFaite = (num) => allSeances().filter(x => x.num < num && seanceEntamee(x)).pop() || null;
 const opt = (k, f, v, l, multi, hot) => { const cur = d(k + f, undefined), on = multi ? (cur || []).includes(v) : cur === v;
