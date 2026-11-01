@@ -674,7 +674,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-01j";
+const BUILD = "2026-11-01k";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -1082,6 +1082,9 @@ const BQ = {
   jours: ["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"],
   ciblesObj: ["Fessiers","Cuisses","Ventre / taille","Bras","Dos","Pectoraux","Épaules","Tout le corps"]
 };
+/* le mot de Nathanael : pourquoi on remplit avant que la séance s'active */
+const MOT_SUIVI = "Ta séance s'active seulement quand tu as rempli ces infos. C'est pour ta sécurité : je lis tes réponses une par une pour adapter ton programme et limiter au max le risque de blessure. Tu es suivi·e perso, alors on avance ensemble 💪";
+const motSuivi = () => `<span class="small" style="font-style:italic">« ${esc(MOT_SUIVI)} »</span>`;
 const lblOf = (arr, v) => (arr.find(x => x[0] === v) || [, v])[1];
 const bilanFait = s => !!s?.bilan?.at;
 const alertesOf = b => (b?.alertes || []).filter(x => x !== "aucune");
@@ -1105,7 +1108,7 @@ function bilanResume(b){
 function bilanSection(sid, s){
   const coach = S.owner, b = s.bilan, k = "bq." + sid + ".";
   if (!seanceEntamee(s) && !b) return coach ? "" : `<section class="sec" id="bilan"><div class="banner" style="flex-direction:column;align-items:flex-start">
-    <b>Après ta séance : questionnaire santé (30 secondes)</b><span class="small">Il est obligatoire : c'est grâce à lui que ta séance suivante est préparée et débloquée.</span><button class="btn ink" data-a="toggle-faite" data-v="${sid}">J'ai terminé ma séance</button></div></section>`;
+    <b>Après ta séance : questionnaire santé (30 secondes)</b><span class="small">Il est obligatoire : c'est grâce à lui que ta séance suivante est préparée et débloquée.</span>${motSuivi()}<button class="btn ink" data-a="toggle-faite" data-v="${sid}">J'ai terminé ma séance</button></div></section>`;
   if (b && !S.drafts[k + "edit"]) return `<section class="sec" id="bilan"><div class="banner ${bilanAlerte(s) ? "warn" : ""}" style="flex-direction:column;align-items:flex-start">
     <b>Questionnaire santé ${bilanAlerte(s) ? "· à surveiller" : "✓"}</b>${bilanResume(b)}
     ${!coach && bilanAlerte(s) ? `<span class="small">Nathanael est prévenu et revient vers toi avant ta prochaine séance. Si la douleur est forte ou empire, consulte un médecin.</span>` : !coach ? `<span class="small muted">Merci ! Ta séance suivante est préparée à partir de tes réponses.</span>` : ""}
@@ -1114,7 +1117,7 @@ function bilanSection(sid, s){
   bqInit(k, b);
   const dl = d(k + "douleur");
   return `<section class="sec" id="bilan"><h2>Questionnaire santé</h2><div class="card">
-    <span class="small muted">Obligatoire, 30 secondes. Sans lui, ta séance suivante ne peut pas être débloquée.</span>
+    <span class="small muted">Obligatoire, 30 secondes. Sans lui, ta séance suivante ne peut pas être débloquée.</span>${motSuivi()}
     <label class="f">1. Pendant ou après la séance, une douleur anormale ?</label>
     <span class="small muted">Pas les courbatures, ni la brûlure du muscle qui travaille, ni ta douleur de fond habituelle.</span>
     <div class="opts">${opt(k, "douleur", "non", "Non")}${opt(k, "douleur", "oui", "Oui", false, true)}</div>
@@ -1141,7 +1144,7 @@ async function saveBilan(sid){
 /* contrôle avant de commencer : une douleur depuis la dernière séance ? */
 function avantCheck(g, s){
   const k = "av." + g.sid + ".", dl = d(k + "douleur");
-  return `<div class="go-fin" style="text-align:left;align-items:stretch"><h3 style="text-align:center">Avant de commencer</h3>
+  return `<div class="go-fin" style="text-align:left;align-items:stretch"><h3 style="text-align:center">Avant de commencer</h3><span class="small" style="text-align:center;font-style:italic">10 secondes pour ta sécurité : je vérifie que tout va bien avant que tu te lances.</span>
     <label class="f">Depuis ta dernière séance, une douleur anormale ?</label>
     <div class="opts">${opt(k, "douleur", "non", "Non, ça va")}${opt(k, "douleur", "oui", "Oui", false, true)}</div>
     ${dl === "oui" ? `<label class="f">Où ?</label><div class="opts">${BQ.zones.map(z => opt(k, "zones", z, z, true)).join("")}</div><label class="f">Combien sur 10 ?</label>${scale10(k, "intensite", true)}` : ""}
@@ -1168,7 +1171,7 @@ function objectifsCard(){
   const m = S.cur.member; if (!m || S.owner || m.objectifsRequis !== true || objNote()) return "";
   const k = "obj.", buts = d(k + "buts", []);
   if (!S.drafts[k + "open"]) return `<section class="sec"><button class="card tap" data-a="obj-open" style="border:2px solid var(--a1)">
-    <span class="eyebrow">Nouveau cycle · 2 minutes</span><b>Quels sont tes objectifs ?</b><span class="small">Perdre du poids, prendre des fessiers, du muscle… Nathanael construit tes séances à partir de tes réponses.</span>
+    <span class="eyebrow">Nouveau cycle · 2 minutes</span><b>Quels sont tes objectifs ?</b><span class="small">Perdre du poids, prendre des fessiers, du muscle… Nathanael construit tes séances à partir de tes réponses.</span>${motSuivi()}
     <span class="small" style="color:var(--mag);font-weight:700">Répondre ›</span></button></section>`;
   return `<section class="sec" id="objectifs"><h2>Tes objectifs pour ce cycle</h2><div class="card">
     <span class="eyebrow">Toi</span>
@@ -1480,7 +1483,7 @@ function seancesView(){
 function waitingCard(nx){
   const p = derniereFaite(nx.num), manque = p && !bilanFait(p);
   return `<div class="card" style="border:2px dashed var(--line)"><span class="eyebrow">Séance ${Number.isInteger(nx.num) ? nx.num + " · " : ""}${esc(lieuLbl(nx))}${nx.date ? " · " + esc(fmtDay(parseIso(nx.date)) + heureLbl(nx.heure)) : ""}</span>
-    ${manque ? `<span><b>Réponds au questionnaire santé de ta dernière séance</b> pour débloquer celle-ci.</span><button class="btn solid" data-a="open-bilan" data-v="${p.id}">Répondre (30 secondes)</button>`
+    ${manque ? `<span><b>Réponds au questionnaire santé de ta dernière séance</b> pour débloquer celle-ci.</span>${motSuivi()}<button class="btn solid" data-a="open-bilan" data-v="${p.id}">Répondre (30 secondes)</button>`
       : p && bilanAlerte(p) ? `<span>Tu as signalé une douleur ou un signe à surveiller. Nathanael revient vers toi avant de débloquer la suite.</span>`
       : `<span>Nathanael prépare cette séance à partir de tes réponses. Elle apparaît ici dans la journée.</span>`}</div>`;
 }
@@ -1491,7 +1494,7 @@ function rappelBilan(){
   if (!p || bilanFait(p) || (p.date && p.date < lim)) return "";
   const nx = nextSeance(allSeances()); if (nx && hiddenFor(nx)) return "";   /* la carte « séance suivante » le dit déjà */
   return `<section class="sec"><button class="card tap" data-a="open-bilan" data-v="${p.id}" style="border:2px solid var(--warn)"><span class="eyebrow">Séance ${Number.isInteger(p.num) ? p.num : ""} · questionnaire santé</span>
-    <b>30 secondes pour dire comment ça s'est passé</b><span class="small">Obligatoire pour débloquer ta séance suivante.</span><span class="small" style="color:var(--mag);font-weight:700">Répondre ›</span></button></section>`;
+    <b>30 secondes pour dire comment ça s'est passé</b><span class="small">Obligatoire pour débloquer ta séance suivante.</span>${motSuivi()}<span class="small" style="color:var(--mag);font-weight:700">Répondre ›</span></button></section>`;
 }
 function sline(s, nx, m){
   const pi = phaseOf(m?.cycle, s.num);
