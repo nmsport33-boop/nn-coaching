@@ -674,7 +674,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-01f";
+const BUILD = "2026-11-01h";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -1227,7 +1227,10 @@ function watch(mid){
   S.cur = {mid, member:undefined, seances:{}, notes:[]};
   if (!mid || !S.db) return;
   const base = "members/" + mid;
-  unsubs.push(S.db.doc(base).onSnapshot(s => { S.cur.member = s.exists ? s.data() : null; render(); if (!S.owner && S.cur.member) syncBookings(mid, S.cur.seances, S.cur.member, false); }, () => {}));
+  unsubs.push(S.db.doc(base).onSnapshot(s => { if (s.metadata.fromCache && !s.exists) return; S.cur.member = s.exists ? s.data() : null; render(); if (!S.owner && S.cur.member) syncBookings(mid, S.cur.seances, S.cur.member, false); },
+    async e => { /* adhérent refusé : on refait le lien de connexion puis on recharge sa fiche (une fois) */
+      if (!S.owner && e && e.code === "permission-denied" && !watch.retried) { watch.retried = true; if (await relink()) return watch(mid); }
+      if (!S.owner) { S.cur.member = null; S.err = e && (e.code || e.message); render(true); } }));
   unsubs.push(S.db.collection(base + "/seances").onSnapshot(q => { const o = {}; q.docs.forEach(x => o[x.id] = x.data()); S.cur.seances = o; syncLive(); render();
     if (!S.owner && S.cur.member) syncBookings(mid, o, S.cur.member, false); }, () => {}));
   unsubs.push(S.db.collection(base + "/notes").orderBy("at").limit(500).onSnapshot(q => { S.cur.notes = q.docs.map(x => ({id:x.id, ...x.data()})); render(); }, () => {}));
@@ -1268,7 +1271,7 @@ function view(){
   // adhérent
   if (!S.asMember && !S.uid) return `<div class="empty">Ouvre l'appli avec ton lien perso (celui reçu par texto) pour réserver tes séances.</div>` + planning(false);
   if (S.cur.member === undefined) return pre + `<div class="empty">Chargement de ton espace…</div>`;
-  if (S.cur.member === null) return pre + onboarding();
+  if (S.cur.member === null) return pre + (S.owner ? onboarding() : `<div class="empty">Ton espace n'a pas pu s'ouvrir avec ce lien${S.err ? ` (${esc(String(S.err))})` : ""}.<br>Ferme l'appli et rouvre le lien reçu par texto. Si ça recommence, envoie à Nathanael une capture de cet écran.<br><span class="small muted">Lien ${esc(String((new URL(location.href).searchParams.get("c") || (()=>{try{return localStorage.getItem("nn.code")}catch(e){return ""}})() || "?")).slice(0,4))}… · fiche ${esc(String(S.uid || "?"))}</span></div>`);
   const abo = `<section class="sec">${aboCard(S.cur.member, false)}</section>`;
   const fo = formuleCard(S.cur.member);
   if (S.tab === "reserver") return pre + objectifsCard() + rappelBilan() + heroAdh() + abo + fo + mesRdv() + planning(false);
