@@ -585,6 +585,69 @@ body.ecran-on .repos{display:none!important}
   #ecran .e-next{font-size:clamp(13px,3.8vw,18px)} #ecran .e-ring{width:clamp(110px,34vw,200px)} #ecran .e-ring b{font-size:clamp(34px,11vw,64px)} #ecran .e-chr span{font-size:clamp(14px,4vw,20px)}
   #ecran .e-ctl{gap:10px} #ecran .e-quit{position:static;padding:8px 10px} #ecran .e-go{min-width:0;flex:1;height:60px;font-size:clamp(15px,4.4vw,20px)} #ecran .e-nav{width:52px;height:52px;flex:none;font-size:24px}
   #ecran .e-rest .e-ring{width:min(70vw,320px)} #ecran .e-rest .e-ring b{font-size:clamp(54px,18vw,90px)} #ecran .e-rb{flex-wrap:wrap;justify-content:center} }
+/* ---------- Formules / abonnements ---------- */
+.off-hero{position:relative;overflow:hidden;border-radius:26px;padding:26px 20px 22px;border:1px solid rgba(var(--a1r),.35);background:
+  radial-gradient(80% 60% at 0% 0%,rgba(var(--a3r),.28),transparent 60%),radial-gradient(70% 70% at 100% 100%,rgba(var(--a1r),.25),transparent 60%),rgba(var(--sr),.8);
+  box-shadow:0 0 40px rgba(var(--a1r),.12),inset 0 0 30px rgba(var(--a2r),.12)}
+.off-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(rgba(var(--gr),.07) 1px,transparent 1px) 0 0/22px 22px,linear-gradient(90deg,rgba(var(--gr),.07) 1px,transparent 1px) 0 0/22px 22px;
+  -webkit-mask:linear-gradient(180deg,#000,transparent 85%);mask:linear-gradient(180deg,#000,transparent 85%);pointer-events:none}
+.off-hero > *{position:relative;z-index:1}
+.off-k{font-family:var(--display);font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--a1)}
+.off-hero h2{font-size:clamp(25px,7vw,34px);margin:8px 0 8px;text-transform:uppercase;letter-spacing:.05em;background:linear-gradient(92deg,var(--ink) 20%,var(--a1) 60%,var(--a3l));-webkit-background-clip:text;background-clip:text;color:transparent}
+.off-hero p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.5}
+.off-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.off-stats div{border:1px solid var(--line);border-radius:14px;padding:9px 6px;text-align:center;background:rgba(var(--ov),.04)}
+.off-stats b{display:block;font-family:var(--display);font-size:18px;color:var(--a1l)}
+.off-stats span{font-size:11px;color:var(--muted)}
+.off-test{display:flex;gap:12px;align-items:center;border-radius:18px;padding:14px;margin-top:14px;border:1px solid rgba(var(--a4r),.45);background:rgba(var(--a4r),.08);box-shadow:0 0 22px rgba(var(--a4r),.12)}
+.off-test .ic{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:rgba(var(--a4r),.16);color:var(--a4l);font-size:20px}
+.off-test b{display:block;color:var(--a4l)}.off-test span{font-size:13.5px;color:var(--ink2,var(--ink))}
+.off-list{display:flex;flex-direction:column;gap:16px;margin-top:18px}
+.off-card{position:relative;border-radius:24px;padding:20px 18px 18px;background:var(--surface);border:1px solid var(--line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 10px 34px rgba(0,0,0,.35);isolation:isolate}
+.off-card.top{border-color:transparent;background:linear-gradient(var(--b0),var(--b0)) padding-box,conic-gradient(from var(--off-a,0deg),var(--a1),var(--a2),var(--a3),var(--a4),var(--a1)) border-box;border:2px solid transparent;box-shadow:0 0 34px rgba(var(--a1r),.22),0 0 60px rgba(var(--a3r),.12)}
+.off-card.top::before{content:"";position:absolute;inset:0;border-radius:22px;z-index:-1;background:radial-gradient(90% 60% at 50% 0%,rgba(var(--a1r),.16),transparent 70%),rgba(var(--sr),.85)}
+@property --off-a{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes off-spin{to{--off-a:360deg}}
+@keyframes off-shine{from{transform:translateX(-120%)}to{transform:translateX(220%)}}
+@media (prefers-reduced-motion: no-preference){ .off-card.top{animation:off-spin 6s linear infinite} .off-cta.solid::after{animation:off-shine 3.2s ease-in-out infinite} .off-card{transition:transform .15s} .off-card:active{transform:scale(.99)} }
+.off-badge{position:absolute;top:-12px;right:16px;font-family:var(--display);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;padding:6px 11px;border-radius:99px;color:var(--on-a1);background:linear-gradient(90deg,var(--a1),var(--a4));box-shadow:0 0 16px rgba(var(--a1r),.55)}
+.off-h{display:flex;gap:12px;align-items:center}
+.off-ico{flex:none;width:46px;height:46px;border-radius:15px;display:grid;place-items:center;color:var(--a1);background:rgba(var(--a1r),.1);border:1px solid rgba(var(--a1r),.35);box-shadow:inset 0 0 12px rgba(var(--a1r),.2)}
+.off-ico svg{width:24px;height:24px}
+.off-card.c2 .off-ico{color:var(--a3l);background:rgba(var(--a3r),.1);border-color:rgba(var(--a3r),.4)}
+.off-card.c3 .off-ico{color:var(--a4l);background:rgba(var(--a4r),.1);border-color:rgba(var(--a4r),.4)}
+.off-name{font-family:var(--display);font-size:17px;letter-spacing:.08em;text-transform:uppercase}
+.off-sub{font-size:13px;color:var(--muted)}
+.off-price{display:flex;align-items:baseline;gap:6px;margin:16px 0 4px}
+.off-price b{font-family:var(--display);font-size:46px;line-height:1;font-variant-numeric:tabular-nums;background:linear-gradient(180deg,var(--ink),var(--a1l));-webkit-background-clip:text;background-clip:text;color:transparent}
+.off-price span{color:var(--muted);font-size:14px;font-weight:600}
+.off-alt{display:inline-flex;gap:6px;align-items:center;font-size:12.5px;padding:5px 10px;border-radius:99px;background:rgba(var(--a4r),.1);color:var(--a4l);border:1px solid rgba(var(--a4r),.3)}
+.off-feat{list-style:none;padding:0;margin:14px 0 16px;display:flex;flex-direction:column;gap:9px}
+.off-feat li{display:flex;gap:10px;font-size:14px;line-height:1.4}
+.off-feat li::before{content:"";flex:none;width:18px;height:18px;margin-top:1px;border-radius:6px;background:rgba(var(--a1r),.14) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2322e3ff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/12px no-repeat;box-shadow:0 0 8px rgba(var(--a1r),.25)}
+.off-cta{position:relative;overflow:hidden;width:100%;min-height:52px;border-radius:16px;font-family:var(--display);font-size:15px;letter-spacing:.1em;text-transform:uppercase}
+.off-cta.solid::after{content:"";position:absolute;top:0;bottom:0;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent)}
+.off-done{display:flex;justify-content:center;align-items:center;gap:8px;min-height:52px;border-radius:16px;border:1px dashed rgba(var(--a4r),.5);color:var(--a4l);font-weight:700;font-size:14px}
+.off-carte{display:flex;gap:14px;align-items:center;margin-top:16px;border-radius:20px;padding:16px;border:1px solid rgba(var(--a3r),.35);background:linear-gradient(120deg,rgba(var(--a3r),.12),rgba(var(--a2r),.08))}
+.off-carte .p{font-family:var(--display);font-size:30px;color:var(--a3l);line-height:1;flex:none;text-align:center}
+.off-carte .p small{display:block;font-size:10px;letter-spacing:.14em;color:var(--muted);margin-top:3px}
+.off-carte b{display:block;font-size:15px}.off-carte span{font-size:13px;color:var(--muted)}
+.off-sec-t{font-family:var(--display);font-size:15px;letter-spacing:.2em;text-transform:uppercase;margin:28px 0 12px;color:var(--a1)}
+.off-tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--surface)}
+.off-tbl th,.off-tbl td{padding:10px 6px;text-align:center;border-bottom:1px solid var(--line)}
+.off-tbl tr:last-child td{border-bottom:0}
+.off-tbl th{font-family:var(--display);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.off-tbl th.hl,.off-tbl td.hl{background:rgba(var(--a1r),.08);color:var(--a1l)}
+.off-tbl td:first-child,.off-tbl th:first-child{text-align:left;padding-left:12px;color:var(--ink)}
+.off-tbl .y{color:var(--a4l);font-weight:800}.off-tbl .n{color:var(--muted2,var(--muted));opacity:.6}
+.off-faq details{border:1px solid var(--line);border-radius:16px;background:var(--surface);margin-bottom:8px;overflow:hidden}
+.off-faq summary{list-style:none;cursor:pointer;padding:14px 44px 14px 14px;font-weight:700;font-size:14.5px;position:relative}
+.off-faq summary::-webkit-details-marker{display:none}
+.off-faq summary::after{content:"+";position:absolute;right:16px;top:50%;transform:translateY(-50%);font-family:var(--display);font-size:20px;color:var(--a1);transition:transform .2s}
+.off-faq details[open] summary::after{transform:translateY(-50%) rotate(45deg)}
+.off-faq details[open]{border-color:rgba(var(--a1r),.4)}
+.off-faq p{margin:0;padding:0 14px 14px;font-size:14px;color:var(--muted);line-height:1.5}
+.off-foot{margin:22px 0 8px;text-align:center;font-size:12.5px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -611,7 +674,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-01a";
+const BUILD = "2026-11-01b";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -740,8 +803,62 @@ function aboCard(m, coach){
       : `<b>Coaching réglé jusqu'au ${esc(finAbo(e.fin))}</b><span>Encore ${e.jours} jour${e.jours>1?"s":""}. Pour continuer après, il faudra régler le mois suivant auprès de Nathanael.</span>`; }
   return `<div class="banner ${cls}" style="flex-direction:column;align-items:flex-start;gap:4px">
     <span class="eyebrow" style="color:inherit;opacity:.7">${coach ? "Abonnement" : "Ton abonnement"}${m.forfait ? " · " + esc(m.forfait) : ""}</span>${txt}
+    ${!coach && premiumOffert(m) ? `<span class="off-alt">✦ Accès Premium offert pendant la phase de test (valeur 59 €/mois)</span>` : ""}
+    ${!coach ? `<button class="btn sm ghost" data-a="tab" data-v="offres">Voir les formules</button>` : ""}
     ${coach && e.fin ? `<button class="btn sm ${S.confirmRenew ? "ink" : "solid"}" data-a="renew">${S.confirmRenew ? "Confirmer : +1 mois payé" : "Renouveler : +1 mois"}</button>` : ""}</div>`;
 }
+/* ---------- formules / abonnements (page « Offres ») ----------
+   Prix fixés par Nathanael le 01/11/2026. Les adhérents actuels gardent leur accès offert pendant la phase de test :
+   cette page n'écrit rien dans members.abo, le bouton « Choisir » envoie seulement une note à Nathanael. */
+const OFFRES = [
+  {id:"programme", c:"c1", nom:"Programme 4 semaines", sub:"Ton plan sur mesure, en autonomie", prix:39, per:"une fois", ico:"bolt",
+    feat:["Questionnaire santé et objectifs avant de commencer","Un cycle de 4 semaines construit pour toi","Une vidéo pour chaque exercice","Mode séance guidée avec chrono et repos automatiques"]},
+  {id:"suivi", c:"c2", top:true, nom:"Suivi à distance", sub:"Le coaching complet, où tu veux", prix:59, per:"/ mois", alt:"ou 159 € les 3 mois (53 €/mois)", ico:"pulse",
+    feat:["Tout le Programme 4 semaines","Chaque séance ajustée à ton dernier retour","Séances débloquées au fil de tes progrès, en sécurité","Questionnaire santé après chaque séance : douleur ou alerte, on adapte","Réponses de Nathanael à tes questions dans l'appli","Sans engagement, au mois"]},
+  {id:"mixte", c:"c3", nom:"Hybride", sub:"Distance + une séance coachée en salle", prix:79, per:"/ mois", ico:"star",
+    feat:["Tout le Suivi à distance","1 séance coachée par mois avec Nathanael","Technique corrigée en direct, charges ajustées sur place","Programme réglé juste après la séance"]}];
+const OFF_ICO = {
+  bolt:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>`,
+  pulse:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h4l3-8 4 16 3-8h6"/></svg>`,
+  star:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg>`};
+const SEANCE_PRIVEE = 30;
+function offresView(m){
+  const coach = !m, e = m ? aboEtat(m) : null;
+  const asked = id => !coach && S.cur.notes.some(n => n.auteur === "adherent" && n.offre === id);
+  const card = o => `<article class="off-card ${o.c}${o.top ? " top" : ""}">
+    ${o.top ? `<span class="off-badge">Le plus choisi</span>` : ""}
+    <div class="off-h"><div class="off-ico">${OFF_ICO[o.ico]}</div><div><div class="off-name">${esc(o.nom)}</div><div class="off-sub">${esc(o.sub)}</div></div></div>
+    <div class="off-price"><b>${o.prix} €</b><span>${esc(o.per)}</span></div>
+    ${o.alt ? `<span class="off-alt">✦ ${esc(o.alt)}</span>` : ""}
+    <ul class="off-feat">${o.feat.map(f => `<li>${esc(f)}</li>`).join("")}</ul>
+    ${asked(o.id) ? `<div class="off-done">✓ Demande envoyée à Nathanael</div>`
+      : `<button class="btn ${o.top ? "solid" : "ghost"} off-cta" data-a="want-offre" data-v="${o.id}" ${coach || S.owner || S.writeBlocked ? "disabled" : ""}>${coach ? "Aperçu" : "Choisir cette formule"}</button>`}
+  </article>`;
+  const Y = `<span class="y">✓</span>`, N = `<span class="n">—</span>`;
+  const rows = [["Programme sur mesure",Y,Y,Y],["Vidéos + séance guidée",Y,Y,Y],["Ajusté à chaque retour",N,Y,Y],["Questionnaire santé suivi",N,Y,Y],["Questions au coach",N,Y,Y],["Séance coachée en salle",N,N,"1 / mois"]];
+  const faq = [["Comment je paie ?","Directement auprès de Nathanael, au mois. Il n'y a aucun paiement dans l'appli."],
+    ["Je peux arrêter quand je veux ?","Oui. Les formules au mois sont sans engagement. Seule l'offre 3 mois est réglée en une fois."],
+    ["J'ai une douleur ou une blessure, c'est possible ?","Oui. Le questionnaire santé est obligatoire après chaque séance. En cas de douleur ou d'alerte, la séance suivante reste bloquée tant que le programme n'a pas été adapté."],
+    ["Quel matériel faut-il ?","Peu de matériel : le programme s'adapte à ce que tu as, chez toi ou en salle."],
+    ["Je peux changer de formule ?","Oui, à tout moment. Il suffit de le dire à Nathanael ou de choisir une autre formule ici."]];
+  return `<section class="sec">
+    ${coach ? `<div class="banner">Aperçu : c'est la page « Offres » que voient tes adhérents. Les prix se changent dans OFFRES (index.html).</div>` : ""}
+    <div class="off-hero"><div class="off-k">NN Coaching · Formules</div>
+      <h2>Ton coaching, à ton rythme</h2>
+      <p>Des séances construites pour toi, ajustées après chaque retour, et ta santé suivie à chaque étape.</p>
+      <div class="off-stats"><div><b>100 %</b><span>sur mesure</span></div><div><b>1 vidéo</b><span>par exercice</span></div><div><b>0</b><span>engagement</span></div></div></div>
+    ${premiumOffert(m) ? `<div class="off-test"><div class="ic">✦</div><div><b>Tu as le Premium gratuitement</b><span>Tu fais partie des testeurs : le Suivi à distance (valeur 59 €/mois) t'est offert pendant la phase de test${e.prix && !e.offert ? `, tu règles seulement tes séances coachées (${e.prix} €/mois)` : ""}. Rien ne change pour toi, merci pour tes retours !</span></div></div>` : ""}
+    <div class="off-list">${OFFRES.map(card).join("")}</div>
+    <div class="off-carte"><div class="p">${SEANCE_PRIVEE} €<small>la séance</small></div><div><b>Séance coachée à la carte</b><span>Une heure en salle avec Nathanael, à deux maximum, à Saint-Médard-en-Jalles. Réserve-la dans « Planning ».</span></div></div>
+    <div class="off-sec-t">Comparer</div>
+    <table class="off-tbl"><thead><tr><th></th><th>Programme</th><th class="hl">Suivi</th><th>Hybride</th></tr></thead>
+      <tbody>${rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td class="hl">${r[2]}</td><td>${r[3]}</td></tr>`).join("")}</tbody></table>
+    <div class="off-sec-t">Questions fréquentes</div>
+    <div class="off-faq">${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}</div>
+    <p class="off-foot">Paiement directement auprès de Nathanael · NN Coaching</p></section>`;
+}
+/* Premium offert : tous les adhérents pendant la phase de test, sauf ceux qui paient déjà la formule à distance (Nathanael, 01/11/2026) */
+function premiumOffert(m){ if (!m) return false; const e = aboEtat(m); return !(m.option === "distance" && e.prix && !e.offert); }
 /* formule : "coache" (séances en salle avec Nathanael + autonomie) ou "distance" (autonomie seule) ; sans choix, déduite des séances */
 function optionOf(m, seances){ if (m?.option === "coache" || m?.option === "distance") return m.option;
   return seances && Object.values(seances).some(x => x.lieu === "Salle") ? "coache" : seances ? "distance" : ""; }
@@ -1082,6 +1199,7 @@ function view(){
   if (isCoachUI()) {
     if (S.tab === "planning") return pre + heroCoach() + planning(true);
     if (S.tab === "adherents") return pre + (S.fiche ? fiche() : adherents());
+    if (S.tab === "offres") return pre + offresView(null);
   }
   // adhérent
   if (!S.asMember && !S.uid) return `<div class="empty">Ouvre l'appli avec ton lien perso (celui reçu par texto) pour réserver tes séances.</div>` + planning(false);
@@ -1092,6 +1210,7 @@ function view(){
   if (S.tab === "reserver") return pre + objectifsCard() + rappelBilan() + heroAdh() + abo + fo + mesRdv() + planning(false);
   if (S.tab === "seances") return pre + objectifsCard() + rappelBilan() + heroAdh() + abo + (optionOf(S.cur.member, S.cur.seances) === "coache" ? fo + seancesView() : seancesView() + fo);
   if (S.tab === "cycle") return pre + cycleView(S.cur.member, true);
+  if (S.tab === "offres") return pre + offresView(S.cur.member);
   return pre;
 }
 
@@ -1101,11 +1220,12 @@ function renderTabs(){
     cal:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>`,
     ppl:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.6c2 .7 3.2 2.6 3.5 5.4"/></svg>`,
     dumb:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 7v10M3.5 9.5v5M18 7v10M20.5 9.5v5M6 12h12"/></svg>`,
+    gem:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M2 9h20M9 3l3 18 3-18"/></svg>`,
     cyc:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg>`};
   let items = [];
   if (S.mode !== "ready") { t.hidden = true; return; }
-  if (isCoachUI()) items = [["planning","Planning",ic.cal],["adherents","Adhérents",ic.ppl]];
-  else if (S.cur.member) items = [["reserver","Planning",ic.cal],["seances","Mes séances",ic.dumb],["cycle","Mon cycle",ic.cyc]];
+  if (isCoachUI()) items = [["planning","Planning",ic.cal],["adherents","Adhérents",ic.ppl],["offres","Offres",ic.gem]];
+  else if (S.cur.member) items = [["reserver","Planning",ic.cal],["seances","Mes séances",ic.dumb],["cycle","Mon cycle",ic.cyc],["offres","Offres",ic.gem]];
   t.hidden = !items.length;
   t.innerHTML = `<div class="tabs-in">${items.map(([k,l,i]) => `<button class="tab ${S.tab===k?"on":""}" data-a="tab" data-v="${k}">${i}${l}</button>`).join("")}</div>`;
 }
@@ -1886,6 +2006,9 @@ async function act(a, ds){
       return; }
     case "want-coach": await run(db.collection(`members/${memberId()}/notes`).add({seance: null, auteur: S.owner ? "coach" : "adherent", option: "coache", suivante: false, at: Date.now(),
       texte: "Je suis intéressé·e par les séances coachées en salle. Tu peux me dire comment ça marche ?"}), "Demande envoyée à Nathanael"); return;
+    case "want-offre": { const o = OFFRES.find(x => x.id === v); if (!o || S.owner) return;
+      await run(db.collection(`members/${memberId()}/notes`).add({seance: null, auteur: "adherent", offre: o.id, suivante: false, at: Date.now(),
+        texte: `Je suis intéressé·e par la formule « ${o.nom} » (${o.prix} € ${o.per}). Tu peux me dire comment on démarre ?`}), "Demande envoyée à Nathanael"); return; }
     case "del-note": await run(db.doc(`members/${memberId()}/notes/${v}`).delete(), "Note supprimée"); return;
     case "new-seance": return newSeance();
     case "save-consignes": if (await run(db.doc("members/" + S.fiche).update({consignes: (S.drafts["su.consignes"] ?? "").trim().slice(0, 3000), consignesAt: Date.now()}), "Consignes enregistrées")) clearDrafts("su.consignes"); return;
