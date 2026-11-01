@@ -1139,7 +1139,8 @@ async function saveAvant(sid){
 const objCle = m => String(m?.objectifsCle || m?.cycle?.nom || "cycle-1");
 const objNote = () => S.cur.notes.filter(n => n.type === "objectifs" && n.cycle === objCle(S.cur.member)).pop() || null;
 function objectifsCard(){
-  const m = S.cur.member; if (!m || S.owner || objNote()) return "";
+  /* seulement pour un nouvel adhérent ou un nouveau cycle (members.objectifsRequis) : on ne redemande rien à ceux qui ont déjà commencé */
+  const m = S.cur.member; if (!m || S.owner || m.objectifsRequis !== true || objNote()) return "";
   const k = "obj.", buts = d(k + "buts", []);
   if (!S.drafts[k + "open"]) return `<section class="sec"><button class="card tap" data-a="obj-open" style="border:2px solid var(--a1)">
     <span class="eyebrow">Nouveau cycle · 2 minutes</span><b>Quels sont tes objectifs ?</b><span class="small">Perdre du poids, prendre des fessiers, du muscle… Nathanael construit tes séances à partir de tes réponses.</span>
