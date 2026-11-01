@@ -674,7 +674,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-01g";
+const BUILD = "2026-11-01i";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -1177,10 +1177,12 @@ function watch(mid){
   S.cur = {mid, member:undefined, seances:{}, notes:[]};
   if (!mid || !S.db) return;
   const base = "members/" + mid;
-  unsubs.push(S.db.doc(base).onSnapshot(s => { if (s.metadata.fromCache && !s.exists) return; S.cur.member = s.exists ? s.data() : null; render(); if (!S.owner && S.cur.member) syncBookings(mid, S.cur.seances, S.cur.member, false); },
+  unsubs.push(S.db.doc(base).onSnapshot(async s => { if (s.metadata.fromCache && !s.exists) return;
+    if (!s.exists && !S.owner) { try { const g = await S.db.doc(base).get({source: "server"}); if (g.exists) s = g; else S.err = "fiche absente (serveur)"; } catch (e) { S.err = "lecture serveur : " + (e.code || e.message || e); } }
+    S.cur.member = s.exists ? s.data() : null; render(); if (!S.owner && S.cur.member) syncBookings(mid, S.cur.seances, S.cur.member, false); },
     async e => { /* adhérent refusé : on refait le lien de connexion puis on recharge sa fiche (une fois) */
       if (!S.owner && e && e.code === "permission-denied" && !watch.retried) { watch.retried = true; if (await relink()) return watch(mid); }
-      if (!S.owner) { S.cur.member = null; S.err = e && (e.code || e.message); render(true); } }));
+      if (!S.owner) { S.cur.member = null; S.err = "écoute : " + ((e && (e.code || e.message)) || "erreur inconnue"); render(true); } }));
   unsubs.push(S.db.collection(base + "/seances").onSnapshot(q => { const o = {}; q.docs.forEach(x => o[x.id] = x.data()); S.cur.seances = o; syncLive(); render();
     if (!S.owner && S.cur.member) syncBookings(mid, o, S.cur.member, false); }, () => {}));
   unsubs.push(S.db.collection(base + "/notes").orderBy("at").limit(500).onSnapshot(q => { S.cur.notes = q.docs.map(x => ({id:x.id, ...x.data()})); render(); }, () => {}));
@@ -2432,7 +2434,9 @@ function startData(isCoach, cid){
   const auth = firebase.auth();
   S.db = firebase.firestore();
   if (location.hostname === "localhost") { auth.useEmulator("http://localhost:9099", {disableWarnings:true}); S.db.useEmulator("localhost", 8080); }
-  try { S.db.enablePersistence({synchronizeTabs:true}).catch(() => {}); } catch (e) {}
+  /* cache hors ligne : coach seulement. Sur iPhone, le cache IndexedDB d'un adhérent pouvait renvoyer « fiche absente » (Kylian, 01/11) */
+  const adhLien = (() => { try { return !!(new URL(location.href).searchParams.get("c") || localStorage.getItem("nn.code")); } catch (e) { return true; } })();
+  if (!adhLien) try { S.db.enablePersistence({synchronizeTabs:true}).catch(() => {}); } catch (e) {}
   const url = new URL(location.href);
   let code = url.searchParams.get("c");
   const ec = url.searchParams.get("ecran"); if (ec) S.ecran = {sid: ec.split("~").pop(), mid: ec.includes("~") ? ec.split("~")[0] : null};
