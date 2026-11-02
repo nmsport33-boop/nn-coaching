@@ -229,6 +229,7 @@ const formeLbl = s => s == null ? "Pas encore noté" : s >= 80 ? "Pleine forme" 
 const bar = (v, max, col) => `<div class="px-bar"><i style="width:${max > 0 ? Math.min(100, v / max * 100) : 0}%;background:${col}"></i></div>`;
 const seg = (cur, items, act) => `<div class="px-seg">${items.map(([k, l]) => `<button class="${cur === k ? "on" : ""}" data-a="${act}" data-v="${k}">${esc(l)}</button>`).join("")}</div>`;
 function askBar(){
+  if (window.NN_IA) return window.NN_IA.bar();   /* assistant (ia.js) */
   return `<button class="px-ask" data-a="px-ask"><span class="px-ask-av">NN</span><span>Une question ? Écris à Nathanael</span><span class="px-ask-go">›</span></button>`;
 }
 
