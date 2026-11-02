@@ -83,7 +83,7 @@ const SCHEMA = {
           properties: {
             nom: {type: "string"}, temps: {type: "string", description: "Ex. « 10 min »."},
             ingredients: {type: "array", items: {type: "string"}, description: "Pour une portion, avec quantités."},
-            etapes: {type: "array", items: {type: "string"}, description: "Étapes courtes, dans l'ordre."}
+            etapes: {type: "array", items: {type: "string"}, description: "Étapes courtes, dans l'ordre, sans numéro au début."}
           },
           required: ["nom", "temps", "ingredients", "etapes"],
           additionalProperties: false
@@ -207,7 +207,7 @@ function lireReponse(texte){
   const pl = j.plan_repas || {};
   const jours = Array.isArray(pl.jours) ? pl.jours.slice(0, 7).map(d => ({nom: court(d.nom, 60), matin: court(d.matin, 400), midi: court(d.midi, 400), collation: court(d.collation, 400), soir: court(d.soir, 400)})).filter(d => d.nom) : [];
   const L = (a, n) => Array.isArray(a) ? a.slice(0, n) : [];
-  const recettes = L(pl.recettes, 8).map(r => ({nom: court(r.nom, 80), temps: court(r.temps, 30), ingredients: L(r.ingredients, 20).map(x => court(x, 120)), etapes: L(r.etapes, 12).map(x => court(x, 300))})).filter(r => r.nom);
+  const recettes = L(pl.recettes, 8).map(r => ({nom: court(r.nom, 80), temps: court(r.temps, 30), ingredients: L(r.ingredients, 20).map(x => court(x, 120)), etapes: L(r.etapes, 12).map(x => court(String(x || "").replace(/^\s*(?:étape\s*)?\d+\s*[.)\-:]\s*/i, ""), 300))})).filter(r => r.nom);
   const courses = L(pl.courses, 50).map(c => ({rayon: court(c.rayon, 40) || "Autre", article: court(c.article, 80), quantite: court(c.quantite, 60), magasin: court(c.magasin, 30), produit: court(c.produit, 120), prix: Math.max(0, Math.round(Number(c.prix) * 100) / 100 || 0)})).filter(c => c.article);
   const total = Math.round(courses.reduce((t, c) => t + c.prix, 0) * 100) / 100;
   const plan = pl.existe && jours.length ? {titre: court(pl.titre, 120) || "Ton plan de repas", jours, conseils: court(pl.conseils, 800), recettes, courses, budgetEstime: total || Number(pl.budget_estime) || 0} : null;
