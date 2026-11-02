@@ -37,7 +37,7 @@ exports.assistant = onDocumentCreated({
 
   const [msnap, seances, notes] = await Promise.all([base.get(), lister(base.collection("seances")), lister(base.collection("notes"))]);
   if (!msnap.exists) return;
-  const member = msnap.data();
+  const member = {id: mid, ...msnap.data()};
   if (member.iaOff === true) return ecrire({r: "L'assistant est en pause pour toi. Ton message est transmis à Nathanael, il te répond dans l'appli.", alerte: true, pourCoach: A.court(q.q, 600), pause: true});
   if (A.messagesDuJour(notes) > A.LIMITE_JOUR) return ecrire({r: "On a beaucoup échangé aujourd'hui ! Je reprends demain. Si c'est urgent, écris directement à Nathanael.", limite: true});
 
@@ -65,7 +65,14 @@ exports.assistant = onDocumentCreated({
     logger.info("réponse", {mid, nid, prop: !!r.prop, alerte: r.alerte, entree: rep.usage?.input_tokens, cache: rep.usage?.cache_read_input_tokens, sortie: rep.usage?.output_tokens});
     /* plan de repas : seule chose que l'assistant applique lui-même, et seulement avec le Plan nutrition (délégation de Nathanael, 02/11/2026) */
     let plan = false;
-    if (r.plan && member.nutritionPlan && !r.alerte) { await base.update({planRepas: {...r.plan, at: Date.now(), par: "assistant", nid}}); plan = true; }
+    if (r.plan && member.nutritionPlan && !r.alerte) {
+      const at = Date.now();
+      await base.update({planRepas: {...r.plan, at, par: "assistant", nid}}); plan = true;
+      /* famille : la liste de courses rejoint celle de la personne qui fait les courses (members.famille.courses), qui choisit de l'ajouter ou non */
+      const qui = member.famille && member.famille.courses;
+      if (qui && qui !== mid && r.plan.courses.length) await db.doc(`members/${qui}`).update({[`familleCourses.${mid}`]: {prenom: member.prenom || "?", at, courses: r.plan.courses, budgetEstime: r.plan.budgetEstime}})
+        .catch(e => logger.warn("famille", {mid, qui, e: String(e.message || e)}));
+    }
     return ecrire({r: r.r, prop: r.prop, statut: r.prop ? "attente" : null, alerte: r.alerte, pourCoach: r.pourCoach, planRepas: plan});
   } catch (e) {
     const quoi = e instanceof Anthropic.AuthenticationError ? "clé API refusée" : e instanceof Anthropic.RateLimitError ? "trop de demandes"

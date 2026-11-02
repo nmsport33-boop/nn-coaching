@@ -649,8 +649,8 @@ body.ecran-on .repos{display:none!important}
 .off-faq p{margin:0;padding:0 14px 14px;font-size:14px;color:var(--muted);line-height:1.5}
 .off-foot{margin:22px 0 8px;text-align:center;font-size:12.5px;color:var(--muted)}
 </style>
-<link rel="stylesheet" href="plus.css?v=2026-11-02u">
-<link rel="stylesheet" href="ia.css?v=2026-11-02u">
+<link rel="stylesheet" href="plus.css?v=2026-11-02v">
+<link rel="stylesheet" href="ia.css?v=2026-11-02v">
 </head>
 <body>
 
@@ -672,11 +672,11 @@ body.ecran-on .repos{display:none!important}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="config.js?v=2026-11-02u"></script>
+<script src="config.js?v=2026-11-02v"></script>
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-02u";
+const BUILD = "2026-11-02v";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -2535,7 +2535,7 @@ function startData(isCoach, cid){
 })();
 
 </script>
-<script src="plus.js?v=2026-11-02u"></script>
-<script src="ia.js?v=2026-11-02u"></script>
+<script src="plus.js?v=2026-11-02v"></script>
+<script src="ia.js?v=2026-11-02v"></script>
 </body>
 </html>

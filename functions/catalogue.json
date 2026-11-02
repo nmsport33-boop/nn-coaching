@@ -1,0 +1,245 @@
+{
+ "source": "Open Food Facts (photos et fiches vérifiées le 02/11/2026)",
+ "produits": [
+  {
+   "id": "lait",
+   "nom": "Lait demi-écrémé UHT",
+   "marque": "Milsani",
+   "magasin": "Aldi",
+   "qte": "1 L",
+   "ean": "26006024",
+   "img": "https://images.openfoodfacts.org/images/products/000/002/600/6024/front_fr.101.400.jpg",
+   "rayon": "Crèmerie et œufs"
+  },
+  {
+   "id": "fblanc-aldi",
+   "nom": "Fromage blanc nature 0 %",
+   "marque": "Milsani",
+   "magasin": "Aldi",
+   "qte": "1 kg",
+   "ean": "26050195",
+   "img": "https://images.openfoodfacts.org/images/products/000/002/605/0195/front_fr.92.400.jpg",
+   "rayon": "Crèmerie et œufs"
+  },
+  {
+   "id": "fblanc-inter",
+   "nom": "Fromage blanc 0 %",
+   "marque": "Pâturages",
+   "magasin": "Intermarché",
+   "qte": "1 kg",
+   "ean": "3250390010098",
+   "img": "https://images.openfoodfacts.org/images/products/325/039/001/0098/front_fr.46.400.jpg",
+   "rayon": "Crèmerie et œufs"
+  },
+  {
+   "id": "yaourt",
+   "nom": "Yaourts nature x12",
+   "marque": "Pâturages",
+   "magasin": "Intermarché",
+   "qte": "1,5 kg",
+   "ean": "3250390010395",
+   "img": "https://images.openfoodfacts.org/images/products/325/039/001/0395/front_fr.52.400.jpg",
+   "rayon": "Crèmerie et œufs"
+  },
+  {
+   "id": "emmental",
+   "nom": "Emmental français râpé",
+   "marque": "Pâturages",
+   "magasin": "Intermarché",
+   "qte": "200 g",
+   "ean": "3250390010258",
+   "img": "https://images.openfoodfacts.org/images/products/325/039/001/0258/front_fr.66.400.jpg",
+   "rayon": "Crèmerie et œufs"
+  },
+  {
+   "id": "oeufs",
+   "nom": "6 œufs frais plein air",
+   "marque": "marque Aldi",
+   "magasin": "Aldi",
+   "qte": "6 œufs",
+   "ean": "26027111",
+   "img": "https://images.openfoodfacts.org/images/products/000/002/602/7111/front_fr.37.400.jpg",
+   "rayon": "Crèmerie et œufs"
+  },
+  {
+   "id": "poulet",
+   "nom": "Filets de poulet",
+   "marque": "marque Aldi",
+   "magasin": "Aldi",
+   "qte": "barquette",
+   "ean": "4068262039677",
+   "img": "https://images.openfoodfacts.org/images/products/406/826/203/9677/front_fr.3.400.jpg",
+   "rayon": "Viandes et poissons"
+  },
+  {
+   "id": "jambon",
+   "nom": "Jambon supérieur découenné dégraissé, 4 tranches",
+   "marque": "Le Marsigny",
+   "magasin": "Aldi",
+   "qte": "200 g",
+   "ean": "26067506",
+   "img": "https://images.openfoodfacts.org/images/products/000/002/606/7506/front_fr.39.400.jpg",
+   "rayon": "Viandes et poissons"
+  },
+  {
+   "id": "thon",
+   "nom": "Thon au naturel",
+   "marque": "Les Doris",
+   "magasin": "Aldi",
+   "qte": "155 g égoutté",
+   "ean": "26015057",
+   "img": "https://images.openfoodfacts.org/images/products/000/002/601/5057/front_fr.76.400.jpg",
+   "rayon": "Épicerie"
+  },
+  {
+   "id": "sardines",
+   "nom": "Sardines à l'huile d'olive",
+   "marque": "Les Doris",
+   "magasin": "Aldi",
+   "qte": "120 g",
+   "ean": "26015026",
+   "img": "https://images.openfoodfacts.org/images/products/000/002/601/5026/front_fr.8.400.jpg",
+   "rayon": "Épicerie"
+  },
+  {
+   "id": "riz",
+   "nom": "Riz long incollable",
+   "marque": "Top Budget",
+   "magasin": "Intermarché",
+   "qte": "1 kg",
+   "ean": "3410280010748",
+   "img": "https://images.openfoodfacts.org/images/products/341/028/001/0748/front_fr.53.400.jpg",
+   "rayon": "Épicerie"
+  },
+  {
+   "id": "basmati",
+   "nom": "Riz basmati",
+   "marque": "marque Aldi",
+   "magasin": "Aldi",
+   "qte": "500 g",
+   "ean": "26019284",
+   "img": "https://images.openfoodfacts.org/images/products/000/002/601/9284/front_fr.26.400.jpg",
+   "rayon": "Épicerie"
+  },
+  {
+   "id": "coquillettes",
+   "nom": "Coquillettes",
+   "marque": "Top Budget",
+   "magasin": "Intermarché",
+   "qte": "1 kg",
+   "ean": "3410280024370",
+   "img": "https://images.openfoodfacts.org/images/products/341/028/002/4370/front_fr.41.400.jpg",
+   "rayon": "Épicerie"
+  },
+  {
+   "id": "spaghetti",
+   "nom": "Spaghetti",
+   "marque": "Top Budget",
+   "magasin": "Intermarché",
+   "qte": "1 kg",
+   "ean": "3410280024394",
+   "img": "https://images.openfoodfacts.org/images/products/341/028/002/4394/front_fr.18.400.jpg",
+   "rayon": "Épicerie"
+  },
+  {
+   "id": "avoine",
+   "nom": "Flocons d'avoine",
+   "marque": "marque Aldi",
+   "magasin": "Aldi",
+   "qte": "500 g",
+   "ean": "2006050133741",
+   "img": "https://images.openfoodfacts.org/images/products/200/605/013/3741/front_fr.12.400.jpg",
+   "rayon": "Épicerie"
+  },
+  {
+   "id": "lentilles",
+   "nom": "Lentilles vertes",
+   "marque": "Fleurs des Champs",
+   "magasin": "Aldi",
+   "qte": "500 g",
+   "ean": "2006050173181",
+   "img": "https://images.openfoodfacts.org/images/products/200/605/017/3181/front_fr.13.400.jpg",
+   "rayon": "Épicerie"
+  },
+  {
+   "id": "poischiches",
+   "nom": "Pois chiches",
+   "marque": "Fleurs des Champs",
+   "magasin": "Aldi",
+   "qte": "400 g (265 g égoutté)",
+   "ean": "26043708",
+   "img": "https://images.openfoodfacts.org/images/products/000/002/604/3708/front_fr.3.400.jpg",
+   "rayon": "Épicerie"
+  },
+  {
+   "id": "tomates",
+   "nom": "Tomates entières pelées",
+   "marque": "Top Budget",
+   "magasin": "Intermarché",
+   "qte": "765 g",
+   "ean": "3410280044491",
+   "img": "https://images.openfoodfacts.org/images/products/341/028/004/4491/front_fr.25.400.jpg",
+   "rayon": "Épicerie"
+  },
+  {
+   "id": "haricots",
+   "nom": "Haricots verts extra-fins",
+   "marque": "Top Budget",
+   "magasin": "Intermarché",
+   "qte": "800 g",
+   "ean": "3410280048000",
+   "img": "https://images.openfoodfacts.org/images/products/341/028/004/8000/front_fr.27.400.jpg",
+   "rayon": "Épicerie"
+  },
+  {
+   "id": "huile",
+   "nom": "Huile d'olive vierge extra",
+   "marque": "marque Aldi",
+   "magasin": "Aldi",
+   "qte": "1 L",
+   "ean": "26033976",
+   "img": "https://images.openfoodfacts.org/images/products/000/002/603/3976/front_fr.32.400.jpg",
+   "rayon": "Épicerie"
+  },
+  {
+   "id": "cacahuete",
+   "nom": "Beurre de cacahuètes",
+   "marque": "marque Aldi",
+   "magasin": "Aldi",
+   "qte": "500 g",
+   "ean": "4068262073381",
+   "img": "https://images.openfoodfacts.org/images/products/406/826/207/3381/front_fr.24.400.jpg",
+   "rayon": "Épicerie"
+  },
+  {
+   "id": "compote",
+   "nom": "Compote pomme allégée en sucres, 16 coupelles",
+   "marque": "Paquito",
+   "magasin": "Intermarché",
+   "qte": "1,6 kg",
+   "ean": "3250391434008",
+   "img": "https://images.openfoodfacts.org/images/products/325/039/143/4008/front_fr.28.400.jpg",
+   "rayon": "Épicerie"
+  },
+  {
+   "id": "painmie",
+   "nom": "Pain de mie Grand Mie complet",
+   "marque": "Chabrior",
+   "magasin": "Intermarché",
+   "qte": "550 g",
+   "ean": "3250390272007",
+   "img": "https://images.openfoodfacts.org/images/products/325/039/027/2007/front_fr.129.400.jpg",
+   "rayon": "Épicerie"
+  },
+  {
+   "id": "poelee",
+   "nom": "Poêlée champêtre",
+   "marque": "Saint Eloi",
+   "magasin": "Intermarché",
+   "qte": "1 kg",
+   "ean": "3250390136033",
+   "img": "https://images.openfoodfacts.org/images/products/325/039/013/6033/front_fr.47.400.jpg",
+   "rayon": "Surgelés"
+  }
+ ]
+}

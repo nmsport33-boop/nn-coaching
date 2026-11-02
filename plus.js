@@ -16,6 +16,13 @@ window.NN_DATA_TYPES = DATA_TYPES;
 const today = () => iso(new Date());
 const num = v => { const n = Number(String(v ?? "").replace(",", ".")); return isFinite(n) ? n : 0; };
 const r0 = n => Math.round(n), r10 = n => Math.round(n / 10) * 10;
+// Catalogue de produits vérifiés (photos Open Food Facts), chargé une fois
+let CAT = null;
+function catalogue(){
+  if (CAT) return CAT.map || {};
+  CAT = {}; fetch("functions/catalogue.json?v=" + (typeof BUILD !== "undefined" ? BUILD : Date.now())).then(r => r.json()).then(j => { CAT.map = Object.fromEntries((j.produits || []).map(p => [p.id, p])); if (P.planSeg === "courses") render(); }).catch(() => {});
+  return {};
+}
 const fr = (n, d = 0) => Number(n || 0).toLocaleString("fr-FR", {maximumFractionDigits: d, minimumFractionDigits: 0});
 const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const memberUI = () => S.mode === "ready" && !isCoachUI() && !!S.cur.member;
@@ -77,13 +84,29 @@ function goutsForm(){
     <span class="small muted">Repas par jour (collations comprises)</span><div class="px-chips">${[3, 4, 5].map(n => chip("px-grep", n, f.repas === n, n + " repas")).join("")}</div>
     <span class="small muted">Le midi, tu manges surtout</span><div class="px-chips">${MIDI.map(([k, l]) => chip("px-gmidi", k, f.midi === k, l)).join("")}</div>
     <span class="small muted">Temps pour cuisiner</span><div class="px-chips">${CUISINE.map(([k, l]) => chip("px-gcui", k, f.cuisine === k, l)).join("")}</div>
-    <span class="small muted">Tes magasins (Saint-Médard-en-Jalles)</span><div class="px-chips">${MAGASINS.map(x => chip("px-gmag", x, f.magasins.includes(x))).join("")}</div>
+    <span class="small muted">Tes magasins à Saint-Médard-en-Jalles : un ou plusieurs, on prend le meilleur de chacun</span><div class="px-chips">${MAGASINS.map(x => chip("px-gmag", x, f.magasins.includes(x))).join("")}</div>
     <span class="small muted">Budget courses par semaine, pour toi</span><div class="px-chips">${BUDGETS.map(([n, l]) => chip("px-gbud", n, f.budget === n, l)).join("")}</div>
-    <span class="small muted">Tu fais les courses pour</span><div class="px-chips">${[1, 2, 3, 4].map(n => chip("px-gpers", n, f.personnes === n, n === 1 ? "Moi seul·e" : n === 4 ? "4 personnes et +" : n + " personnes")).join("")}</div>
+    <span class="small muted">Tu fais les courses pour</span><div class="px-chips">${[1, 2, 3, 4, 5].map(n => chip("px-gpers", n, f.personnes === n, n === 1 ? "Moi seul·e" : n === 5 ? "5 personnes et +" : n + " personnes")).join("")}</div>
     <label class="f">Autre chose à savoir (horaires, cantine, matériel de cuisine…)<input type="text" data-d="pxg.autre" placeholder="Facultatif" value="${esc(d("autre", g.autre))}"></label>
     <div class="row"><button class="btn solid" data-a="px-gsave">Enregistrer mes goûts</button>${g.at ? `<button class="btn ghost" data-a="px-gcancel">Annuler</button>` : ""}</div></div>`;
 }
 /* plan de repas préparé par l'assistant (members.planRepas), visible par l'adhérent et par Nathanael */
+/* Liste de courses en PDF : page propre à imprimer, l'iPhone propose « Enregistrer en PDF » / Partager */
+function coursesPdf(v){
+  if (!v || !(v.all || []).length) return;
+  const cat = catalogue(), co = v.all, eur = n => Number(n).toLocaleString("fr-FR", {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " €";
+  const ordre = [...v.mags.filter(x => co.some(c => c.magasin === x)), ...new Set(co.map(c => c.magasin || "Autre").filter(x => !v.mags.includes(x)))];
+  const som = l => l.reduce((t, c) => t + (Number(c.prix) || 0), 0), qui = [...new Set(co.map(c => c.qui).filter(Boolean))];
+  const html = `<h1>🛒 Liste de courses</h1><p>${new Date().toLocaleDateString("fr-FR", {weekday: "long", day: "numeric", month: "long"})}${qui.length ? " · avec les listes de " + esc(qui.join(", ")) : ""} · total ≈ ${eur(som(co))}${v.budget ? " (budget " + v.budget + " €)" : ""}</p>
+    ${ordre.map(mg => { const l = co.filter(c => (c.magasin || "Autre") === mg); return `<h2>${esc(mg)} <small>≈ ${eur(som(l))}</small></h2><table>${l.map(c => { const x = c.ref && cat[c.ref];
+      return `<tr><td class="b">☐</td><td class="ph">${x ? `<img src="${esc(x.img)}" alt="" onerror="this.remove()">` : ""}</td><td><b>${esc(c.article)}</b> · ${esc(c.quantite)}${c.qui ? ` <i>(${esc(c.qui)})</i>` : ""}<br><span>${esc(c.produit)}</span></td><td class="p">${c.promo ? "🏷️ " : ""}${c.prix ? eur(c.prix) : ""}</td></tr>`; }).join("")}</table>`; }).join("")}
+    <p class="n">🏷️ = promo relevée cette semaine. Les autres prix sont estimés. · NN Coaching</p>`;
+  let d = document.getElementById("px-print"); if (!d) { d = document.createElement("div"); d.id = "px-print"; document.body.appendChild(d); }
+  d.innerHTML = html; document.body.classList.add("px-printing");
+  const fin = () => { document.body.classList.remove("px-printing"); window.removeEventListener("afterprint", fin); };
+  window.addEventListener("afterprint", fin);
+  setTimeout(() => { window.print(); setTimeout(fin, 2000); }, 300);
+}
 function planRepasCard(m, coach){
   const pl = m?.planRepas, ia = !coach && window.NN_IA_ACTIF && window.NN_IA && !m.iaOff, g = goutsDoc();
   if (!coach && (!g || P.gEdit)) return goutsForm();
@@ -101,13 +124,29 @@ function planRepasCard(m, coach){
       <span class="eyebrow">Ingrédients (1 portion)</span><ul class="px-ing">${(r.ingredients || []).map(x => `<li>${esc(x)}</li>`).join("")}</ul>
       <span class="eyebrow">Préparation</span><ol class="px-etapes">${(r.etapes || []).map(x => `<li>${esc(x)}</li>`).join("")}</ol></details>`).join("");
   else { const cc = S.cur.notes.find(n => n.id === "courses"), coches = cc && cc.plan === pl.at ? cc.coches || {} : {}, g = goutsDoc() || {};
-    const rayons = [...new Set(co.map(c => c.rayon))], fait = co.filter((_, k) => coches[k]).length, tot = pl.budgetEstime || co.reduce((t, c) => t + (Number(c.prix) || 0), 0);
+    const cat = catalogue(), mags = (g.magasins && g.magasins.length) ? g.magasins : ["Intermarché", "Aldi"], auj = new Date().toISOString().slice(0, 10);
+    const promos = ((m && m.promos && m.promos.items) || []).filter(x => mags.includes(x.magasin) && (!x.au || x.au >= auj));
+    const eur = n => Number(n).toLocaleString("fr-FR", {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " €";
+    const photo = c => { const x = c.ref && cat[c.ref]; return x ? `<img class="px-ph" src="${esc(x.img)}" alt="" loading="lazy" onerror="this.remove()">` : ""; };
+    const promoBox = promos.length ? `<details class="px-promos"><summary>🏷️ Promos de la semaine · ${promos.length}</summary><span class="small muted">Relevées le ${esc(m.promos.maj || "")} dans tes magasins de Saint-Médard-en-Jalles.</span>
+      ${mags.filter(mg => promos.some(x => x.magasin === mg)).map(mg => `<span class="eyebrow">${esc(mg)}</span>${promos.filter(x => x.magasin === mg).map(x => `<div class="px-pr"><span>${esc(x.produit)}${x.du && x.du > auj ? ` <span class="small muted">· dès le ${esc(x.du.slice(8, 10) + "/" + x.du.slice(5, 7))}</span>` : x.au ? ` <span class="small muted">· jusqu'au ${esc(x.au.slice(8, 10) + "/" + x.au.slice(5, 7))}</span>` : ""}</span><b>${eur(x.prix)}</b>${x.avant ? `<s class="small muted">${eur(x.avant)}</s>` : ""}</div>`).join("")}`).join("")}</details>` : "";
+    /* famille : les listes des autres (copiées par le serveur dans familleCourses) s'ajoutent si elle les inclut */
+    const fam = Object.entries((m && m.familleCourses) || {}).filter(([, f]) => f && (f.courses || []).length).sort((x, y) => (x[1].prenom || "").localeCompare(y[1].prenom || ""));
+    const inclus = (cc && cc.inclus) || {};
+    const all = [...co.map((c, k) => ({...c, key: String(k)})), ...fam.filter(([id]) => inclus[id]).flatMap(([id, f]) => f.courses.map((c, k) => ({...c, key: `${id}@${f.at}:${k}`, qui: f.prenom})))];
+    const famBox = fam.length ? `<div class="px-fam"><span class="small"><b>👨‍👩‍👦 Listes de la famille</b> · touche un prénom pour ajouter sa liste à la tienne</span><div class="px-chips">${fam.map(([id, f]) => `<button class="${inclus[id] ? "on" : ""}" data-a="${coach ? "" : "px-finc"}" data-v="${esc(id)}">${inclus[id] ? "✓ " : "+ "}${esc(f.prenom)} <span class="small muted">${f.courses.length} art. · ${esc(fmtWhen(f.at))}</span></button>`).join("")}</div></div>` : "";
+    const nbMag = new Set(all.map(c => c.magasin).filter(Boolean)).size, grp = P.coGrp || (nbMag > 1 ? "mag" : "rayon"), cle = c => (grp === "mag" ? c.magasin || "Autre" : c.rayon);
+    const rayons = grp === "mag" ? [...mags.filter(x => all.some(c => c.magasin === x)), ...new Set(all.map(c => c.magasin || "Autre").filter(x => !mags.includes(x)))] : [...new Set(all.map(c => c.rayon))];
+    const fait = all.filter(c => coches[c.key]).length, tot = all.reduce((t, c) => t + (Number(c.prix) || 0), 0);
     const budget = g.budget ? g.budget * (g.personnes || 1) : 0;
-    body = `<div class="px-budget ${budget && tot > budget ? "over" : ""}"><b>≈ ${fr(tot, 0)} €</b><span class="small">${budget ? `pour un budget de ${budget} €` : "pour la semaine"} · ${fait}/${co.length} articles pris</span></div>
-      <span class="small muted">Prix estimés : ils varient selon le magasin et les promos.</span>
-      ${rayons.map(r => `<div class="px-rayon"><span class="eyebrow">${esc(r)}</span>${co.map((c, k) => c.rayon !== r ? "" : `<button class="px-art ${coches[k] ? "ok" : ""}" data-a="${coach ? "" : "px-coche"}" data-v="${k}"><span class="px-box">${coches[k] ? "✓" : ""}</span>
-        <span class="px-art-t"><b>${esc(c.article)}</b> <span class="small muted">${esc(c.quantite)}</span><span class="small">${c.magasin ? `<i class="px-mag">${esc(c.magasin)}</i> ` : ""}${esc(c.produit)}</span></span><span class="px-prix">${c.prix ? Number(c.prix).toLocaleString("fr-FR", {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " €" : ""}</span></button>`).join("")}</div>`).join("")}
-      ${!coach && fait ? `<button class="btn link sm" data-a="px-coche-raz">Tout décocher</button>` : ""}`; }
+    const versFam = m && m.famille && m.famille.courses && m.famille.coursesPar && m.famille.coursesPar !== m.prenom ? `<span class="small px-qui" style="margin:0">👨‍👩‍👦 Ta liste est envoyée à ${esc(m.famille.coursesPar || "la personne qui fait les courses")}, qui peut l'ajouter à la sienne.</span>` : "";
+    body = `${famBox}${versFam}<div class="px-budget ${budget && tot > budget ? "over" : ""}"><b>≈ ${fr(tot, 0)} €</b><span class="small">${budget ? `pour un budget de ${budget} €` : "pour la semaine"} · ${fait}/${all.length} articles pris</span></div>
+      <span class="small muted">${all.some(c => c.promo) ? "Prix 🏷️ = promo relevée cette semaine. Les autres prix sont estimés." : "Prix estimés : ils varient selon le magasin et les promos."}</span>${promoBox}
+      <div class="px-seg px-co-grp"><button class="${grp === "mag" ? "on" : ""}" data-a="px-cogrp" data-v="mag">Par magasin</button><button class="${grp === "rayon" ? "on" : ""}" data-a="px-cogrp" data-v="rayon">Par rayon</button><button data-a="px-pdf">📄 PDF</button></div>
+      ${rayons.map(r => `<div class="px-rayon"><span class="eyebrow">${grp === "mag" ? "🛒 " : ""}${esc(r)}${grp === "mag" ? ` · ≈ ${fr(all.filter(c => cle(c) === r).reduce((t, c) => t + (Number(c.prix) || 0), 0), 0)} €` : ""}</span>${all.filter(c => cle(c) === r).map(c => `<button class="px-art ${coches[c.key] ? "ok" : ""}" data-a="${coach ? "" : "px-coche"}" data-v="${esc(c.key)}"><span class="px-box">${coches[c.key] ? "✓" : ""}</span>${photo(c)}
+        <span class="px-art-t"><b>${esc(c.article)}</b> <span class="small muted">${esc(c.quantite)}</span>${c.qui ? `<i class="px-qui">${esc(c.qui)}</i>` : ""}<span class="small">${grp === "mag" ? `<i class="px-mag">${esc(c.rayon)}</i> ` : c.magasin ? `<i class="px-mag">${esc(c.magasin)}</i> ` : ""}${esc(c.produit)}</span></span><span class="px-prix">${c.promo ? `<i class="px-promo">🏷️ promo</i>` : ""}${c.prix ? eur(c.prix) : ""}</span></button>`).join("")}</div>`).join("")}
+      ${!coach && fait ? `<button class="btn link sm" data-a="px-coche-raz">Tout décocher</button>` : ""}`;
+    P.coursesVue = {titre: pl.titre, at: pl.at, all, mags, budget, grp}; }
   return `<div class="card px-plan"><div class="sec-h"><b>🍽️ ${esc(pl.titre || "Ton plan de repas")}</b><span class="small muted">${esc(fmtWhen(pl.at))}</span></div>
     <span class="small muted">${pl.par === "assistant" ? (coach ? "Préparé par l'assistant (tu l'as autorisé pour le Plan nutrition)." : "Préparé par ton assistant, selon tes goûts, tes cibles et ton budget. Nathanael le voit.") : "Préparé par Nathanael."}</span>
     ${tabs}${body}
@@ -932,9 +971,14 @@ window.act = act = async function(a, ds){
     case "px-greg": { const f = P.g; if (v === "Aucun") f.regime = []; else f.regime = f.regime.includes(v) ? f.regime.filter(x => x !== v) : [...f.regime, v]; return render(); }
     case "px-gall": { const f = P.g; f.allergenes = f.allergenes.includes(v) ? f.allergenes.filter(x => x !== v) : [...f.allergenes, v]; return render(); }
     case "px-pseg": P.planSeg = v; return render();
+    case "px-cogrp": P.coGrp = v; return render();
+    case "px-pdf": return coursesPdf(P.coursesVue);
     case "px-coche": case "px-coche-raz": { const pl = S.cur.member?.planRepas; if (!pl) return; const cc = S.cur.notes.find(n => n.id === "courses");
       const coches = a === "px-coche-raz" ? {} : {...(cc && cc.plan === pl.at ? cc.coches || {} : {})}; if (a === "px-coche") { if (coches[v]) delete coches[v]; else coches[v] = true; }
-      await run(S.db.doc(`members/${memberId()}/notes/courses`).set({type: "courses", auteur: "adherent", seance: null, plan: pl.at, coches, at: Date.now()})); return; }
+      await run(S.db.doc(`members/${memberId()}/notes/courses`).set({type: "courses", auteur: "adherent", seance: null, plan: pl.at, coches, inclus: (cc && cc.inclus) || {}, at: Date.now()})); return; }
+    case "px-finc": { const pl = S.cur.member?.planRepas; if (!pl) return; const cc = S.cur.notes.find(n => n.id === "courses"), inclus = {...((cc && cc.inclus) || {})};
+      if (inclus[v]) delete inclus[v]; else inclus[v] = true;
+      await run(S.db.doc(`members/${memberId()}/notes/courses`).set({type: "courses", auteur: "adherent", seance: null, plan: pl.at, coches: cc && cc.plan === pl.at ? cc.coches || {} : {}, inclus, at: Date.now()})); return; }
     case "px-gmag": { const f = P.g; f.magasins = f.magasins.includes(v) ? f.magasins.filter(x => x !== v) : [...f.magasins, v]; return render(); }
     case "px-gbud": P.g.budget = Number(v); return render();
     case "px-gpers": P.g.personnes = Number(v); return render();
@@ -946,7 +990,9 @@ window.act = act = async function(a, ds){
     case "px-gsave": { const g = goutsDoc() || {}, t = k => String(S.drafts["pxg." + k] ?? g[k] ?? "").trim().slice(0, 400);
       const doc = {type: "gouts", auteur: "adherent", seance: null, aime: t("aime"), naime: t("naime"), allergies: t("allergies"), autre: t("autre"), regime: P.g.regime, allergenes: P.g.allergenes, midi: P.g.midi, magasins: P.g.magasins, budget: P.g.budget, personnes: P.g.personnes, repas: P.g.repas, cuisine: P.g.cuisine, at: g.at || Date.now(), maj: Date.now()};
       if (await run(S.db.doc(`members/${memberId()}/notes/gouts`).set(doc), "Goûts enregistrés")) { clearDrafts("pxg."); P.gEdit = false; P.g = null; render(); } return; }
-    case "px-plandel": if (!confirm("Effacer le plan de repas ?")) return; await run(S.db.doc("members/" + S.fiche).update({planRepas: firebase.firestore.FieldValue.delete()}), "Plan effacé"); return;
+    case "px-plandel": { if (!confirm("Effacer le plan de repas ?")) return; const qui = S.cur.member?.famille?.courses;
+      if (qui && qui !== S.fiche) await S.db.doc("members/" + qui).update({["familleCourses." + S.fiche]: firebase.firestore.FieldValue.delete()}).catch(() => {});
+      await run(S.db.doc("members/" + S.fiche).update({planRepas: firebase.firestore.FieldValue.delete()}), "Plan effacé"); return; }
     case "px-nauto": if (await run(S.db.doc("members/" + S.fiche).update({nutrition: firebase.firestore.FieldValue.delete()}), "Retour au calcul auto")) clearDrafts("pxn."); return;
   }
 };
