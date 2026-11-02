@@ -8,3 +8,5 @@ window.FB_CONFIG = {
   appId: "1:360502778523:web:d423f6e358f1b583ba843e"
 };
 window.COACH_EMAIL = "nmsport33@gmail.com";
+// Assistant (ia.js) : visible par les adhérents seulement quand la fonction serveur est en ligne (passer à true après activation)
+window.NN_IA_ACTIF = false;

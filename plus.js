@@ -145,59 +145,111 @@ function zonesSensibles(){
   return [...z].filter(v => v !== "Autre");
 }
 
-/* ================= le bonhomme (dessin NN Coaching, vue de face / de dos) =================
-   Moitié gauche dessinée, l'autre en miroir. viewBox 0 0 200 400. */
+/* ================= le corps (dessin NN Coaching, vue de face / de dos) =================
+   Planche anatomique façon écorché, rendu néon : les muscles remplissent tout le corps, les tendons sont clairs,
+   une texture de fibres et un éclairage en relief. Moitié gauche de l'écran dessinée, l'autre en miroir. viewBox 0 0 200 400. */
+const BRAS = {
+  avantbras: ["M44,149 C41,158 39,168 38.5,178 C38.5,186 39,193 40,200 L43,201 C43,190 44.5,176 47,164 C48,158 48,153 47,149 Z",
+              "M48.5,150 C48,160 46.5,172 45,184 C44.5,191 44.5,197 45,201 L47.5,201 C49,190 52,176 55,162 C56,156 56.5,151 56,148 C53,148 50.5,149 48.5,150 Z"]};
 const HALF = {
   face: {
-    trapezes: "M93,58 C88,63 80,68 71,72 L90,74 C93,70 94,64 93,58 Z",
-    epaules: "M71,72 C59,72 51,81 51,95 C51,101 52,105 55,108 C58,98 64,90 75,86 C77,80 76,75 71,72 Z",
-    pecs: "M98,76 L77,76 C72,81 72,90 74,97 C78,106 88,110 98,108 Z",
-    biceps: "M54,109 C50,119 49,131 51,142 C54,146 60,146 63,142 C66,130 66,117 63,104 C59,104 56,106 54,109 Z",
-    avantbras: "M51,146 C47,160 45,175 46,190 L54,192 C58,178 62,162 63,146 C59,149 55,149 51,146 Z",
-    obliques: "M78,101 C74,110 74,122 76,136 C78,150 80,161 86,170 C84,150 83,130 84,112 C82,107 80,103 78,101 Z",
-    abdos: "M98,111 L86,113 C84,131 85,151 88,168 C91,174 95,176 98,176 Z",
-    quadriceps: "M75,190 C69,210 67,236 71,262 C75,276 82,282 89,280 C93,262 95,236 95,205 C89,199 82,194 75,190 Z",
-    adducteurs: "M96,205 C96,227 94,250 92,276 C96,268 98,248 98.5,226 L98.5,203 Z",
-    mollets: "M74,298 C70,320 71,344 75,365 L85,367 C88,344 90,320 89,298 C84,302 78,302 74,298 Z"},
+    trapezes: ["M90,52 C89.5,58 87.5,63 84,66 C78,68 71,69 65,70 C73,71.5 83,72 92,71.5 C93,65 92,58 91,53 Z", "M91.5,49 C93.5,56 96,63 98.8,70 L96.3,71 C93.8,64 91.5,57 90.2,51 Z"],
+    epaules: ["M64,70 C54,70 46,77 44.5,89 C43.5,98 44.5,107 48,114 C51,104 53,94 57,86 C59,79 61,74 64,70 Z",
+              "M66.5,71 C73,72 78.5,74.5 80.5,78.5 C77,87 71,93 64.5,99 C60.5,103 56.5,108 53.5,113 L49,114 C51.5,104 53.5,94 57.5,86 C59.5,79 62.5,74 66.5,71 Z"],
+    pecs: ["M99,75 C92,74.5 85.5,75 81.5,79 C79,82 77,85 75,88.5 C83,87.5 91,88.5 99,90.5 Z",
+           "M99,92.5 C91,90.5 82.5,89.5 74,90.5 C71,93.5 68.5,96.5 66,99.5 C68,104 72,108 77,110.5 C84,113.5 92,113.5 99,111.5 Z"],
+    biceps: ["M55,111 C50,118 47,127 46.5,136 C46.5,142 48.5,146 52,147 C56,145 59,138 60.5,128 C61.5,120 61,114 59,110 C57.5,109.5 56,110 55,111 Z",
+             "M47.5,115 C45.5,123 44.5,132 44.5,140 C45,145 46.5,147 48.5,148 C47,142 46.8,136 46.8,130 C47.2,124 48.2,119 49.8,115 Z"],
+    triceps: ["M61.5,112 C63,120 62.5,130 60,140 C59,143 58,145 56.5,147 C59.5,140 61.2,130 61.2,120 Z"],
+    ...BRAS,
+    dorsaux: ["M69.5,108.5 C70.5,120 72,133 74,146 C75.5,138 76,128 75.8,119 C74,114 72,110.5 69.5,108.5 Z"],
+    obliques: ["M76,108 C79,108.5 82,109.6 83.5,111.4 C82.8,113.4 81,114.8 78.6,115 C77.2,114.4 76.3,113 75.9,111.4 Z",
+               "M76.2,117 C79.3,117.4 82.4,118.5 84,120.3 C83.3,122.4 81.5,123.8 79,124 C77.5,123.4 76.6,122 76.2,120.4 Z",
+               "M76.6,126 C79.6,126.4 82.6,127.5 84.2,129.3 C83.5,131.3 81.8,132.7 79.4,132.9 C78,132.4 77.1,131 76.7,129.4 Z",
+               "M76.5,135.5 C75.5,146 76.3,157 78.3,166 C80,172.5 83,177 87,180 C86.4,165 86,150 86.3,136.5 C82.8,134.5 79.5,134.5 76.5,135.5 Z"],
+    abdos: ["M98,112.5 C94.5,112 91,112.6 89,114.2 C88.2,117.8 88.4,121.8 89.6,125.2 C92.6,126 95.4,126.2 98,125.8 Z",
+            "M98,127.8 C94.8,127.4 91.4,127.7 89,128.8 C88.1,132.4 88.2,136.6 89.2,140.2 C92.2,141.2 95.3,141.4 98,141 Z",
+            "M98,142.9 C94.8,142.5 91.5,142.8 89.1,143.9 C88.3,147.6 88.4,151.8 89.4,155.4 C92.4,156.4 95.4,156.6 98,156.2 Z",
+            "M98,158.2 C94.8,157.8 91.7,158.1 89.6,159.3 C89.3,167 92,176 98,184 Z"],
+    quadriceps: ["M74,172 C71,180 69,188 68.5,198 C71,196 74,194 77,193 C77,186 76.5,179 74,172 Z",
+                 "M71.8,200 C71,221 71.5,243 73.5,263 C75,273 77.5,280.5 80.8,284 C81.6,266 81.2,244 80.6,224 C80.1,212 78.8,203 77.2,196 C75.2,197 73.4,198.4 71.8,200 Z",
+                 "M79.6,195 C83.6,207 87.3,224 88.6,244 C89.2,256 88,266 85.8,273 C83.4,266 82.4,254 82.2,240 C82,224 81.2,208 79.6,195 Z",
+                 "M78.2,188 C80.2,187 82.2,188 83.2,190 C87.2,208 91.2,228 94.7,252 L92.6,254 C88.4,232 83.6,212 78.2,188 Z",
+                 "M91.2,249 C95.7,257 97.2,267 95.2,277 C93.2,283 88.7,286 86.2,283 C88.7,273 90.2,261 91.2,249 Z"],
+    adducteurs: ["M85.5,195 C91.5,199 96.8,205 99,213 C98.6,226 97.2,238 95,249 C91.2,231 88,213 83.8,197 Z"],
+    mollets: ["M72.6,300 C70.1,312 70.1,326 72.1,340 C73.1,348 74.6,356 76.1,362 C75.1,346 74.6,330 74.6,314 C74.6,308 73.6,303 72.6,300 Z",
+              "M76.2,298 C74.6,312 74.6,328 76.4,344 C77.4,352 79.2,360 81,366 L83.6,366 C83.2,348 83.2,326 83.6,306 C81.8,302 79.2,299 76.2,298 Z",
+              "M86.6,298 C90.6,306 92.1,318 91.1,332 C90.6,342 89.1,350 87.1,356 C86.1,342 85.6,326 85.6,312 C85.6,306 86.1,301 86.6,298 Z"]},
   dos: {
-    trapezes: "M99,57 L87,65 C80,69 74,72 70,74 C80,78 90,88 99,106 Z",
-    epaules: "M70,73 C59,72 51,81 51,95 C51,101 52,105 55,108 C58,98 64,90 75,86 C76,80 75,76 70,73 Z",
-    dorsaux: "M75,87 C72,104 76,124 84,140 L98,150 L98,112 C92,102 84,93 75,87 Z",
-    triceps: "M54,109 C50,119 49,131 51,142 C54,146 60,146 63,142 C66,130 66,117 63,104 C59,104 56,106 54,109 Z",
-    avantbras: "M51,146 C47,160 45,175 46,190 L54,192 C58,178 62,162 63,146 C59,149 55,149 51,146 Z",
-    lombaires: "M98.5,150 L85,142 C85,155 87,165 91,172 L98.5,174 Z",
-    fessiers: "M98.5,176 L88,172 C78,174 72,186 72,200 C74,214 86,220 98.5,216 Z",
-    ischios: "M72,206 C68,228 70,252 75,276 C81,282 89,282 93,276 C95,252 96,231 97,219 C88,222 78,218 72,206 Z",
-    mollets: "M73,296 C67,312 68,330 74,346 C78,354 84,354 88,346 C92,330 92,312 88,296 C83,300 78,300 73,296 Z"}
+    trapezes: ["M99,52 C95,58 88,64 66,70 C78,74 89,80 99,92 Z", "M99,94 C92,86 84,80 74.5,78 C79,90 88,104 99,124 Z"],
+    epaules: ["M64,70 C54,70 46,77 44.5,89 C43.5,98 44.5,107 48,114 C52,104 58,94 68,86 C70,80 68,74 64,70 Z"],
+    dorsaux: ["M70.5,87 C66.5,93 66.5,101 69.5,107.5 C77.5,106.5 85.5,103.5 91.5,100.5 C85.5,92.5 78.5,88.5 70.5,87 Z",
+              "M69.5,110 C69.5,125 72.5,141 78.5,155 C83.5,163 89.5,168 95.5,170 L95.5,129 C87.5,121 78.5,114 69.5,110 Z"],
+    triceps: ["M48.5,115 C45,123 44,133 44.5,141 C45.5,146 48.5,148 52,147 C52.5,136 52.5,124 51.5,115 Z",
+              "M54,111 C56,122 56,134 54.5,147 C58.5,146 61,139 62,129 C62.5,120 60.5,113 55.5,110 Z"],
+    ...BRAS,
+    obliques: ["M76.5,152 C74.5,162 75,171 76.5,179 L89.5,181 C85.5,173 80.5,163 78.5,154 Z"],
+    lombaires: ["M99,125 L97,127 L97,171 C95,176 93.6,181 93.6,186 L99,189 Z"],
+    fessiers: ["M86,186.5 C79,186.5 73,190.5 70,198.5 C77,197.5 86,197.5 97,199.5 C96,193.5 92,188.5 86,186.5 Z",
+               "M99,201 C88,199 77,200 70.5,206 C67.5,215 68.5,225 74,232 C81,238 91,238 99,235 Z"],
+    adducteurs: ["M98.8,238 C98.8,246 98.4,254 97.6,260 C96.2,252 95.4,245 95.2,239 C96.6,238.8 97.8,238.5 98.8,238 Z"],
+    ischios: ["M71.5,235 C70,251 71,267 74,281 C76,287 79,291 83,293 C83.5,275 84,255 84.5,239 C80,239 75.5,237 71.5,235 Z",
+              "M86.5,239 C86.5,257 86.5,275 85.5,293 C90,293 93.5,288 95,281 C96.3,272 97,263 97.3,254 C96,248 95,243 94.5,239 C91.8,239.5 89,239.5 86.5,239 Z"],
+    mollets: ["M74,297 C69.5,307 68.5,321 70.5,333 C72.5,341 76,345 80.5,343 C81.5,327 81.5,313 80.5,299 Z",
+              "M83,299 C84,313 84,329 83,345 C88,347 92,342 93,333 C94,319 92.5,307 88.5,299 Z",
+              "M70.5,336 C71.5,348 73.5,357 76,364 L87.5,364 C89,356 90.3,347 91.6,338 C88,346 76.5,348 70.5,336 Z"]}
 };
-const BASE = { /* silhouette (articulations, tête, mains, pieds) */
-  face: `<ellipse cx="100" cy="32" rx="18" ry="23"/><path d="M91,52 L109,52 L110,66 L90,66 Z"/>
-    <path d="M45,190 C42,200 43,210 47,215 C51,215 55,206 55,193 Z"/><path d="M155,190 C158,200 157,210 153,215 C149,215 145,206 145,193 Z"/>
-    <path d="M86,170 C80,176 76,183 74,191 L99,203 L101,203 L126,191 C124,183 120,176 114,170 L100,178 Z"/>
-    <ellipse cx="81" cy="289" rx="10" ry="10"/><ellipse cx="119" cy="289" rx="10" ry="10"/>
-    <path d="M75,366 C71,376 69,385 73,390 L88,390 C88,382 87,374 85,367 Z"/><path d="M125,366 C129,376 131,385 127,390 L112,390 C112,382 113,374 115,367 Z"/>
-    <path d="M76,77 L98,76 L98,111 L86,113 L78,101 L74,97 C72,90 72,82 76,77 Z" opacity=".55"/><path d="M124,77 L102,76 L102,111 L114,113 L122,101 L126,97 C128,90 128,82 124,77 Z" opacity=".55"/>`,
-  dos: `<ellipse cx="100" cy="32" rx="18" ry="23"/><path d="M91,52 L109,52 L110,64 L90,64 Z"/>
-    <path d="M45,190 C42,200 43,210 47,215 C51,215 55,206 55,193 Z"/><path d="M155,190 C158,200 157,210 153,215 C149,215 145,206 145,193 Z"/>
-    <ellipse cx="82" cy="287" rx="10" ry="9"/><ellipse cx="118" cy="287" rx="10" ry="9"/>
-    <path d="M76,350 C75,360 74,372 72,384 C71,388 74,391 78,391 L88,391 C88,378 87,362 87,350 Z"/><path d="M124,350 C125,360 126,372 128,384 C129,388 126,391 122,391 L112,391 C112,378 113,362 113,350 Z"/>`
-};
+/* silhouette complète (moitié) */
+const SIL = "M91,47 C91,55 90,60 88,64 C82,67 72,68 63,70 C53,72 46,79 44,90 C42,101 43,112 44,122 C42,132 41,140 41,148 C39,160 37,172 37,184 C36,192 36,198 37,204 C35,210 34.5,217 36.5,221.5 C39.5,226.5 46,226 48.5,221 C50,216 49.5,209 47.5,203 C49.5,190 51.5,176 54.5,162 C56.5,154 58.5,148 58.5,142 C60.5,132 61.5,122 63.5,114 C65,110 67,108.5 69.5,108 C70.5,122 72.5,138 74.5,150 C75.5,158 76.5,166 75.5,172 C72,180 69,190 67.8,202 C66,220 66,242 69,262 C70.5,272 72,280 73,288 C70.5,298 69,312 69.5,327 C70.5,343 73,356 75,366 C73,374 70,382 70.5,388 C72.5,394 84,395.5 90,392.5 C91,385 90,376 88.5,368 C90.5,349 92.5,327 92.5,307 C92.5,299 93,293 94,287 C96,265 98,239 99.2,215 L100,209 L100,47 Z";
+/* tendons et aponévroses (clairs), mains, pieds, tête */
+const TEN = {
+  face: "M87.5,111 L100,111 L100,194 C95,190 90,184 87,178 Z M87,178 C90,187 95,197 100,207 L100,193 C95,189 90,184 87,178 Z M66,70 C78,71 90,71.8 99,72 L99,74.6 C90,74.2 79,73.6 68,72.2 Z M44,145 C47,147.5 52,148.4 57,147 L56,151 C52,152 47,151.4 44,149 Z M38,199.5 L48,200.5 L47.6,205 L37.6,204 Z M37.6,204 C35,209 34.5,216 36.5,221 C39.5,226 45.5,226 48,221.5 C49.5,217 49,211 47.6,205 Z M67.8,201 C66.4,221 66.8,243 69.6,264 L72.4,264 C70.4,243 70.4,221 71.6,201 Z M77.6,284 C79.6,279.5 87.6,279.5 89.8,284 C91,290 89.4,296.5 84,298.6 C78.6,296.5 76.6,290 77.6,284 Z M83.8,304 L85.6,304 L85.6,363 L83.8,365 Z M75.6,364.5 L88.4,364.5 L88.6,370.5 L75.4,370.5 Z M75.4,370.5 C72.4,377 70.4,384 70.8,388.5 C72.8,394 84,395.4 89.8,392.4 C90.6,385 89.8,377.5 88.6,370.5 Z",
+  dos: "M93.6,186 C95.4,180 96.8,174 97,171 L100,168 L100,195 Z M48,147 C51,149 55,149.4 58,147.4 L57,152.4 C54,153.4 50,153.2 48,151 Z M38,199.5 L48,200.5 L47.6,205 L37.6,204 Z M37.6,204 C35,209 34.5,216 36.5,221 C39.5,226 45.5,226 48,221.5 C49.5,217 49,211 47.6,205 Z M67.6,206 C66.4,226 66.8,248 69.8,270 L72.4,270 C70.2,248 70,226 70.6,206 Z M76,286 C80,290 88,291 94,288 L93.4,294 C88,297 80,296 75.6,292 Z M78.4,363.5 L86.8,363.5 L86,371 L79.2,371 Z M75.6,371 L88.4,371 L88.6,375 L75.4,375 Z M75.4,375 C72.4,380 70.6,385 70.8,388.5 C72.8,394 84,395.4 89.8,392.4 C90.6,386 89.8,380 88.6,375 Z"};
+const TETE_D = "M100,6 C89,6 84.5,14 84.5,25 C84.5,35 87.5,43 93.5,47.5 L106.5,47.5 C112.5,43 115.5,35 115.5,25 C115.5,14 111,6 100,6 Z";
+const VISAGE = `<path d="M91.5,25 C93.5,23.5 96,23.5 97.5,25 M102.5,25 C104,23.5 106.5,23.5 108.5,25 M97.5,33 C99,34 101,34 102.5,33 M95,39.5 C98,41 102,41 105,39.5 M88,30 C89,38 92,44 96,47 M112,30 C111,38 108,44 104,47"/>`;
+const DECO = {
+  face: `<path d="M100,72 L100,194"/><path d="M89,113 L98,113"/>`,
+  dos: `<path d="M100,56 L100,192"/><path d="M93,198 C95,194 98,192 100,192"/>`};
+const DEFS = `<defs><radialGradient id="pxsh" cx=".4" cy=".32" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".4"/><stop offset=".45" stop-color="#fff" stop-opacity=".04"/><stop offset="1" stop-color="#000" stop-opacity=".5"/></radialGradient>
+  <linearGradient id="pxsil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgb(var(--a1r))" stop-opacity=".14"/><stop offset=".6" stop-color="rgb(var(--a2r))" stop-opacity=".08"/><stop offset="1" stop-color="rgb(var(--a1r))" stop-opacity=".04"/></linearGradient>
+  <radialGradient id="pxaura" cx=".5" cy=".42" r=".5"><stop offset="0" stop-color="rgb(var(--a1r))" stop-opacity=".22"/><stop offset="1" stop-color="rgb(var(--a1r))" stop-opacity="0"/></radialGradient>
+  <filter id="pxfib" x="-15%" y="-5%" width="130%" height="110%"><feTurbulence type="fractalNoise" baseFrequency=".9 .045" numOctaves="2" seed="7" result="n"/>
+    <feColorMatrix in="n" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.9 1.08" result="s"/><feComposite in="s" in2="SourceGraphic" operator="in" result="f"/>
+    <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="f"/></feMerge></filter></defs>`;
 /* points des articulations sensibles (vue de face : la gauche de la personne est à droite de l'écran) */
 const JOINTS = {
-  "Genou gauche": {face: [119, 289], dos: [82, 287]}, "Genou droit": {face: [81, 289], dos: [118, 287]},
-  "Épaule gauche": {face: [138, 86], dos: [62, 86]}, "Épaule droite": {face: [62, 86], dos: [138, 86]},
-  "Bas du dos": {dos: [100, 160]}, "Nuque / haut du dos": {dos: [100, 62], face: [100, 60]},
-  "Hanche": {face: [125, 192], dos: [125, 192]}, "Cheville / pied": {face: [120, 366], dos: [120, 352]},
-  "Poignet / coude": {face: [150, 190], dos: [50, 190]}};
+  "Genou gauche": {face: [116, 289], dos: [84, 290]}, "Genou droit": {face: [84, 289], dos: [116, 290]},
+  "Épaule gauche": {face: [148, 88], dos: [52, 88]}, "Épaule droite": {face: [52, 88], dos: [148, 88]},
+  "Bas du dos": {dos: [100, 176]}, "Nuque / haut du dos": {dos: [100, 60], face: [100, 58]},
+  "Hanche": {face: [130, 198], dos: [130, 198]}, "Cheville / pied": {face: [118, 367], dos: [118, 367]},
+  "Poignet / coude": {face: [157, 172], dos: [43, 172]}};
+/* silhouette féminine : même planche, déformée (épaules et taille plus fines, hanches et cuisses plus larges, cheveux) */
+const KF = [[0, .92], [100, .93], [125, .93], [160, .83], [192, 1.1], [218, 1.12], [252, 1.05], [290, .97], [400, .96]];
+const kf = y => { for (let i = 1; i < KF.length; i++) if (y <= KF[i][0]) { const [y0, k0] = KF[i - 1], [y1, k1] = KF[i]; return k0 + (k1 - k0) * (y - y0) / (y1 - y0); } return KF[KF.length - 1][1]; };
+const BRAS_F = (x, y) => x < 66 && y > 96 && y < 232;   /* bras : déplacés d'un bloc vers le corps */
+const fpt = (x, y) => BRAS_F(x, y) ? [x + (100 - 64) * (1 - kf(100)) + 2.2, y] : [100 - (100 - x) * kf(y), y];
+const FEM = new Map();
+const fem = d => { if (!FEM.has(d)) FEM.set(d, d.replace(/(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/g, (_, a, b) => fpt(+a, +b).map(v => +v.toFixed(2)).join(","))); return FEM.get(d); };
+const CHEVEUX = "M100,3 C87,3 80,12 80.5,26 C81,40 80,54 77.5,67 C81.5,69.5 86,67.5 89,63 C88,57 87.2,51 87.4,45 C85,39 84.5,31 85,24 C85.5,15 91.5,9.5 100,9.5 Z";
+const POITRINE = "M77,97 C76,107 81,115.5 89,117 C94,118 97.5,116 99,113";
+const MIR = `transform="translate(200,0) scale(-1,1)"`;
+function sexeAffiche(){ try { return profil().sexe || ""; } catch (e) { return ""; } }
 function bodySVG(vue, fills, o = {}){
-  const half = HALF[vue], tap = !!o.tap;
-  const part = (k, d, mir) => { const f = fills[k], sel = o.sel === k;
-    return `<path d="${d}" ${mir ? `transform="translate(200,0) scale(-1,1)"` : ""} class="px-m ${f ? "on" : ""} ${sel ? "sel" : ""}" style="${f ? `--f:${f}` : ""}" ${tap ? `data-a="px-muscle" data-v="${k}"` : ""}/>`; };
-  const muscles = Object.entries(half).map(([k, d]) => part(k, d, false) + part(k, d, true)).join("");
-  const abs = vue === "face" ? `<path class="px-abl" d="M100,114 L100,174 M87,128 L113,128 M87,144 L113,144 M88,159 L112,159"/>` : `<path class="px-abl" d="M100,108 L100,174"/>`;
-  const joints = (o.joints || []).map(z => { const p = JOINTS[z]?.[vue]; return p ? `<circle class="px-j" cx="${p[0]}" cy="${p[1]}" r="9"/><circle class="px-jc" cx="${p[0]}" cy="${p[1]}" r="3.5"/>` : ""; }).join("");
-  return `<svg class="px-body ${o.cls || ""}" viewBox="${o.vb || "0 0 200 400"}" role="img" aria-label="${o.label || "Corps, vue de " + (vue === "face" ? "face" : "dos")}">
-    <g class="px-base">${BASE[vue]}</g>${muscles}${abs}${o.extra || ""}${joints}</svg>`;
+  const tap = !!o.tap, mini = /mini/.test(o.cls || ""), F = (o.sexe ?? sexeAffiche()) === "F", g = d => F ? fem(d) : d;
+  const half = HALF[vue];
+  const part = (k, d, mir) => { const f = fills[k], sel = o.sel === k, m = mir ? MIR : "";
+    return `<g class="px-m ${f ? "on" : ""} ${sel ? "sel" : ""}" style="${f ? `--f:${f}` : ""}" ${tap ? `data-a="px-muscle" data-v="${k}"` : ""}><path d="${g(d)}" ${m}/><path class="px-sh" d="${g(d)}" ${m}/></g>`; };
+  const muscles = Object.entries(half).map(([k, ds]) => ds.map(d => part(k, d, false) + part(k, d, true)).join("")).join("");
+  const joints = (o.joints || []).map(z => { let p = JOINTS[z]?.[vue]; if (!p) return ""; if (F) { const q = fpt(p[0] > 100 ? 200 - p[0] : p[0], p[1]); p = [p[0] > 100 ? 200 - q[0] : q[0], q[1]]; }
+    return `<circle class="px-j" cx="${p[0]}" cy="${p[1]}" r="9"/><circle class="px-jc" cx="${p[0]}" cy="${p[1]}" r="3.5"/>`; }).join("");
+  const cheveux = F ? `<path d="${CHEVEUX}"/><path d="${CHEVEUX}" ${MIR}/>` : "";
+  const deco = DECO[vue] + (F && vue === "face" ? `<path d="${g(POITRINE)}"/><path d="${g(POITRINE)}" ${MIR}/>` : "");
+  return `<svg class="px-body ${F ? "fem" : ""} ${o.cls || ""}" viewBox="${o.vb || "0 0 200 400"}" role="img" aria-label="${o.label || "Corps, vue de " + (vue === "face" ? "face" : "dos")}">${DEFS}
+    <ellipse class="px-aura" cx="100" cy="200" rx="95" ry="200" fill="url(#pxaura)"/>
+    <g class="px-sil">${cheveux}<path d="${g(SIL)}"/><path d="${g(SIL)}" ${MIR}/><path d="${TETE_D}"/></g>
+    <g class="px-ten"><path d="${g(TEN[vue])}"/><path d="${g(TEN[vue])}" ${MIR}/></g>
+    <g class="px-mus" ${mini ? "" : `filter="url(#pxfib)"`}>${muscles}</g>
+    <g class="px-deco">${deco}</g>${o.extra || ""}${joints}</svg>`;
 }
 /* petit bonhomme pour une carte d'exercice */
 function miniBody(nom){
@@ -229,6 +281,7 @@ const formeLbl = s => s == null ? "Pas encore noté" : s >= 80 ? "Pleine forme" 
 const bar = (v, max, col) => `<div class="px-bar"><i style="width:${max > 0 ? Math.min(100, v / max * 100) : 0}%;background:${col}"></i></div>`;
 const seg = (cur, items, act) => `<div class="px-seg">${items.map(([k, l]) => `<button class="${cur === k ? "on" : ""}" data-a="${act}" data-v="${k}">${esc(l)}</button>`).join("")}</div>`;
 function askBar(){
+  if (window.NN_IA) return window.NN_IA.bar();   /* assistant (ia.js) */
   return `<button class="px-ask" data-a="px-ask"><span class="px-ask-av">NN</span><span>Une question ? Écris à Nathanael</span><span class="px-ask-go">›</span></button>`;
 }
 
@@ -506,9 +559,7 @@ const INFO = {
   "Améliorer mon cardio": ["Le cœur s'entraîne aussi", "Des efforts réguliers, d'abord tranquilles puis plus intenses par intervalles. Ton souffle progresse vite si tu restes régulier·e."],
   "Me remettre en forme": ["On reprend en douceur", "Les premières semaines posent les bases : bons gestes, régularité, plaisir. Ensuite on augmente petit à petit."],
   "Préparer un sport ou une épreuve": ["Une préparation sur mesure", "On part de ta date et de ton sport, et on construit les qualités dont tu as besoin : force, explosivité, endurance, prévention des blessures."]};
-const silhouette = sexe => `<svg viewBox="0 0 200 400" class="px-sil">${sexe === "F"
-  ? `<ellipse cx="100" cy="34" rx="17" ry="22"/><path d="M92,54 L108,54 L109,66 L91,66 Z"/><path d="M76,72 C88,68 112,68 124,72 C136,76 142,90 144,110 L150,180 L142,182 L130,116 C128,140 126,150 120,166 C132,180 136,196 134,214 L128,292 L130,370 L114,372 L108,296 L104,214 L96,214 L92,296 L86,372 L70,370 L72,292 L66,214 C64,196 68,180 80,166 C74,150 72,140 70,116 L58,182 L50,180 L56,110 C58,90 64,76 76,72 Z"/>`
-  : `<ellipse cx="100" cy="33" rx="18" ry="23"/><path d="M91,54 L109,54 L111,66 L89,66 Z"/><path d="M70,70 C84,66 116,66 130,70 C146,74 152,88 154,110 L160,184 L151,186 L138,118 C136,140 132,156 128,172 C130,190 130,200 128,216 L124,292 L127,370 L111,372 L106,296 L103,218 L97,218 L94,296 L89,372 L73,370 L76,292 L72,216 C70,200 70,190 72,172 C68,156 64,140 62,118 L49,186 L40,184 L46,110 C48,88 54,74 70,70 Z"/>`}</svg>`;
+const silhouette = sexe => bodySVG("face", {}, {cls: "px-sx", sexe, label: sexe === "F" ? "Silhouette féminine" : "Silhouette masculine"});
 function etapesObjectifs(){
   const niv = Object.entries(BQ.niv).map(([f, [q, os]]) => ({id: "niv_" + f, k: "single", q, sub: "Ton niveau : réponds au plus juste, c'est ce qui règle tes charges.", opts: os}));
   return [

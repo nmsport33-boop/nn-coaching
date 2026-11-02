@@ -6,20 +6,27 @@ html.px-lock,html.px-lock body{overflow:hidden}
 
 /* bonhomme */
 .px-body{display:block;width:100%;height:auto}
-.px-body .px-base{fill:var(--px-body)}
-.px-m{fill:var(--px-body);stroke:var(--px-line);stroke-width:.8;transition:fill .25s}
-.px-m.on{fill:var(--f);filter:drop-shadow(0 0 4px var(--f))}
-.px-m.sel{stroke:#fff;stroke-width:2}
+.px-body .px-sil path{fill:url(#pxsil);stroke:rgb(var(--a1r));stroke-opacity:.9;stroke-width:1.1;stroke-linejoin:round}
+.px-body .px-sil{filter:drop-shadow(0 0 2px rgba(var(--a1r),.9)) drop-shadow(0 0 9px rgba(var(--a1r),.55))}
+.px-ten path{fill:rgba(225,245,255,.2);stroke:rgba(var(--a1r),.55);stroke-width:.4;stroke-linejoin:round}
+.px-m path{fill:rgba(var(--ov),.07);stroke:var(--b0);stroke-width:1.3;stroke-linejoin:round;transition:fill .25s}
+.px-m path.px-sh{fill:url(#pxsh);stroke:rgba(var(--a1r),.55);stroke-width:.45;pointer-events:none}
+.px-m.on path:not(.px-sh){fill:var(--f)}
+.px-m.on path.px-sh{stroke:rgba(255,255,255,.7)}
+.px-m.on{filter:drop-shadow(0 0 2px var(--f)) drop-shadow(0 0 7px var(--f))}
+.px-m.sel path:not(.px-sh){stroke:#fff;stroke-width:1.6}
 .px-m[data-a]{cursor:pointer}
-.px-abl{stroke:var(--px-line);stroke-width:.8;fill:none}
+.px-deco path{fill:none;stroke:rgba(var(--a1r),.45);stroke-width:.6;stroke-linecap:round}
 .px-j{fill:rgba(255,138,61,.25);stroke:var(--warn);stroke-width:1.5;animation:pxpulse 1.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 .px-jc{fill:var(--warn)}
 @keyframes pxpulse{50%{transform:scale(1.35);opacity:.5}}
 .px-body.mini{width:56px;height:84px;flex:none}
-.px-body.mini .px-m{stroke-width:0}
+.px-body.mini .px-m path{stroke-width:.9}
+.px-body.mini .px-deco,.px-body.mini .px-fib,.px-body.mini .px-aura{display:none}
+.px-body.mini .px-sil{filter:drop-shadow(0 0 3px rgba(var(--a1r),.5))}
+.px-fib path{fill:none;stroke:rgba(0,0,0,.3);stroke-width:.6;stroke-linecap:round;pointer-events:none}
 .px-body.glow{max-width:190px;margin:0 auto;filter:drop-shadow(0 0 22px rgba(var(--a1r),.45))}
-.px-body.glow .px-m{fill:rgba(var(--a1r),.16);stroke:rgba(var(--a1r),.55)}
-.px-body.glow .px-base{fill:rgba(var(--a1r),.1)}
+.px-body.glow .px-m path:not(.px-sh){fill:rgba(var(--a1r),.2)}
 .px-band ellipse{fill:none;stroke:rgba(var(--ov),.25);stroke-width:2;stroke-dasharray:3 3}
 .px-band.on ellipse{stroke:var(--a1);stroke-dasharray:none;filter:drop-shadow(0 0 3px var(--a1))}
 
@@ -229,7 +236,8 @@ html.px-lock,html.px-lock body{overflow:hidden}
 .px-sexe button.on{border-color:var(--a1);box-shadow:0 0 24px rgba(var(--a1r),.3)}
 .px-sexe button.on span i{background:var(--a1);border-color:var(--a1);box-shadow:inset 0 0 0 3px var(--b0)}
 .px-sil{height:min(38vh,300px);width:auto;fill:rgba(var(--a1r),.18);stroke:rgba(var(--a1r),.8);stroke-width:1.5;filter:drop-shadow(0 0 14px rgba(var(--a1r),.45))}
-.px-sexe button:not(.on) .px-sil{opacity:.65}
+.px-sexe button:not(.on) .px-body{opacity:.6}
+.px-sexe .px-body{max-width:130px;margin:0 auto}
 .px-wdate{font-size:22px;padding:16px;border-radius:20px;border:1px solid var(--line);background:rgba(var(--ov),.06);color:var(--ink);text-align:center;width:100%;min-height:62px}
 .px-wtxt{width:100%;font-size:16px;padding:14px 16px;border-radius:20px;border:1px solid var(--line);background:rgba(var(--ov),.06);color:var(--ink);text-align:left}
 .px-num{display:flex;align-items:center;justify-content:center;gap:14px}

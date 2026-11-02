@@ -1,0 +1,60 @@
+# Met en ligne la fonction serveur de l'assistant (dossier functions/) sur Firebase.
+# Se lance tout seul quand functions/ change, ou à la main (onglet Actions > Assistant > Run workflow).
+# Il faut deux secrets du dépôt (Settings > Secrets and variables > Actions) :
+#   FIREBASE_SA        = le fichier JSON de la clé du compte de service Firebase (copier tout le contenu)
+#   ANTHROPIC_API_KEY  = la clé API Anthropic (console.anthropic.com)
+# Sans ces secrets, rien ne se passe.
+name: Assistant (fonction serveur)
+on:
+  push:
+    branches: [gh-pages]
+    paths: ["functions/**", "firebase.json", ".github/workflows/assistant.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency: assistant
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      PROJET: nn-coaching-bd311
+      PRET: ${{ secrets.FIREBASE_SA != '' && secrets.ANTHROPIC_API_KEY != '' }}
+    steps:
+      - name: Secrets présents ?
+        if: env.PRET != 'true'
+        run: echo "::notice::Secrets FIREBASE_SA ou ANTHROPIC_API_KEY absents, rien à mettre en ligne."
+      - uses: actions/checkout@v4
+        if: env.PRET == 'true'
+      - uses: actions/setup-node@v4
+        if: env.PRET == 'true'
+        with:
+          node-version: 22
+      - uses: google-github-actions/auth@v2
+        if: env.PRET == 'true'
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SA }}
+      - name: Région de la base Firestore
+        if: env.PRET == 'true'
+        run: |
+          LOC=$(gcloud firestore databases describe --database='(default)' --project "$PROJET" --format='value(locationId)' || true)
+          case "$LOC" in eur3) R=europe-west1;; nam5|nam7|"") R=us-central1;; *) R="$LOC";; esac
+          echo "Base : ${LOC:-inconnue} -> fonction en $R"
+          echo "REGION=$R" > functions/.env
+      - name: Dépendances
+        if: env.PRET == 'true'
+        run: npm ci --no-audit --no-fund
+        working-directory: functions
+      - name: Clé API (secret Firebase)
+        if: env.PRET == 'true'
+        env:
+          CLE: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          f=$(mktemp); printf '%s' "$CLE" > "$f"
+          npx -y firebase-tools@15 functions:secrets:set ANTHROPIC_API_KEY --data-file "$f" --project "$PROJET" --non-interactive --force
+          rm -f "$f"
+      - name: Mise en ligne
+        if: env.PRET == 'true'
+        run: |
+          # le tout premier déploiement échoue parfois le temps que Google active ses services : on réessaie une fois
+          npx -y firebase-tools@15 deploy --only functions --project "$PROJET" --non-interactive --force \
+            || (sleep 60 && npx -y firebase-tools@15 deploy --only functions --project "$PROJET" --non-interactive --force)
