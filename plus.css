@@ -8,7 +8,7 @@ html.px-lock,html.px-lock body{overflow:hidden}
 .px-body{display:block;width:100%;height:auto}
 .px-body .px-sil path{fill:url(#pxsil);stroke:rgb(var(--a1r));stroke-opacity:.9;stroke-width:1.1;stroke-linejoin:round}
 .px-body .px-sil{filter:drop-shadow(0 0 2px rgba(var(--a1r),.9)) drop-shadow(0 0 9px rgba(var(--a1r),.55))}
-.px-body .px-os ellipse{fill:rgba(var(--ov),.05);stroke:rgba(var(--a1r),.35);stroke-width:.6}
+.px-ten path{fill:rgba(225,245,255,.2);stroke:rgba(var(--a1r),.55);stroke-width:.4;stroke-linejoin:round}
 .px-m path{fill:rgba(var(--ov),.07);stroke:var(--b0);stroke-width:1.3;stroke-linejoin:round;transition:fill .25s}
 .px-m path.px-sh{fill:url(#pxsh);stroke:rgba(var(--a1r),.55);stroke-width:.45;pointer-events:none}
 .px-m.on path:not(.px-sh){fill:var(--f)}
@@ -16,7 +16,7 @@ html.px-lock,html.px-lock body{overflow:hidden}
 .px-m.on{filter:drop-shadow(0 0 2px var(--f)) drop-shadow(0 0 7px var(--f))}
 .px-m.sel path:not(.px-sh){stroke:#fff;stroke-width:1.6}
 .px-m[data-a]{cursor:pointer}
-.px-deco path{fill:none;stroke:rgba(var(--ov),.16);stroke-width:.7;stroke-linecap:round}
+.px-deco path{fill:none;stroke:rgba(var(--a1r),.45);stroke-width:.6;stroke-linecap:round}
 .px-j{fill:rgba(255,138,61,.25);stroke:var(--warn);stroke-width:1.5;animation:pxpulse 1.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
 .px-jc{fill:var(--warn)}
 @keyframes pxpulse{50%{transform:scale(1.35);opacity:.5}}
