@@ -21,7 +21,11 @@ Le dossier indique « Plan nutrition : OUI » ou « NON ».
 - OUI : Nathanael t'autorise à faire toi-même sa programmation nutritionnelle. Quand l'adhérent demande un plan de repas, des menus ou une organisation de ses repas, ou quand c'est clairement utile, tu remplis plan_repas (existe = true) : il est enregistré directement dans son onglet Nutrition, sans attendre Nathanael, qui le voit dans la fiche. C'est la seule chose que tu peux appliquer toi-même.
   Le plan respecte ses cibles du jour (calories et protéines du dossier) en restant simple, avec des aliments courants en France et des quantités faciles (grammes, cuillères, portions). Tu tiens compte de ses goûts, allergies, horaires, budget et de ses jours de séance quand tu les connais ; s'il manque une info importante (allergie, régime végétarien, horaires), tu la demandes avant de faire le plan. 7 jours au plus ; souvent 3 à 4 journées types suffisent (jour de séance, jour de repos, week-end).
   Tu ne changes jamais les cibles elles-mêmes : si elles te semblent à revoir, c'est une proposition pour Nathanael. Mineur : aucune restriction, aucun déficit, aucun complément, des repas pour bien grandir. Trouble alimentaire évoqué, perte de poids très rapide ou malaise : pas de plan, passer_la_main = true.
-  Dans reponse, tu résumes le plan en 2 ou 3 phrases et tu dis qu'il est dans son onglet Nutrition.
+  Avec le plan, tu fais aussi :
+  - recettes : les plats du plan qui demandent une préparation (3 à 6 recettes), avec ingrédients en quantités pour UNE portion et étapes courtes et numérotées. Rapides si l'adhérent a peu de temps. Une recette ne contient jamais un de ses allergènes.
+  - courses : la liste de courses de la semaine pour tout le plan (et pour le nombre de personnes indiqué), regroupée par rayon (Fruits et légumes, Viandes et poissons, Crèmerie et œufs, Épicerie, Surgelés, Boissons), avec des quantités d'achat réelles (barquette de 1 kg, sachet de 500 g, boîte de 6 œufs…). Pour chaque article, le magasin le plus intéressant parmi ses magasins préférés et ce qu'il faut prendre : de préférence la marque du magasin, bon rapport qualité-prix, ni premier prix médiocre ni marque chère. Marques de magasin que tu peux citer : Intermarché (Pâturages pour la crèmerie, Chabrior pour l'épicerie, Monique Ranou pour la charcuterie, Paquito pour les jus, Top Budget pour le premier prix), Aldi (Milsani pour la crèmerie, sinon dis « marque Aldi »), Lidl (Milbona pour la crèmerie, Combino pour les pâtes, Crownfield pour les céréales), Leclerc (Marque Repère, Eco+ pour le premier prix). N'invente jamais d'autre nom de marque ou de produit : sinon écris « marque du magasin ». Prix estimé en euros pour chaque article, d'après les prix moyens en supermarché en France : c'est une estimation, à arrondir.
+  - budget_estime : le total estimé de la liste. Il doit rester dans son budget par semaine (multiplié par le nombre de personnes si les courses sont pour plusieurs). Si c'est impossible avec ses cibles, tu choisis les aliments les moins chers (œufs, légumineuses, flocons d'avoine, poulet entier ou cuisses, surgelés, fruits de saison) et tu le dis.
+  Dans reponse, tu résumes le plan en 2 ou 3 phrases, tu donnes le total estimé des courses face à son budget, et tu dis que menus, recettes et liste de courses sont dans son onglet Nutrition.
 - NON : pas de plan de repas ni de menus détaillés (plan_repas.existe = false). Tu peux donner une idée de repas ponctuelle. S'il veut un vrai suivi nutrition, tu lui dis gentiment, sans insister, que le Plan nutrition (39 € par mois, à voir avec Nathanael ou dans la page Offres) le permet.
 - Motiver, rassurer, féliciter les efforts réels (séances faites, régularité).
 - Préparer le travail de Nathanael : dans note_pour_nathanael, une ou deux phrases sur ce qu'il doit savoir (ressenti, difficulté, besoin, idée). Vide si rien d'utile.
@@ -73,9 +77,32 @@ const SCHEMA = {
           required: ["nom", "matin", "midi", "collation", "soir"],
           additionalProperties: false
         }},
-        conseils: {type: "string", description: "2 à 4 conseils courts (hydratation, préparation, astuces). Vide si existe = false."}
+        conseils: {type: "string", description: "2 à 4 conseils courts (hydratation, préparation, astuces). Vide si existe = false."},
+        recettes: {type: "array", description: "3 à 6 recettes. Vide si existe = false.", items: {
+          type: "object",
+          properties: {
+            nom: {type: "string"}, temps: {type: "string", description: "Ex. « 10 min »."},
+            ingredients: {type: "array", items: {type: "string"}, description: "Pour une portion, avec quantités."},
+            etapes: {type: "array", items: {type: "string"}, description: "Étapes courtes, dans l'ordre."}
+          },
+          required: ["nom", "temps", "ingredients", "etapes"],
+          additionalProperties: false
+        }},
+        courses: {type: "array", description: "Liste de courses de la semaine, 10 à 35 lignes. Vide si existe = false.", items: {
+          type: "object",
+          properties: {
+            rayon: {type: "string", enum: ["Fruits et légumes", "Viandes et poissons", "Crèmerie et œufs", "Épicerie", "Surgelés", "Boissons", "Autre"]},
+            article: {type: "string"}, quantite: {type: "string"},
+            magasin: {type: "string", description: "Un de ses magasins préférés."},
+            produit: {type: "string", description: "Ce qu'il faut prendre, ex. « Fromage blanc 0 % Pâturages 1 kg »."},
+            prix: {type: "number", description: "Prix estimé en euros."}
+          },
+          required: ["rayon", "article", "quantite", "magasin", "produit", "prix"],
+          additionalProperties: false
+        }},
+        budget_estime: {type: "number", description: "Total estimé de la liste de courses, en euros. 0 si existe = false."}
       },
-      required: ["existe", "titre", "jours", "conseils"],
+      required: ["existe", "titre", "jours", "conseils", "recettes", "courses", "budget_estime"],
       additionalProperties: false
     },
     passer_la_main: {type: "boolean", description: "true si Nathanael doit intervenir lui-même (santé, douleur, situation hors de ton rôle)."},
@@ -147,7 +174,7 @@ function contexte({member: m, seances, notes, maintenant = Date.now()}){
   L.push(`Cibles nutrition : ${nut}.`);
   L.push(`Plan nutrition : ${m.nutritionPlan ? "OUI" + (m.nutritionPlan.offert ? " (offert pendant la période test)" : "") : "NON (option à 39 €/mois)"}.`);
   const go = notes.find(n => n.id === "gouts");
-  if (m.nutritionPlan) L.push(go ? `Goûts alimentaires (questionnaire de l'adhérent) : aime ${court(go.aime, 300) || "?"} ; n'aime pas / ne mange pas ${court(go.naime, 300) || "rien de précisé"} ; allergies et intolérances ${[...(go.allergenes || []), go.allergies].filter(Boolean).join(", ") || "aucune déclarée"} ; le midi ${({maison: "à la maison", gamelle: "gamelle au travail", cantine: "cantine ou self", dehors: "restaurant ou sandwich"})[go.midi] || "?"} ; régime ${(go.regime || []).join(", ") || "aucun"} ; ${go.repas || "?"} repas par jour ; temps pour cuisiner ${({rapide: "moins de 15 min", moyen: "15 à 30 min", aime: "aime cuisiner"})[go.cuisine] || "?"}${go.autre ? " ; autre : " + court(go.autre, 300) : ""}. Le plan de repas suit ces goûts : jamais un aliment qu'il ne mange pas, ni un aliment contenant un de ses allergènes (pense aux sources cachées : gluten dans le pain, les pâtes, la semoule, la panure ; lait dans le fromage, le beurre, la whey ; fruits à coque dans les barres et le pesto ; soja dans le tofu et les sauces). Le midi s'adapte à l'endroit où il mange (gamelle facile à transporter, choix malins à la cantine ou au restaurant).` : "Goûts alimentaires : pas encore remplis (lui demander ses goûts et allergies avant un plan).");
+  if (m.nutritionPlan) L.push(go ? `Goûts alimentaires (questionnaire de l'adhérent) : aime ${court(go.aime, 300) || "?"} ; n'aime pas / ne mange pas ${court(go.naime, 300) || "rien de précisé"} ; allergies et intolérances ${[...(go.allergenes || []), go.allergies].filter(Boolean).join(", ") || "aucune déclarée"} ; le midi ${({maison: "à la maison", gamelle: "gamelle au travail", cantine: "cantine ou self", dehors: "restaurant ou sandwich"})[go.midi] || "?"} ; régime ${(go.regime || []).join(", ") || "aucun"} ; ${go.repas || "?"} repas par jour ; temps pour cuisiner ${({rapide: "moins de 15 min", moyen: "15 à 30 min", aime: "aime cuisiner"})[go.cuisine] || "?"}${go.autre ? " ; autre : " + court(go.autre, 300) : ""} ; magasins préférés à Saint-Médard-en-Jalles : ${(go.magasins || []).join(", ") || "Intermarché, Aldi"} ; budget courses ${go.budget ? go.budget + " € par semaine" + (go.budget >= 100 ? " ou plus" : "") : "non précisé"} ; courses pour ${go.personnes || 1} personne${(go.personnes || 1) > 1 ? "s" : ""}. Le plan de repas suit ces goûts : jamais un aliment qu'il ne mange pas, ni un aliment contenant un de ses allergènes (pense aux sources cachées : gluten dans le pain, les pâtes, la semoule, la panure ; lait dans le fromage, le beurre, la whey ; fruits à coque dans les barres et le pesto ; soja dans le tofu et les sauces). Le midi s'adapte à l'endroit où il mange (gamelle facile à transporter, choix malins à la cantine ou au restaurant).` : "Goûts alimentaires : pas encore remplis (lui demander ses goûts et allergies avant un plan).");
   if (m.nutritionPlan && m.planRepas) L.push(`Plan de repas actuel (${quand(m.planRepas.at || 0)}) : ${court(m.planRepas.titre, 120)} · ${(m.planRepas.jours || []).map(j => j.nom).join(", ")}`);
   if (m.iaConsignes) L.push(`CONSIGNES DE NATHANAEL POUR L'ASSISTANT (à respecter) :\n${court(m.iaConsignes, 1500)}`);
   L.push(`\nSÉANCES FAITES (${faites.length}) :\n${faites.slice(-4).map(seanceTxt).join("\n") || "aucune"}`);
@@ -179,7 +206,11 @@ function lireReponse(texte){
   const prop = p.existe && String(p.titre || "").trim() ? {quoi: p.quoi || "autre", titre: court(p.titre, 90), detail: court(p.detail, 1200)} : null;
   const pl = j.plan_repas || {};
   const jours = Array.isArray(pl.jours) ? pl.jours.slice(0, 7).map(d => ({nom: court(d.nom, 60), matin: court(d.matin, 400), midi: court(d.midi, 400), collation: court(d.collation, 400), soir: court(d.soir, 400)})).filter(d => d.nom) : [];
-  const plan = pl.existe && jours.length ? {titre: court(pl.titre, 120) || "Ton plan de repas", jours, conseils: court(pl.conseils, 800)} : null;
+  const L = (a, n) => Array.isArray(a) ? a.slice(0, n) : [];
+  const recettes = L(pl.recettes, 8).map(r => ({nom: court(r.nom, 80), temps: court(r.temps, 30), ingredients: L(r.ingredients, 20).map(x => court(x, 120)), etapes: L(r.etapes, 12).map(x => court(x, 300))})).filter(r => r.nom);
+  const courses = L(pl.courses, 50).map(c => ({rayon: court(c.rayon, 40) || "Autre", article: court(c.article, 80), quantite: court(c.quantite, 60), magasin: court(c.magasin, 30), produit: court(c.produit, 120), prix: Math.max(0, Math.round(Number(c.prix) * 100) / 100 || 0)})).filter(c => c.article);
+  const total = Math.round(courses.reduce((t, c) => t + c.prix, 0) * 100) / 100;
+  const plan = pl.existe && jours.length ? {titre: court(pl.titre, 120) || "Ton plan de repas", jours, conseils: court(pl.conseils, 800), recettes, courses, budgetEstime: total || Number(pl.budget_estime) || 0} : null;
   return {r: String(j.reponse || "").trim().slice(0, 3000), prop, plan, alerte: !!j.passer_la_main, pourCoach: court(j.note_pour_nathanael, 600)};
 }
 

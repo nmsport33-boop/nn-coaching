@@ -24,7 +24,7 @@ exports.assistant = onDocumentCreated({
   document: "members/{mid}/notes/{nid}",
   region: process.env.REGION || "europe-west1",
   secrets: [CLE],
-  timeoutSeconds: 120,
+  timeoutSeconds: 300,
   memory: "512MiB",
   maxInstances: 3,
   retry: false
@@ -45,7 +45,7 @@ exports.assistant = onDocumentCreated({
   try {
     const rep = await client.beta.messages.create({
       model: MODELE,
-      max_tokens: 8000,
+      max_tokens: 16000,
       betas: ["server-side-fallback-2026-07-01"],
       fallbacks: "default",
       output_config: {effort: "medium", format: {type: "json_schema", schema: A.SCHEMA}},
