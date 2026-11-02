@@ -649,8 +649,8 @@ body.ecran-on .repos{display:none!important}
 .off-faq p{margin:0;padding:0 14px 14px;font-size:14px;color:var(--muted);line-height:1.5}
 .off-foot{margin:22px 0 8px;text-align:center;font-size:12.5px;color:var(--muted)}
 </style>
-<link rel="stylesheet" href="plus.css?v=2026-11-02s">
-<link rel="stylesheet" href="ia.css?v=2026-11-02s">
+<link rel="stylesheet" href="plus.css?v=2026-11-02t">
+<link rel="stylesheet" href="ia.css?v=2026-11-02t">
 </head>
 <body>
 
@@ -672,11 +672,11 @@ body.ecran-on .repos{display:none!important}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="config.js?v=2026-11-02s"></script>
+<script src="config.js?v=2026-11-02t"></script>
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-02s";
+const BUILD = "2026-11-02t";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -832,11 +832,14 @@ const OFFRES = [
   {id:"suivi", c:"c2", top:true, nom:"Suivi à distance", sub:"Le coaching complet, où tu veux", prix:59, per:"/ mois", alt:"ou 159 € les 3 mois (53 €/mois)", ico:"pulse",
     feat:["Tout le Programme 4 semaines","Chaque séance ajustée à ton dernier retour","Séances débloquées au fil de tes progrès, en sécurité","Questionnaire santé après chaque séance : douleur ou alerte, on adapte","Réponses de Nathanael à tes questions dans l'appli","Sans engagement, au mois"]},
   {id:"mixte", c:"c3", nom:"Hybride", sub:"Distance + une séance coachée en salle", prix:79, per:"/ mois", ico:"star",
-    feat:["Tout le Suivi à distance","1 séance coachée par mois avec Nathanael","Technique corrigée en direct, charges ajustées sur place","Programme réglé juste après la séance"]}];
+    feat:["Tout le Suivi à distance","1 séance coachée par mois avec Nathanael","Technique corrigée en direct, charges ajustées sur place","Programme réglé juste après la séance"]},
+  {id:"nutrition", c:"c1", nom:"Plan nutrition", sub:"En option, avec n'importe quelle formule", prix:39, per:"/ mois", ico:"fork",
+    feat:["Tes calories et protéines du jour, calculées pour toi","Journal des repas en quelques secondes","Cibles et conseils réglés par Nathanael","Sans engagement, au mois"]}];
 const OFF_ICO = {
   bolt:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>`,
   pulse:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h4l3-8 4 16 3-8h6"/></svg>`,
-  star:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg>`};
+  star:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg>`,
+  fork:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 3v8M4.5 3v5a2.5 2.5 0 0 0 5 0V3M7 11v10M17 21V3c-2.5 1.5-3.5 4-3.5 8h3.5"/></svg>`};
 const SEANCE_PRIVEE = 30;
 function offresView(m){
   const coach = !m, e = m ? aboEtat(m) : null;
@@ -864,7 +867,8 @@ function offresView(m){
       <p>Des séances construites pour toi, ajustées après chaque retour, et ta santé suivie à chaque étape.</p>
       <div class="off-stats"><div><b>100 %</b><span>sur mesure</span></div><div><b>1 vidéo</b><span>par exercice</span></div><div><b>0</b><span>engagement</span></div></div></div>
     ${premiumOffert(m) ? `<div class="off-test"><div class="ic">✦</div><div><b>Tu as le Premium gratuitement</b><span>Tu fais partie des testeurs : le Suivi à distance (valeur 59 €/mois) t'est offert pendant la phase de test${e.prix && !e.offert ? `, tu règles seulement tes séances coachées (${e.prix} €/mois)` : ""}. Rien ne change pour toi, merci pour tes retours !</span></div></div>` : ""}
-    <div class="off-list">${OFFRES.map(card).join("")}</div>
+    ${m?.nutritionPlan?.offert ? `<div class="off-test"><div class="ic">✦</div><div><b>Le Plan nutrition t'est offert</b><span>Pendant la période test, tu as le Plan nutrition (valeur 39 €/mois) gratuitement. Merci pour tes retours !</span></div></div>` : ""}
+    <div class="off-list">${OFFRES.filter(o => !(o.id === "nutrition" && m?.nutritionPlan)).map(card).join("")}</div>
     <div class="off-carte"><div class="p">${SEANCE_PRIVEE} €<small>la séance</small></div><div><b>Séance coachée à la carte</b><span>Une heure en salle avec Nathanael, à deux maximum, à Saint-Médard-en-Jalles. Réserve-la dans « Planning ».</span></div></div>
     <div class="off-sec-t">Comparer</div>
     <table class="off-tbl"><thead><tr><th></th><th>Programme</th><th class="hl">Suivi</th><th>Hybride</th></tr></thead>
@@ -2531,7 +2535,7 @@ function startData(isCoach, cid){
 })();
 
 </script>
-<script src="plus.js?v=2026-11-02s"></script>
-<script src="ia.js?v=2026-11-02s"></script>
+<script src="plus.js?v=2026-11-02t"></script>
+<script src="ia.js?v=2026-11-02t"></script>
 </body>
 </html>
