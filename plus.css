@@ -312,3 +312,7 @@ html.px-lock,html.px-lock body{overflow:hidden}
   #px-print td span{color:#444;font-size:12px}
   #px-print .n{margin-top:12px;font-size:11px;color:#555}
 }
+#px-pdfbox{position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;padding:16px}
+.px-pdfbox-in{width:100%;max-width:440px;background:var(--surface);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 10px 40px rgba(0,0,0,.5);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:10px;color:var(--ink);margin-bottom:max(16px,env(safe-area-inset-bottom))}
+.px-pdfbox-in .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.px-pdfbox-in a.btn{text-decoration:none}
