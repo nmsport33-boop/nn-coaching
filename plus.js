@@ -223,19 +223,33 @@ const JOINTS = {
   "Bas du dos": {dos: [100, 176]}, "Nuque / haut du dos": {dos: [100, 60], face: [100, 58]},
   "Hanche": {face: [130, 198], dos: [130, 198]}, "Cheville / pied": {face: [118, 367], dos: [118, 367]},
   "Poignet / coude": {face: [157, 172], dos: [43, 172]}};
+/* silhouette féminine : même planche, déformée (épaules et taille plus fines, hanches et cuisses plus larges, cheveux) */
+const KF = [[0, .92], [100, .93], [125, .93], [160, .83], [192, 1.1], [218, 1.12], [252, 1.05], [290, .97], [400, .96]];
+const kf = y => { for (let i = 1; i < KF.length; i++) if (y <= KF[i][0]) { const [y0, k0] = KF[i - 1], [y1, k1] = KF[i]; return k0 + (k1 - k0) * (y - y0) / (y1 - y0); } return KF[KF.length - 1][1]; };
+const BRAS_F = (x, y) => x < 66 && y > 96 && y < 232;   /* bras : déplacés d'un bloc vers le corps */
+const fpt = (x, y) => BRAS_F(x, y) ? [x + (100 - 64) * (1 - kf(100)) + 2.2, y] : [100 - (100 - x) * kf(y), y];
+const FEM = new Map();
+const fem = d => { if (!FEM.has(d)) FEM.set(d, d.replace(/(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/g, (_, a, b) => fpt(+a, +b).map(v => +v.toFixed(2)).join(","))); return FEM.get(d); };
+const CHEVEUX = "M100,3 C87,3 80,12 80.5,26 C81,40 80,54 77.5,67 C81.5,69.5 86,67.5 89,63 C88,57 87.2,51 87.4,45 C85,39 84.5,31 85,24 C85.5,15 91.5,9.5 100,9.5 Z";
+const POITRINE = "M77,97 C76,107 81,115.5 89,117 C94,118 97.5,116 99,113";
 const MIR = `transform="translate(200,0) scale(-1,1)"`;
+function sexeAffiche(){ try { return profil().sexe || ""; } catch (e) { return ""; } }
 function bodySVG(vue, fills, o = {}){
-  const half = HALF[vue], tap = !!o.tap, mini = /mini/.test(o.cls || "");
+  const tap = !!o.tap, mini = /mini/.test(o.cls || ""), F = (o.sexe ?? sexeAffiche()) === "F", g = d => F ? fem(d) : d;
+  const half = HALF[vue];
   const part = (k, d, mir) => { const f = fills[k], sel = o.sel === k, m = mir ? MIR : "";
-    return `<g class="px-m ${f ? "on" : ""} ${sel ? "sel" : ""}" style="${f ? `--f:${f}` : ""}" ${tap ? `data-a="px-muscle" data-v="${k}"` : ""}><path d="${d}" ${m}/><path class="px-sh" d="${d}" ${m}/></g>`; };
+    return `<g class="px-m ${f ? "on" : ""} ${sel ? "sel" : ""}" style="${f ? `--f:${f}` : ""}" ${tap ? `data-a="px-muscle" data-v="${k}"` : ""}><path d="${g(d)}" ${m}/><path class="px-sh" d="${g(d)}" ${m}/></g>`; };
   const muscles = Object.entries(half).map(([k, ds]) => ds.map(d => part(k, d, false) + part(k, d, true)).join("")).join("");
-  const joints = (o.joints || []).map(z => { const p = JOINTS[z]?.[vue]; return p ? `<circle class="px-j" cx="${p[0]}" cy="${p[1]}" r="9"/><circle class="px-jc" cx="${p[0]}" cy="${p[1]}" r="3.5"/>` : ""; }).join("");
-  return `<svg class="px-body ${o.cls || ""}" viewBox="${o.vb || "0 0 200 400"}" role="img" aria-label="${o.label || "Corps, vue de " + (vue === "face" ? "face" : "dos")}">${DEFS}
+  const joints = (o.joints || []).map(z => { let p = JOINTS[z]?.[vue]; if (!p) return ""; if (F) { const q = fpt(p[0] > 100 ? 200 - p[0] : p[0], p[1]); p = [p[0] > 100 ? 200 - q[0] : q[0], q[1]]; }
+    return `<circle class="px-j" cx="${p[0]}" cy="${p[1]}" r="9"/><circle class="px-jc" cx="${p[0]}" cy="${p[1]}" r="3.5"/>`; }).join("");
+  const cheveux = F ? `<path d="${CHEVEUX}"/><path d="${CHEVEUX}" ${MIR}/>` : "";
+  const deco = DECO[vue] + (F && vue === "face" ? `<path d="${g(POITRINE)}"/><path d="${g(POITRINE)}" ${MIR}/>` : "");
+  return `<svg class="px-body ${F ? "fem" : ""} ${o.cls || ""}" viewBox="${o.vb || "0 0 200 400"}" role="img" aria-label="${o.label || "Corps, vue de " + (vue === "face" ? "face" : "dos")}">${DEFS}
     <ellipse class="px-aura" cx="100" cy="200" rx="95" ry="200" fill="url(#pxaura)"/>
-    <g class="px-sil"><path d="${SIL}"/><path d="${SIL}" ${MIR}/><path d="${TETE_D}"/></g>
-    <g class="px-ten"><path d="${TEN[vue]}"/><path d="${TEN[vue]}" ${MIR}/></g>
+    <g class="px-sil">${cheveux}<path d="${g(SIL)}"/><path d="${g(SIL)}" ${MIR}/><path d="${TETE_D}"/></g>
+    <g class="px-ten"><path d="${g(TEN[vue])}"/><path d="${g(TEN[vue])}" ${MIR}/></g>
     <g class="px-mus" ${mini ? "" : `filter="url(#pxfib)"`}>${muscles}</g>
-    <g class="px-deco">${DECO[vue]}</g>${o.extra || ""}${joints}</svg>`;
+    <g class="px-deco">${deco}</g>${o.extra || ""}${joints}</svg>`;
 }
 /* petit bonhomme pour une carte d'exercice */
 function miniBody(nom){
@@ -545,9 +559,7 @@ const INFO = {
   "Améliorer mon cardio": ["Le cœur s'entraîne aussi", "Des efforts réguliers, d'abord tranquilles puis plus intenses par intervalles. Ton souffle progresse vite si tu restes régulier·e."],
   "Me remettre en forme": ["On reprend en douceur", "Les premières semaines posent les bases : bons gestes, régularité, plaisir. Ensuite on augmente petit à petit."],
   "Préparer un sport ou une épreuve": ["Une préparation sur mesure", "On part de ta date et de ton sport, et on construit les qualités dont tu as besoin : force, explosivité, endurance, prévention des blessures."]};
-const silhouette = sexe => `<svg viewBox="0 0 200 400" class="px-sil">${sexe === "F"
-  ? `<ellipse cx="100" cy="34" rx="17" ry="22"/><path d="M92,54 L108,54 L109,66 L91,66 Z"/><path d="M76,72 C88,68 112,68 124,72 C136,76 142,90 144,110 L150,180 L142,182 L130,116 C128,140 126,150 120,166 C132,180 136,196 134,214 L128,292 L130,370 L114,372 L108,296 L104,214 L96,214 L92,296 L86,372 L70,370 L72,292 L66,214 C64,196 68,180 80,166 C74,150 72,140 70,116 L58,182 L50,180 L56,110 C58,90 64,76 76,72 Z"/>`
-  : `<ellipse cx="100" cy="33" rx="18" ry="23"/><path d="M91,54 L109,54 L111,66 L89,66 Z"/><path d="M70,70 C84,66 116,66 130,70 C146,74 152,88 154,110 L160,184 L151,186 L138,118 C136,140 132,156 128,172 C130,190 130,200 128,216 L124,292 L127,370 L111,372 L106,296 L103,218 L97,218 L94,296 L89,372 L73,370 L76,292 L72,216 C70,200 70,190 72,172 C68,156 64,140 62,118 L49,186 L40,184 L46,110 C48,88 54,74 70,70 Z"/>`}</svg>`;
+const silhouette = sexe => bodySVG("face", {}, {cls: "px-sx", sexe, label: sexe === "F" ? "Silhouette féminine" : "Silhouette masculine"});
 function etapesObjectifs(){
   const niv = Object.entries(BQ.niv).map(([f, [q, os]]) => ({id: "niv_" + f, k: "single", q, sub: "Ton niveau : réponds au plus juste, c'est ce qui règle tes charges.", opts: os}));
   return [
