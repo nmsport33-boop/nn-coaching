@@ -674,7 +674,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-02a";
+const BUILD = "2026-11-02b";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -948,17 +948,21 @@ const exoFait = (s, bi, ei, b) => { const n = nbTours(b.tours); return n >= 2 ? 
 const toursComplets = (s, bi, b) => { const n = nbTours(b.tours), ex = b.exos || []; let f = 0; while (f < n && ex.every((_, ei) => rondOn(s, bi, ei, f + 1))) f++; return f; };
 const blocFini = (s, bi, b) => (b.exos || []).every((_, ei) => exoFait(s, bi, ei, b));
 const seanceFinie = s => (s.blocs || []).some(b => (b.exos || []).length) && (s.blocs || []).every((b, bi) => blocFini(s, bi, b));
+/* ordre imposé dans un bloc à tours : exo 1 puis exo 2 (puis 3…), repos, et on recommence au tour suivant */
+function rondSuivant(s, bi, b){ const n = nbTours(b.tours), ex = b.exos || [];
+  for (let t = 1; t <= n; t++) for (let ei = 0; ei < ex.length; ei++) if (!rondOn(s, bi, ei, t)) return {ei, t, k: `${bi}-${ei}-t${t}`};
+  return null; }
 function rondsExo(s, sid, b, bi, ei){
-  const n = nbTours(b.tours), f = toursComplets(s, bi, b);
+  const n = nbTours(b.tours), nx = rondSuivant(s, bi, b);
   return `<div class="ronds"><span>Tour</span>${Array.from({length: n}, (_, i) => { const t = i + 1, on = rondOn(s, bi, ei, t);
-    return `<button class="rond ${on ? "on" : ""} ${!on && t === f + 1 ? "next" : ""}" data-a="rond" data-v="${sid}" data-k="${bi}-${ei}-t${t}" aria-pressed="${on}" aria-label="Tour ${t} fini">${on ? "✓" : t}</button>`; }).join("")}</div>`;
+    return `<button class="rond ${on ? "on" : ""} ${!on && nx?.ei === ei && nx?.t === t ? "next" : ""}" data-a="rond" data-v="${sid}" data-k="${bi}-${ei}-t${t}" aria-pressed="${on}" aria-label="Tour ${t} fini">${on ? "✓" : t}</button>`; }).join("")}</div>`;
 }
 function tourBar(s, sid, b, bi){
   const n = nbTours(b.tours); if (n < 2 || !(b.exos || []).length) return "";
   const f = toursComplets(s, bi, b), fini = f >= n;
   return `<div class="tourbar ${fini ? "fini" : ""}"><span class="dots">${Array.from({length: n}, (_, i) => `<i class="${i < f ? "on" : ""}"></i>`).join("")}</span>
     <span class="lbl">${fini ? "Bloc terminé" : `Tour <b>${f + 1}</b> / ${n}`}</span>
-    ${fini ? "" : `<span class="small">Coche le rond <b>${f + 1}</b> de chaque exo : le repos part tout seul</span>`}</div>`;
+    ${fini ? "" : `<span class="small">${(b.exos || []).length >= 2 ? `Enchaîne ${b.exos.map(e => `<b>${esc(e.n)}</b>`).join(" puis ")}, sans pause : le repos part après le dernier` : `Coche le rond <b>${f + 1}</b> : le repos part tout seul`}</span>`}</div>`;
 }
 /* remarque de l'adhérent sur un exercice (douleur, gêne, trop facile…) : seances.remarques {"bloc-exo": texte} */
 function remarqueRow(s, sid, bi, ei){
@@ -1626,7 +1630,7 @@ function seanceBody(sid, s){
     const nbOk = (s.blocs||[]).reduce((t,b,bi) => t + (b.exos||[]).filter((_,ei) => exoFait(s,bi,ei,b)).length, 0);
     out += `<section class="sec"><div class="sec-h"><h2>Programme</h2><div class="row">${tot ? `<button class="btn sm ink" data-a="project" data-v="seance" data-k="${sid}">▶ Projeter</button>` : ""}${coach ? `<button class="btn sm ghost" data-a="edit-blocs">Modifier</button>` : tot ? `<span class="chip ${nbOk===tot?"ok":""}">${nbOk} / ${tot} cochés</span>` : ""}</div></div>
       ${tot ? `<p class="small muted" style="margin:0">« Projeter » affiche la séance en grand, fond noir, pour un écran ou une télé pendant que tu la fais.</p>` : ""}
-      ${!coach && tot ? `<p class="small muted" style="margin:0">Un rond par tour sur chaque exo : coche le 1 après ton premier passage, le 2 au suivant… Quand tous les exos d'un tour sont cochés, le repos démarre tout seul.</p>` : ""}
+      ${!coach && tot ? `<p class="small muted" style="margin:0">Quand un bloc a plusieurs exos, tu les enchaînes dans l'ordre : exo 1, puis exo 2 (sans repos entre les deux), puis repos, et tu recommences pour le tour suivant. Coche le rond de chaque exo au fur et à mesure : le repos démarre tout seul à la fin du tour.</p>` : ""}
       ${(s.blocs||[]).map((b,bi) => `<div class="bloc"><div class="bloc-h"><b>${esc(b.code)}${b.nom ? " · " + esc(b.nom) : ""}</b><span>${esc(b.tours||"")}</span></div>${tourBar(s, sid, b, bi)}
         ${(b.exos||[]).length ? b.exos.map((e,ei) => `<div class="ex ${exoFait(s,bi,ei,b)?"done":""} ${nbTours(b.tours)>=2?"multi":""}">${nbTours(b.tours)>=2 ? "" : `<button class="tick ${co[bi+"-"+ei]?"on":""}" data-a="coche" data-v="${sid}" data-k="${bi}-${ei}" aria-label="Cocher ${esc(e.n)}" aria-pressed="${co[bi+"-"+ei]?"true":"false"}">✓</button>`}<span class="n">${esc(e.n)}</span><span class="d">${esc(e.d||"")}</span>${/^https:\/\//.test(e.v||"") ? `<a class="vid" href="${esc(e.v)}" target="_blank" rel="noopener">VIDÉO</a>` : ""}${nbTours(b.tours)>=2 ? rondsExo(s, sid, b, bi, ei) : ""}</div>${chargeRow(s, sid, bi, ei, e)}<div class="exbas">${e.c ? `<details class="how"><summary>Comment faire</summary><p>${esc(e.c)}</p></details>` : ""}${remarqueRow(s, sid, bi, ei)}</div>`).join("") : `<div class="ex"><span class="n muted">À compléter</span></div>`}</div>`).join("")}</section>`;
   }
@@ -2048,6 +2052,8 @@ async function act(a, ds){
     case "coche": case "rond": { const s = S.cur.seances[v]; if (!s) return;
       const bi = Number(k.split("-")[0]), b = s.blocs?.[bi]; if (!b) return;
       const on = a === "rond" ? !rondOn(s, bi, Number(k.split("-")[1]), Number(k.split("-t")[1])) : !(s.coches || {})[k];
+      if (a === "rond" && on && (b.exos || []).length >= 2) { const nx = rondSuivant(s, bi, b);
+        if (nx && nx.k !== k) { toast(`Dans l'ordre : d'abord « ${b.exos[nx.ei]?.n || "l'exo d'avant"} » (tour ${nx.t}), puis le suivant. Le repos part après le dernier exo du tour.`); return; } }
       const apres = {...s, coches: {...(s.coches || {}), [k]: on}}, args = [new firebase.firestore.FieldPath("coches", k), on];
       if (a === "rond") { /* on fige les anciens tours en coches explicites, puis on recalcule le compteur du bloc */
         (b.exos || []).forEach((_, ei) => { for (let t = 1; t <= nbTours(b.tours); t++) { const kk = `${bi}-${ei}-t${t}`; if (kk !== k && (s.coches || {})[kk] === undefined && rondOn(s, bi, ei, t)) { apres.coches[kk] = true; args.push(new firebase.firestore.FieldPath("coches", kk), true); } } });
