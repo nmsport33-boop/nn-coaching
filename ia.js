@@ -9,7 +9,7 @@
 (function(){
 "use strict";
 const IA = {open: false, t: "", busy: false};
-const ATTENTE_MAX = 90 * 1000;
+const ATTENTE_MAX = 300 * 1000;   /* un plan de repas complet (menus, recettes, courses) peut prendre 1 à 3 minutes */
 const STAT = {attente: ["⏳", "En attente de la décision de Nathanael"], validee: ["✓", "Validé par Nathanael"], refusee: ["↺", "Nathanael a décidé autrement"]};
 const QUOI = {exercice: "Exercice", seance: "Séance", planning: "Planning", nutrition: "Nutrition", objectif: "Objectif", autre: "Autre"};
 const memberUI = () => S.mode === "ready" && !isCoachUI() && !!S.cur.member;
@@ -44,7 +44,7 @@ function bulles(){
   if (!qs.length) return `<div class="ia-vide"><span class="small muted">Par exemple :</span><div class="px-chips">${["Comment bien faire mon premier exercice ?", "Aide-moi à caser mes séances cette semaine", "Une idée de repas riche en protéines", "Je n'ai pas le matériel pour un exercice"].map(x => `<button data-a="ia-chip" data-v="${esc(x)}">${esc(x)}</button>`).join("")}</div></div>`;
   return qs.map(q => { const r = rs.get(q.id);
     const moi = `<div class="ia-b moi"><div>${txt(q.q)}</div><span>${esc(fmtWhen(q.at))}</span></div>`;
-    if (!r) return moi + (now - q.at < ATTENTE_MAX ? `<div class="ia-b lui ia-dots"><i></i><i></i><i></i></div>`
+    if (!r) return moi + (now - q.at < ATTENTE_MAX ? `<div class="ia-b lui ia-dots"><i></i><i></i><i></i></div>${/plan/i.test(q.q) ? `<span class="small muted">Je prépare tes menus, tes recettes et ta liste de courses : ça prend 1 à 3 minutes. Tu peux fermer, le plan arrivera dans ton onglet Nutrition.</span>` : ""}`
       : `<div class="ia-b lui ia-soft"><div>Ton message est bien arrivé. Je n'ai pas encore pu répondre : Nathanael le voit aussi.</div></div>`);
     return moi + `<div class="ia-b lui"><span class="ia-who">Assistant</span><div>${txt(r.r)}</div>
       ${r.prop ? decision(r) : ""}${r.planRepas ? `<button class="ia-flag ia-plan" data-a="ia-plan">🍽️ Plan de repas enregistré dans ton onglet Nutrition ›</button>` : ""}${r.alerte && !r.limite ? `<span class="ia-flag">Nathanael est prévenu</span>` : ""}</div>`;
@@ -70,7 +70,7 @@ function renderChat(){
 const liste = () => document.querySelector("#ia-chat .ia-list");
 const estEnBas = () => { const l = liste(); return !l || l.scrollHeight - l.scrollTop - l.clientHeight < 80; };
 const descendre = () => { const l = liste(); if (l) l.scrollTop = l.scrollHeight; };
-/* les points « l'assistant réfléchit » laissent place au message d'attente au bout de 90 s */
+/* les points « l'assistant réfléchit » laissent place au message d'attente au bout de 5 min */
 setInterval(() => { if (IA.open) renderChat(); }, 15000);
 
 async function envoyer(){

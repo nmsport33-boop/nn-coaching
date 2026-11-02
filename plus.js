@@ -11,7 +11,7 @@
 (function(){
 "use strict";
 const P = {seg: "muscles", vue: "face", muscle: null, periode: "faites", nutDay: null, photos: null, photosErr: null, sheet: null, wz: null, introLater: false};
-const DATA_TYPES = ["jour", "mesure", "profil", "gouts"];
+const DATA_TYPES = ["jour", "mesure", "profil", "gouts", "courses"];
 window.NN_DATA_TYPES = DATA_TYPES;
 const today = () => iso(new Date());
 const num = v => { const n = Number(String(v ?? "").replace(",", ".")); return isFinite(n) ? n : 0; };
@@ -59,11 +59,13 @@ const nutOffertChip = m => m?.nutritionPlan?.offert ? `<span class="off-alt px-n
 const REGIMES = ["Aucun", "Végétarien", "Végan", "Sans porc", "Halal", "Sans lactose", "Sans gluten"];
 /* les 14 allergènes à déclaration obligatoire en Europe (règlement INCO 1169/2011) */
 const ALLERGENES = ["Gluten", "Lait", "Œufs", "Arachides", "Fruits à coque", "Soja", "Poisson", "Crustacés", "Mollusques", "Sésame", "Céleri", "Moutarde", "Lupin", "Sulfites"];
+const MAGASINS = ["Intermarché", "Aldi", "Lidl", "Leclerc"];
+const BUDGETS = [[30, "30 €"], [45, "45 €"], [60, "60 €"], [80, "80 €"], [100, "100 € et +"]];
 const MIDI = [["maison", "À la maison"], ["gamelle", "Gamelle au travail"], ["cantine", "Cantine / self"], ["dehors", "Restaurant, sandwich"]];
 const CUISINE = [["rapide", "Moins de 15 min"], ["moyen", "15 à 30 min"], ["aime", "J'aime cuisiner"]];
 const goutsDoc = () => S.cur.notes.find(n => n.id === "gouts");
 function goutsForm(){
-  const g = goutsDoc() || {}, f = P.g || (P.g = {regime: g.regime || [], repas: g.repas || 4, cuisine: g.cuisine || "moyen", allergenes: g.allergenes || [], midi: g.midi || ""}), d = (k, x) => S.drafts["pxg." + k] ?? x ?? "";
+  const g = goutsDoc() || {}, f = P.g || (P.g = {regime: g.regime || [], repas: g.repas || 4, cuisine: g.cuisine || "moyen", allergenes: g.allergenes || [], midi: g.midi || "", magasins: g.magasins || ["Intermarché", "Aldi"], budget: g.budget || 45, personnes: g.personnes || 1}), d = (k, x) => S.drafts["pxg." + k] ?? x ?? "";
   const chip = (a, v, on, l) => `<button class="${on ? "on" : ""}" data-a="${a}" data-v="${esc(v)}">${esc(l || v)}</button>`;
   return `<div class="card px-gouts"><b>🥗 ${g.at ? "Tes goûts" : "Avant ton plan : parle-moi de tes goûts"}</b>
     <span class="small muted">Ton plan de repas sera fait avec ça. Tu pourras le modifier quand tu veux.</span>
@@ -75,7 +77,10 @@ function goutsForm(){
     <span class="small muted">Repas par jour (collations comprises)</span><div class="px-chips">${[3, 4, 5].map(n => chip("px-grep", n, f.repas === n, n + " repas")).join("")}</div>
     <span class="small muted">Le midi, tu manges surtout</span><div class="px-chips">${MIDI.map(([k, l]) => chip("px-gmidi", k, f.midi === k, l)).join("")}</div>
     <span class="small muted">Temps pour cuisiner</span><div class="px-chips">${CUISINE.map(([k, l]) => chip("px-gcui", k, f.cuisine === k, l)).join("")}</div>
-    <label class="f">Autre chose à savoir (horaires, budget, cantine…)<input type="text" data-d="pxg.autre" placeholder="Facultatif" value="${esc(d("autre", g.autre))}"></label>
+    <span class="small muted">Tes magasins (Saint-Médard-en-Jalles)</span><div class="px-chips">${MAGASINS.map(x => chip("px-gmag", x, f.magasins.includes(x))).join("")}</div>
+    <span class="small muted">Budget courses par semaine, pour toi</span><div class="px-chips">${BUDGETS.map(([n, l]) => chip("px-gbud", n, f.budget === n, l)).join("")}</div>
+    <span class="small muted">Tu fais les courses pour</span><div class="px-chips">${[1, 2, 3, 4].map(n => chip("px-gpers", n, f.personnes === n, n === 1 ? "Moi seul·e" : n === 4 ? "4 personnes et +" : n + " personnes")).join("")}</div>
+    <label class="f">Autre chose à savoir (horaires, cantine, matériel de cuisine…)<input type="text" data-d="pxg.autre" placeholder="Facultatif" value="${esc(d("autre", g.autre))}"></label>
     <div class="row"><button class="btn solid" data-a="px-gsave">Enregistrer mes goûts</button>${g.at ? `<button class="btn ghost" data-a="px-gcancel">Annuler</button>` : ""}</div></div>`;
 }
 /* plan de repas préparé par l'assistant (members.planRepas), visible par l'adhérent et par Nathanael */
@@ -87,10 +92,25 @@ function planRepasCard(m, coach){
   if (!pl) return coach ? (g ? `<div class="small muted">Goûts notés, pas encore de plan de repas.</div>` : "") : `<div class="card px-plan"><b>🍽️ Ton plan nutritionnel</b>
     <span class="small muted">${ia ? "Ton assistant prépare des menus selon tes goûts, tes cibles et tes jours de séance. Nathanael les voit." : "Nathanael prépare ton plan de repas selon tes goûts."}</span><div class="row">${gen}${edit}</div></div>`;
   const M = [["matin", "Matin"], ["midi", "Midi"], ["collation", "Collation"], ["soir", "Soir"]];
+  const rec = pl.recettes || [], co = pl.courses || [], seg = (rec.length || co.length) ? (P.planSeg || "menus") : "menus";
+  const tabs = rec.length || co.length ? `<div class="px-seg px-plan-seg">${[["menus", "Menus"], ["recettes", `Recettes${rec.length ? " (" + rec.length + ")" : ""}`], ["courses", "Courses"]].map(([k, l]) => `<button class="${seg === k ? "on" : ""}" data-a="px-pseg" data-v="${k}">${l}</button>`).join("")}</div>` : "";
+  let body = "";
+  if (seg === "menus") body = `${(pl.jours || []).map((d, k) => `<details${k === 0 ? " open" : ""}><summary>${esc(d.nom)}</summary><dl class="kv">${M.filter(([x]) => d[x]).map(([x, l]) => `<dt>${l}</dt><dd>${esc(d[x])}</dd>`).join("")}</dl></details>`).join("")}
+    ${pl.conseils ? `<div class="small"><b>Conseils</b> · ${esc(pl.conseils)}</div>` : ""}`;
+  else if (seg === "recettes") body = rec.map((r, k) => `<details${k === 0 ? " open" : ""}><summary>${esc(r.nom)}${r.temps ? ` <span class="small muted">· ${esc(r.temps)}</span>` : ""}</summary>
+      <span class="eyebrow">Ingrédients (1 portion)</span><ul class="px-ing">${(r.ingredients || []).map(x => `<li>${esc(x)}</li>`).join("")}</ul>
+      <span class="eyebrow">Préparation</span><ol class="px-etapes">${(r.etapes || []).map(x => `<li>${esc(x)}</li>`).join("")}</ol></details>`).join("");
+  else { const cc = S.cur.notes.find(n => n.id === "courses"), coches = cc && cc.plan === pl.at ? cc.coches || {} : {}, g = goutsDoc() || {};
+    const rayons = [...new Set(co.map(c => c.rayon))], fait = co.filter((_, k) => coches[k]).length, tot = pl.budgetEstime || co.reduce((t, c) => t + (Number(c.prix) || 0), 0);
+    const budget = g.budget ? g.budget * (g.personnes || 1) : 0;
+    body = `<div class="px-budget ${budget && tot > budget ? "over" : ""}"><b>≈ ${fr(tot, 0)} €</b><span class="small">${budget ? `pour un budget de ${budget} €` : "pour la semaine"} · ${fait}/${co.length} articles pris</span></div>
+      <span class="small muted">Prix estimés : ils varient selon le magasin et les promos.</span>
+      ${rayons.map(r => `<div class="px-rayon"><span class="eyebrow">${esc(r)}</span>${co.map((c, k) => c.rayon !== r ? "" : `<button class="px-art ${coches[k] ? "ok" : ""}" data-a="${coach ? "" : "px-coche"}" data-v="${k}"><span class="px-box">${coches[k] ? "✓" : ""}</span>
+        <span class="px-art-t"><b>${esc(c.article)}</b> <span class="small muted">${esc(c.quantite)}</span><span class="small">${c.magasin ? `<i class="px-mag">${esc(c.magasin)}</i> ` : ""}${esc(c.produit)}</span></span><span class="px-prix">${c.prix ? Number(c.prix).toLocaleString("fr-FR", {minimumFractionDigits: 2, maximumFractionDigits: 2}) + " €" : ""}</span></button>`).join("")}</div>`).join("")}
+      ${!coach && fait ? `<button class="btn link sm" data-a="px-coche-raz">Tout décocher</button>` : ""}`; }
   return `<div class="card px-plan"><div class="sec-h"><b>🍽️ ${esc(pl.titre || "Ton plan de repas")}</b><span class="small muted">${esc(fmtWhen(pl.at))}</span></div>
-    <span class="small muted">${pl.par === "assistant" ? (coach ? "Préparé par l'assistant (tu l'as autorisé pour le Plan nutrition)." : "Préparé par ton assistant, selon tes goûts et tes cibles. Nathanael le voit.") : "Préparé par Nathanael."}</span>
-    ${(pl.jours || []).map((d, k) => `<details${k === 0 ? " open" : ""}><summary>${esc(d.nom)}</summary><dl class="kv">${M.filter(([x]) => d[x]).map(([x, l]) => `<dt>${l}</dt><dd>${esc(d[x])}</dd>`).join("")}</dl></details>`).join("")}
-    ${pl.conseils ? `<div class="small"><b>Conseils</b> · ${esc(pl.conseils)}</div>` : ""}
+    <span class="small muted">${pl.par === "assistant" ? (coach ? "Préparé par l'assistant (tu l'as autorisé pour le Plan nutrition)." : "Préparé par ton assistant, selon tes goûts, tes cibles et ton budget. Nathanael le voit.") : "Préparé par Nathanael."}</span>
+    ${tabs}${body}
     ${coach ? `<button class="btn sm ghost" data-a="px-plandel" style="align-self:flex-start">Effacer ce plan</button>` : `<div class="row">${gen}${ia ? `<button class="btn sm ghost" data-a="ia-open-q" data-v="Je voudrais changer mon plan de repas : ">Changer un repas</button>` : ""}${edit}</div>`}</div>`;
 }
 /* cibles du jour : calcul (Mifflin-St Jeor) sauf si Nathanael a réglé les chiffres dans la fiche */
@@ -911,13 +931,20 @@ window.act = act = async function(a, ds){
     case "px-nplan": if (await run(S.db.doc("members/" + S.fiche).update({nutritionPlan: v === "on" ? {offert: false, at: Date.now()} : firebase.firestore.FieldValue.delete()}), v === "on" ? "Plan nutrition activé" : "Accès retiré")) return; return;
     case "px-greg": { const f = P.g; if (v === "Aucun") f.regime = []; else f.regime = f.regime.includes(v) ? f.regime.filter(x => x !== v) : [...f.regime, v]; return render(); }
     case "px-gall": { const f = P.g; f.allergenes = f.allergenes.includes(v) ? f.allergenes.filter(x => x !== v) : [...f.allergenes, v]; return render(); }
+    case "px-pseg": P.planSeg = v; return render();
+    case "px-coche": case "px-coche-raz": { const pl = S.cur.member?.planRepas; if (!pl) return; const cc = S.cur.notes.find(n => n.id === "courses");
+      const coches = a === "px-coche-raz" ? {} : {...(cc && cc.plan === pl.at ? cc.coches || {} : {})}; if (a === "px-coche") { if (coches[v]) delete coches[v]; else coches[v] = true; }
+      await run(S.db.doc(`members/${memberId()}/notes/courses`).set({type: "courses", auteur: "adherent", seance: null, plan: pl.at, coches, at: Date.now()})); return; }
+    case "px-gmag": { const f = P.g; f.magasins = f.magasins.includes(v) ? f.magasins.filter(x => x !== v) : [...f.magasins, v]; return render(); }
+    case "px-gbud": P.g.budget = Number(v); return render();
+    case "px-gpers": P.g.personnes = Number(v); return render();
     case "px-gmidi": P.g.midi = P.g.midi === v ? "" : v; return render();
     case "px-grep": P.g.repas = Number(v); return render();
     case "px-gcui": P.g.cuisine = v; return render();
     case "px-gedit": P.gEdit = true; P.g = null; return render();
     case "px-gcancel": P.gEdit = false; P.g = null; clearDrafts("pxg."); return render();
     case "px-gsave": { const g = goutsDoc() || {}, t = k => String(S.drafts["pxg." + k] ?? g[k] ?? "").trim().slice(0, 400);
-      const doc = {type: "gouts", auteur: "adherent", seance: null, aime: t("aime"), naime: t("naime"), allergies: t("allergies"), autre: t("autre"), regime: P.g.regime, allergenes: P.g.allergenes, midi: P.g.midi, repas: P.g.repas, cuisine: P.g.cuisine, at: g.at || Date.now(), maj: Date.now()};
+      const doc = {type: "gouts", auteur: "adherent", seance: null, aime: t("aime"), naime: t("naime"), allergies: t("allergies"), autre: t("autre"), regime: P.g.regime, allergenes: P.g.allergenes, midi: P.g.midi, magasins: P.g.magasins, budget: P.g.budget, personnes: P.g.personnes, repas: P.g.repas, cuisine: P.g.cuisine, at: g.at || Date.now(), maj: Date.now()};
       if (await run(S.db.doc(`members/${memberId()}/notes/gouts`).set(doc), "Goûts enregistrés")) { clearDrafts("pxg."); P.gEdit = false; P.g = null; render(); } return; }
     case "px-plandel": if (!confirm("Effacer le plan de repas ?")) return; await run(S.db.doc("members/" + S.fiche).update({planRepas: firebase.firestore.FieldValue.delete()}), "Plan effacé"); return;
     case "px-nauto": if (await run(S.db.doc("members/" + S.fiche).update({nutrition: firebase.firestore.FieldValue.delete()}), "Retour au calcul auto")) clearDrafts("pxn."); return;
