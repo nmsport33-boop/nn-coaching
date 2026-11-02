@@ -674,7 +674,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-01k";
+const BUILD = "2026-11-02a";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -1060,7 +1060,7 @@ function hasAlert(s){ const r = s.ressenti || {}; return (r.pendant ?? 0) > 3 ||
 const BQ = {
   zones: ["Genou gauche","Genou droit","Épaule gauche","Épaule droite","Bas du dos","Nuque / haut du dos","Hanche","Cheville / pied","Poignet / coude","Autre"],
   sensation: [["top","😀 Très bien"],["bien","🙂 Bien"],["moyen","😐 Moyen"],["dur","😣 Difficile"]],
-  fatigue: [["0","Pas fatigué·e"],["1","Normale"],["2","Très fatigué·e"],["3","Épuisé·e"]],
+  fatigue: [["0","Pas fatigué·e"],["1","Un peu fatigué·e (normal)"],["2","Très fatigué·e"],["3","Épuisé·e"]],
   alertes: [["nuit","Douleur la nuit ou au repos"],["bloque","Articulation qui se bloque"],["gonfle","Gonflement"],["derobe","Genou qui se dérobe"],["fourmis","Fourmis, perte de force"]],
   buts: ["Perdre du poids","Prendre des fessiers","Prendre du muscle","Me tonifier","Gagner en force","Être plus souple / mobile","Avoir moins mal (dos, genou, épaule…)","Améliorer mon cardio","Me remettre en forme","Préparer un sport ou une épreuve"],
   lieux: [["salle","En salle avec Nathanael"],["club","Dans une salle de sport"],["maison","À la maison"],["mixte","Un peu des deux"]],
