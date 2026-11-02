@@ -265,7 +265,7 @@ html.px-lock,html.px-lock body{overflow:hidden}
 .px-plan dl.kv{margin-top:6px}
 .px-plan-ask{display:flex;flex-direction:column;gap:4px;text-align:left}
 .px-gouts{display:flex;flex-direction:column;gap:10px}
-.px-gouts .px-chips button.on{border-color:var(--a1);background:rgba(var(--a1r),.16);color:var(--a1);font-weight:700;box-shadow:0 0 10px rgba(var(--a1r),.25)}
+.px-gouts .px-chips button.on,.px-fam .px-chips button.on{border-color:var(--a1);background:rgba(var(--a1r),.16);color:var(--a1);font-weight:700;box-shadow:0 0 10px rgba(var(--a1r),.25)}
 .px-plan-seg{margin:2px 0}
 .px-plan-seg button.on{border-color:var(--a1);color:var(--a1);background:rgba(var(--a1r),.12)}
 .px-ing,.px-etapes{margin:4px 0 8px;padding-left:20px;display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:1.4}
@@ -280,3 +280,35 @@ html.px-lock,html.px-lock body{overflow:hidden}
 .px-art-t{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
 .px-mag{font-style:normal;font-weight:700;color:var(--a1)}
 .px-prix{flex:none;font-weight:700;font-size:13px}
+/* Photos produits et promos (liste de courses) */
+.px-ph{width:40px;height:40px;object-fit:contain;border-radius:8px;background:#fff;flex:none}
+.px-promo{display:block;font-style:normal;font-size:11px;color:var(--a1);text-align:right}
+.px-promos{border:1px solid var(--line,#333);border-radius:12px;padding:8px 12px;margin:6px 0}
+.px-promos summary{font-weight:600;cursor:pointer}
+.px-promos .eyebrow{display:block;margin-top:8px}
+.px-pr{display:flex;align-items:baseline;gap:8px;padding:4px 0;border-bottom:1px solid var(--line,#2a2a2a)}
+.px-pr span{flex:1;min-width:0}
+.px-pr s{white-space:nowrap}
+.px-qui{font-style:normal;font-size:11px;font-weight:700;color:var(--a1);margin-left:6px}
+.px-fam{display:flex;flex-direction:column;gap:6px;margin:4px 0}
+.px-fam .chip .small{font-weight:400}
+.px-co-grp{margin-top:6px}
+#px-print{display:none}
+@media print{
+  body.px-printing > *:not(#px-print){display:none !important}
+  body.px-printing{background:#fff !important;color:#000 !important}
+  body.px-printing #px-print{display:block;font:13px/1.35 -apple-system,Helvetica,Arial,sans-serif;color:#000}
+  #px-print h1,#px-print h2{font-family:-apple-system,Helvetica,Arial,sans-serif;letter-spacing:0;text-transform:none}
+  #px-print h1{font-size:20px;margin:0 0 4px}
+  #px-print h2{font-size:16px;margin:14px 0 4px;border-bottom:2px solid #000}
+  #px-print h2 small{font-weight:400;font-size:12px}
+  #px-print table{width:100%;border-collapse:collapse}
+  #px-print tr{break-inside:avoid;border-bottom:1px solid #ddd}
+  #px-print td{padding:4px;vertical-align:middle}
+  #px-print td.b{width:18px;font-size:16px}
+  #px-print td.ph{width:42px}
+  #px-print td.ph img{width:38px;height:38px;object-fit:contain}
+  #px-print td.p{text-align:right;white-space:nowrap}
+  #px-print td span{color:#444;font-size:12px}
+  #px-print .n{margin-top:12px;font-size:11px;color:#555}
+}
