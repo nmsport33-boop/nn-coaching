@@ -6,13 +6,14 @@ html.px-lock,html.px-lock body{overflow:hidden}
 
 /* bonhomme */
 .px-body{display:block;width:100%;height:auto}
-.px-body .px-sil path,.px-body .px-sil ellipse{fill:url(#pxsil);stroke:rgba(var(--a1r),.55);stroke-width:1;stroke-linejoin:round}
-.px-body .px-sil{filter:drop-shadow(0 0 6px rgba(var(--a1r),.35))}
-.px-body .px-os ellipse{fill:rgba(var(--ov),.08);stroke:rgba(var(--ov),.18);stroke-width:.6}
-.px-m path{fill:rgba(var(--ov),.14);stroke:var(--b0);stroke-width:1.3;stroke-linejoin:round;transition:fill .25s}
-.px-m path.px-sh{fill:url(#pxsh);stroke:none;pointer-events:none}
+.px-body .px-sil path{fill:url(#pxsil);stroke:rgb(var(--a1r));stroke-opacity:.9;stroke-width:1.1;stroke-linejoin:round}
+.px-body .px-sil{filter:drop-shadow(0 0 2px rgba(var(--a1r),.9)) drop-shadow(0 0 9px rgba(var(--a1r),.55))}
+.px-body .px-os ellipse{fill:rgba(var(--ov),.05);stroke:rgba(var(--a1r),.35);stroke-width:.6}
+.px-m path{fill:rgba(var(--ov),.07);stroke:var(--b0);stroke-width:1.3;stroke-linejoin:round;transition:fill .25s}
+.px-m path.px-sh{fill:url(#pxsh);stroke:rgba(var(--a1r),.55);stroke-width:.45;pointer-events:none}
 .px-m.on path:not(.px-sh){fill:var(--f)}
-.px-m.on{filter:drop-shadow(0 0 3px var(--f))}
+.px-m.on path.px-sh{stroke:rgba(255,255,255,.7)}
+.px-m.on{filter:drop-shadow(0 0 2px var(--f)) drop-shadow(0 0 7px var(--f))}
 .px-m.sel path:not(.px-sh){stroke:#fff;stroke-width:1.6}
 .px-m[data-a]{cursor:pointer}
 .px-deco path{fill:none;stroke:rgba(var(--ov),.16);stroke-width:.7;stroke-linecap:round}
@@ -21,8 +22,9 @@ html.px-lock,html.px-lock body{overflow:hidden}
 @keyframes pxpulse{50%{transform:scale(1.35);opacity:.5}}
 .px-body.mini{width:56px;height:84px;flex:none}
 .px-body.mini .px-m path{stroke-width:.9}
-.px-body.mini .px-deco,.px-body.mini .px-fib{display:none}
-.px-fib path{fill:none;stroke:rgba(0,0,0,.26);stroke-width:.6;stroke-linecap:round;pointer-events:none}
+.px-body.mini .px-deco,.px-body.mini .px-fib,.px-body.mini .px-aura{display:none}
+.px-body.mini .px-sil{filter:drop-shadow(0 0 3px rgba(var(--a1r),.5))}
+.px-fib path{fill:none;stroke:rgba(0,0,0,.3);stroke-width:.6;stroke-linecap:round;pointer-events:none}
 .px-body.glow{max-width:190px;margin:0 auto;filter:drop-shadow(0 0 22px rgba(var(--a1r),.45))}
 .px-body.glow .px-m path:not(.px-sh){fill:rgba(var(--a1r),.2)}
 .px-band ellipse{fill:none;stroke:rgba(var(--ov),.25);stroke-width:2;stroke-dasharray:3 3}

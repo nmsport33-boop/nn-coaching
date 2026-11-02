@@ -161,9 +161,9 @@ const HALF = {
            "M98.5,90 C90,87 83,86 77,87.5 C74.5,93 74.5,99 77,104 C82,110 90,112 98.5,110 Z"],
     biceps: ["M57,106 C52,114 50.5,124 51,134 C51.5,141 55,146 60,146 C65,141 67,129 67.5,116 C66,110 62,106 57,106 Z"],
     ...BRAS,
-    obliques: ["M76,106 L82.5,108 L81.5,113 L75,112 Z", "M75,114.5 L82.5,116.5 L81.5,121.5 L75,120.5 Z", "M75.5,123 L82.5,125 L81.5,130 L76,129 Z",
+    obliques: ["M75.5,106.5 C78.5,106.8 81.5,107.8 83,109.5 C82.4,111.4 80.8,112.8 78.5,113 C77,112.6 75.8,111.6 75,110.2 Z", "M75,115 C78.2,115.2 81.4,116.2 83,118 C82.4,120 80.8,121.4 78.4,121.6 C76.8,121.2 75.6,120.2 74.9,118.8 Z", "M75.4,123.6 C78.5,123.8 81.6,124.8 83,126.6 C82.4,128.6 80.8,130 78.6,130.2 C77,129.8 75.9,128.8 75.4,127.4 Z",
                "M76.5,132 C75.5,143 77,154 80.5,164 C82.5,169 85,172 88.5,174 C86.5,158 85.5,144 85.5,131 C82.5,130 79.5,131 76.5,132 Z"],
-    abdos: [rr(88, 112, 98.5, 125, 3), rr(87.5, 127, 98.5, 140, 3), rr(87.5, 142, 98.5, 155, 3), "M98.5,157 L88.5,157 C88.5,166 92,174 98.5,180 Z"],
+    abdos: ["M98.5,112 C94.5,111.3 90.5,112 88.5,113.8 C87.6,117.4 87.9,121.4 89.2,124.8 C92.4,125.8 95.6,126 98.5,125.6 Z", "M98.5,127.4 C95,127 91.2,127.2 88.6,128.4 C87.6,132 87.7,136.4 88.8,140 C92,141 95.4,141.2 98.5,140.8 Z", "M98.5,142.6 C95,142.2 91.3,142.4 88.7,143.6 C87.8,147.2 87.9,151.6 89,155.2 C92.2,156.2 95.5,156.4 98.5,156 Z", "M98.5,158 C95,157.6 91.5,157.8 89.2,159 C89,166 91.6,173.4 98.5,180 Z"],
     quadriceps: ["M75,186 C70,204 68,228 69,252 C70,265 74,275 79,281 C79,262 78,240 79,216 C79,204 78,194 75,186 Z",
                  "M81,192 C86,208 89.5,230 89.5,252 C89.5,264 88,273 85.5,279 C81.5,268 80.5,250 80.5,230 C80.5,216 80.5,203 81,192 Z",
                  "M91,248 C95,256 96.5,266 94.5,276 C92.5,282 88,284 86.5,281 C88.5,271 90,260 91,248 Z"],
@@ -201,8 +201,9 @@ const FIB = {
   face: "M80,80 L97,84 M78,94 L97,100 M80,102 L97,106 M66,78 C62,86 60,94 61,100 M57,80 C54.5,88 54,96 55,104 M56,114 C55,124 56,134 58,142 M62,112 C63,122 63,132 62,142 M73,206 C72,226 73,248 76,268 M84.5,210 C86.5,230 87,250 86,270 M93,214 C95,226 95,236 93,246 M79,140 L84,150 M80,152 L85,162 M81.5,308 C81.5,324 81.5,340 82.5,356 M49,160 C48,170 47,180 47,188 M60,156 C59,168 58,178 56,188",
   dos: "M80,72 L96,80 M86,84 L97,100 M80,118 C82,130 86,140 92,150 M86,116 C88,128 91,140 94,152 M80,200 C86,206 92,210 97,212 M78,210 C84,216 90,218 97,218 M76,236 C76,250 77,264 79,278 M90.5,236 C90.5,250 90.5,264 89.5,278 M54.5,120 C53.5,128 53.5,136 54.5,142 M64.5,116 C65,124 65,132 64,140 M77,305 C76,315 76,325 78,333 M88,305 C89,315 89,325 87,333 M58,82 C56,90 55,98 56,104 M49,160 C48,170 47,180 47,188 M60,156 C59,168 58,178 56,188"};
 const OS = {face: `<ellipse cx="82" cy="288" rx="6" ry="7"/><ellipse cx="118" cy="288" rx="6" ry="7"/>`, dos: ""};
-const DEFS = `<defs><linearGradient id="pxsh" x1="0" y1="0" x2=".7" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".32"/></linearGradient>
-  <linearGradient id="pxsil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgb(var(--a1r))" stop-opacity=".16"/><stop offset="1" stop-color="rgb(var(--a2r))" stop-opacity=".07"/></linearGradient></defs>`;
+const DEFS = `<defs><radialGradient id="pxsh" cx=".4" cy=".32" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".38"/><stop offset=".45" stop-color="#fff" stop-opacity=".04"/><stop offset="1" stop-color="#000" stop-opacity=".5"/></radialGradient>
+  <linearGradient id="pxsil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgb(var(--a1r))" stop-opacity=".14"/><stop offset=".6" stop-color="rgb(var(--a2r))" stop-opacity=".08"/><stop offset="1" stop-color="rgb(var(--a1r))" stop-opacity=".04"/></linearGradient>
+  <radialGradient id="pxaura" cx=".5" cy=".42" r=".5"><stop offset="0" stop-color="rgb(var(--a1r))" stop-opacity=".22"/><stop offset="1" stop-color="rgb(var(--a1r))" stop-opacity="0"/></radialGradient></defs>`;
 /* points des articulations sensibles (vue de face : la gauche de la personne est à droite de l'écran) */
 const JOINTS = {
   "Genou gauche": {face: [118, 288], dos: [82, 286]}, "Genou droit": {face: [82, 288], dos: [118, 286]},
@@ -218,7 +219,7 @@ function bodySVG(vue, fills, o = {}){
   const muscles = Object.entries(half).map(([k, ds]) => ds.map(d => part(k, d, false) + part(k, d, true)).join("")).join("");
   const joints = (o.joints || []).map(z => { const p = JOINTS[z]?.[vue]; return p ? `<circle class="px-j" cx="${p[0]}" cy="${p[1]}" r="9"/><circle class="px-jc" cx="${p[0]}" cy="${p[1]}" r="3.5"/>` : ""; }).join("");
   return `<svg class="px-body ${o.cls || ""}" viewBox="${o.vb || "0 0 200 400"}" role="img" aria-label="${o.label || "Corps, vue de " + (vue === "face" ? "face" : "dos")}">${DEFS}
-    <g class="px-sil"><path d="${SIL}"/><path d="${SIL}" ${MIR}/>${TETE[vue]}</g><g class="px-os">${OS[vue]}</g>
+    <ellipse class="px-aura" cx="100" cy="200" rx="95" ry="200" fill="url(#pxaura)"/><g class="px-sil"><path d="${SIL}"/><path d="${SIL}" ${MIR}/>${TETE[vue]}</g><g class="px-os">${OS[vue]}</g>
     ${muscles}<g class="px-fib"><path d="${FIB[vue]}"/><path d="${FIB[vue]}" ${MIR}/></g><g class="px-deco">${DECO[vue]}<g ${MIR}>${DECO[vue]}</g></g>${o.extra || ""}${joints}</svg>`;
 }
 /* petit bonhomme pour une carte d'exercice */
