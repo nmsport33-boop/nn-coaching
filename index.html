@@ -649,6 +649,7 @@ body.ecran-on .repos{display:none!important}
 .off-faq p{margin:0;padding:0 14px 14px;font-size:14px;color:var(--muted);line-height:1.5}
 .off-foot{margin:22px 0 8px;text-align:center;font-size:12.5px;color:var(--muted)}
 </style>
+<link rel="stylesheet" href="plus.css?v=2026-11-02p">
 </head>
 <body>
 
@@ -674,7 +675,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-02b";
+const BUILD = "2026-11-02p";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
@@ -1242,7 +1243,8 @@ function watch(mid){
       if (!S.owner) { S.cur.member = null; S.err = "écoute : " + ((e && (e.code || e.message)) || "erreur inconnue"); render(true); } }));
   unsubs.push(S.db.collection(base + "/seances").onSnapshot(q => { const o = {}; q.docs.forEach(x => o[x.id] = x.data()); S.cur.seances = o; syncLive(); render();
     if (!S.owner && S.cur.member) syncBookings(mid, o, S.cur.member, false); }, () => {}));
-  unsubs.push(S.db.collection(base + "/notes").orderBy("at").limit(500).onSnapshot(q => { S.cur.notes = q.docs.map(x => ({id:x.id, ...x.data()})); render(); }, () => {}));
+  /* les 1500 plus récentes (journal nutrition, forme, mesures compris), remises dans l'ordre */
+  unsubs.push(S.db.collection(base + "/notes").orderBy("at", "desc").limit(1500).onSnapshot(q => { S.cur.notes = q.docs.map(x => ({id:x.id, ...x.data()})).reverse(); render(); }, () => {}));
 }
 
 /* ---------- rendu ---------- */
@@ -1440,7 +1442,7 @@ function fiche(){
   if (m === undefined) return `<div class="empty">Chargement…</div>`;
   if (m === null) return `<div class="empty">Cette fiche n'existe plus. <button class="btn sm" data-a="back">Retour</button></div>`;
   const nb = nextBooking(S.fiche), list = seancesSorted();
-  const recent = S.cur.notes.filter(n => n.auteur === "adherent").slice(-3).reverse();
+  const recent = S.cur.notes.filter(n => n.auteur === "adherent" && n.texte).slice(-3).reverse();
   return `<div class="row"><button class="btn sm ghost" data-a="back">‹ Adhérents</button></div>
   <section class="sec"><div class="h row" style="flex-wrap:nowrap"><span class="avatar">${esc(initials(m.prenom))}</span>
     <div style="min-width:0;flex:1"><h2 style="font-size:28px">${esc(m.prenom)}</h2><div class="small muted">${esc(m.objectif || "")}</div></div></div>
@@ -1522,7 +1524,7 @@ function cycleView(m, adh){
     return `<button class="cell ${s?.statut==="faite"?"done":""} ${nx&&s&&nx.id===s.id?"next":""} ${s&&hasAlert(s)?"alert":""}" ${s ? `data-a="open-seance" data-v="${s.id}"` : "disabled"} aria-label="Séance ${i+1}">
       ${i+1}<small>${s ? (isAuto(s) ? "A" : "S") : locked[i+1] ? "A ·" : ""}</small></button>`; }).join("");
   const done = list.filter(s => s.statut === "faite").length;
-  const gen = S.cur.notes.filter(x => !x.seance);
+  const gen = S.cur.notes.filter(x => !x.seance && x.texte);
   return `<section class="sec">
     <div class="sec-h"><h2>${adh ? "Mon cycle" : "Macro-cycle"}</h2>${adh ? "" : `<button class="btn sm ghost" data-a="edit-cycle">Modifier</button>`}</div>
     <div class="card"><div class="h"><b>${esc(c.nom)}</b><span class="chip gold">${done} / ${n} faites</span></div>
@@ -2528,5 +2530,6 @@ function startData(isCoach, cid){
 })();
 
 </script>
+<script src="plus.js?v=2026-11-02p"></script>
 </body>
 </html>

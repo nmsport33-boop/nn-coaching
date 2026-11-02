@@ -64,6 +64,13 @@ service cloud.firestore {
         allow update: if linked() && myCid() == cid && resource.data.auteur == 'adherent' && request.resource.data.get('auteur', 'adherent') == 'adherent';
         allow delete: if linked() && myCid() == cid && resource.data.auteur == 'adherent';
       }
+      // Ses photos de progression (02/11/2026) : visibles par lui et le coach seulement, 900 Ko maximum par photo
+      match /photos/{pid} {
+        allow read, write: if coach() || claude();
+        allow read, delete: if linked() && myCid() == cid;
+        allow create: if linked() && myCid() == cid && request.resource.data.img is string && request.resource.data.img.size() < 900000
+          && request.resource.data.keys().hasOnly(['at', 'date', 'img', 'auteur']);
+      }
     }
   }
 }
