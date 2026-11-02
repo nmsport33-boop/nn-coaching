@@ -95,10 +95,6 @@ function goutsForm(){
    Ensuite un bouton « Enregistrer / partager » (feuille de partage iOS : Enregistrer dans Fichiers, Messages…). */
 const JSPDF = "vendor/jspdf-2.5.1.min.js";   /* jsPDF 2.5.1 (licence MIT), copié dans le site */
 const chargerJs = src => new Promise((ok, ko) => { const x = document.createElement("script"); x.src = src; x.onload = ok; x.onerror = ko; document.head.appendChild(x); });
-const imgData = url => new Promise(ok => { const i = new Image(); i.crossOrigin = "anonymous"; const t = setTimeout(() => ok(null), 4000);
-  i.onload = () => { clearTimeout(t); try { const c = document.createElement("canvas"), k = Math.min(1, 160 / Math.max(i.width, i.height)); c.width = Math.round(i.width * k); c.height = Math.round(i.height * k);
-    const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(i, 0, 0, c.width, c.height); ok({d: c.toDataURL("image/jpeg", .8), w: c.width, h: c.height}); } catch (e) { ok(null); } };
-  i.onerror = () => { clearTimeout(t); ok(null); }; i.src = url; });
 function pdfFenetre(html){
   let d = document.getElementById("px-pdfbox"); if (!html) { if (d) d.remove(); return; }
   if (!d) { d = document.createElement("div"); d.id = "px-pdfbox"; document.body.appendChild(d); }
@@ -109,36 +105,54 @@ async function coursesPdf(v){
   pdfFenetre(`<b>📄 Préparation du PDF…</b><span class="small muted">Quelques secondes.</span>`);
   try {
     if (!window.jspdf) await chargerJs(JSPDF);
-    const {jsPDF} = window.jspdf, doc = new jsPDF({unit: "mm", format: "a4"}), cat = catalogue(), co = v.all;
+    const {jsPDF, AcroFormCheckBox} = window.jspdf, doc = new jsPDF({unit: "mm", format: "a4"}), co = v.all;
     const eur = n => Number(n).toLocaleString("fr-FR", {minimumFractionDigits: 2, maximumFractionDigits: 2}).replace(/ | /g, " ") + " €";
-    const txt = x => String(x ?? "").replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[–—]/g, "-").replace(/…/g, "...").replace(/[^\u0000-ÿ€œŒ]/gu, "").trim();
+    const txt = x => String(x ?? "").replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[–—]/g, "-").replace(/…/g, "...").replace(/[^\u0000-ÿ€œŒ]/gu, "").replace(/\s+/g, " ").trim();
     const ordre = [...v.mags.filter(x => co.some(c => c.magasin === x)), ...new Set(co.map(c => c.magasin || "Autre").filter(x => !v.mags.includes(x)))];
+    const RAYONS = ["Fruits et légumes", "Viandes et poissons", "Crèmerie et œufs", "Épicerie", "Surgelés", "Boissons", "Autre"];
     const som = l => l.reduce((t, c) => t + (Number(c.prix) || 0), 0), qui = [...new Set(co.map(c => c.qui).filter(Boolean))];
-    const imgs = {}; await Promise.all([...new Set(co.map(c => c.ref && cat[c.ref] && c.ref).filter(Boolean))].map(async r => { imgs[r] = await imgData(cat[r].img); }));
-    const W = 210, M = 14; let y = 18;
-    const page = h => { if (y + h > 285) { doc.addPage(); y = 16; } };
-    doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.text("Liste de courses", M, y); y += 7;
-    doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(90);
-    doc.text(doc.splitTextToSize(txt(`${new Date().toLocaleDateString("fr-FR", {weekday: "long", day: "numeric", month: "long"})}${qui.length ? " · avec les listes de " + qui.join(", ") : ""} · total environ ${eur(som(co))}${v.budget ? " (budget " + v.budget + " €)" : ""}`), W - 2 * M), M, y); y += 8;
+    const W = 210, M = 15, XQ = 128, XP = W - M; let y = 20, n = 0;
+    const bas = () => { doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(120); doc.text(`Liste de courses NN Coaching · page ${doc.getNumberOfPages()}`, W / 2, 291, {align: "center"}); };
+    const page = h => { if (y + h > 280) { bas(); doc.addPage(); y = 18; } };
+    /* en-tête */
+    doc.setFont("helvetica", "bold"); doc.setFontSize(22); doc.setTextColor(0); doc.text("Liste de courses", M, y); y += 8;
+    doc.setFont("helvetica", "normal"); doc.setFontSize(11); doc.setTextColor(70);
+    const sous = txt(`Semaine du ${new Date().toLocaleDateString("fr-FR", {day: "numeric", month: "long", year: "numeric"})}${qui.length ? "  ·  avec les listes de " + qui.join(", ") : ""}`);
+    doc.text(doc.splitTextToSize(sous, W - 2 * M), M, y); y += 6;
+    doc.setFont("helvetica", "bold"); doc.setTextColor(0);
+    doc.text(txt(`${co.length} articles  ·  total environ ${eur(som(co))}${v.budget ? "  ·  budget " + v.budget + " €" : ""}  ·  ${ordre.join(" puis ")}`), M, y); y += 9;
     for (const mg of ordre) {
-      const l = co.filter(c => (c.magasin || "Autre") === mg); page(16);
-      doc.setTextColor(0); doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.text(txt(mg), M, y);
-      doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.text("environ " + eur(som(l)), W - M, y, {align: "right"}); y += 2;
-      doc.setLineWidth(.6); doc.line(M, y, W - M, y); y += 5;
-      for (const c of l) {
-        const im = c.ref && imgs[c.ref], x0 = M + 8 + (im ? 14 : 0);
-        const l1 = doc.splitTextToSize(txt(`${c.article} · ${c.quantite}${c.qui ? " (" + c.qui + ")" : ""}`), W - M - 30 - x0), l2 = doc.splitTextToSize(txt(c.produit), W - M - 30 - x0);
-        const h = Math.max(im ? 13 : 0, (l1.length + l2.length) * 4.4 + 2); page(h + 2);
-        doc.setDrawColor(0); doc.setLineWidth(.3); doc.rect(M, y - 3.2, 4, 4);
-        if (im) { const k = Math.min(12 / im.w, 12 / im.h); doc.addImage(im.d, "JPEG", M + 7, y - 4, im.w * k, im.h * k); }
-        doc.setFont("helvetica", "bold"); doc.setFontSize(10.5); doc.setTextColor(0); doc.text(l1, x0, y);
-        doc.setFont("helvetica", "normal"); doc.setFontSize(9.5); doc.setTextColor(85); doc.text(l2, x0, y + l1.length * 4.4);
-        doc.setTextColor(0); doc.setFontSize(10.5); doc.text((c.promo ? "PROMO  " : "") + (c.prix ? eur(c.prix) : ""), W - M, y, {align: "right"});
-        y += h; doc.setDrawColor(220); doc.setLineWidth(.2); doc.line(M, y - 3, W - M, y - 3); y += 2;
+      const l = co.filter(c => (c.magasin || "Autre") === mg); page(30);
+      /* bandeau du magasin */
+      doc.setFillColor(25, 25, 35); doc.rect(M, y - 6, W - 2 * M, 10, "F");
+      doc.setTextColor(255); doc.setFont("helvetica", "bold"); doc.setFontSize(15); doc.text(txt(mg.toUpperCase()), M + 3, y + 0.8);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(10.5); doc.text(txt(`${l.length} article${l.length > 1 ? "s" : ""} · environ ${eur(som(l))}`), XP - 3, y + 0.5, {align: "right"}); y += 11;
+      const rays = [...RAYONS.filter(r => l.some(c => c.rayon === r)), ...new Set(l.map(c => c.rayon).filter(r => !RAYONS.includes(r)))];
+      for (const r of rays) {
+        page(18); doc.setTextColor(40); doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.text(txt(r).toUpperCase(), M, y);
+        doc.setDrawColor(150); doc.setLineWidth(.3); doc.line(M, y + 1.5, XP, y + 1.5); y += 7;
+        for (const c of l.filter(c => c.rayon === r)) {
+          const art = doc.setFont("helvetica", "bold").setFontSize(12.5).splitTextToSize(txt(c.article + (c.qui ? " (" + c.qui + ")" : "")), XQ - M - 14);
+          const pro = doc.setFont("helvetica", "normal").setFontSize(10).splitTextToSize(txt(c.produit), XQ - M - 14);
+          const qte = doc.setFontSize(11).splitTextToSize(txt(c.quantite), XP - XQ - 26);
+          const h = Math.max(art.length * 5.2 + pro.length * 4.4, qte.length * 4.8) + 3.5; page(h);
+          /* case à cocher : vraie case cliquable dans le PDF + carré dessiné */
+          doc.setDrawColor(0); doc.setLineWidth(.45); doc.rect(M, y - 4.2, 5.5, 5.5);
+          try { const cb = new AcroFormCheckBox(); cb.fieldName = "art" + (++n); cb.x = M; cb.y = y - 4.2; cb.width = 5.5; cb.height = 5.5; cb.appearanceState = "Off"; doc.addField(cb); } catch (e) {}
+          doc.setTextColor(0); doc.setFont("helvetica", "bold"); doc.setFontSize(12.5); doc.text(art, M + 9, y);
+          doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(90); doc.text(pro, M + 9, y + art.length * 5.2 - 0.6);
+          doc.setFontSize(11); doc.setTextColor(30); doc.text(qte, XQ, y);
+          doc.setFont("helvetica", "bold"); doc.setTextColor(0); doc.text(c.prix ? eur(c.prix) : "", XP, y, {align: "right"});
+          if (c.promo) { doc.setFont("helvetica", "bold"); doc.setFontSize(8.5); doc.setTextColor(200, 40, 90); doc.text("PROMO", XP, y + 4.4, {align: "right"}); }
+          y += h; doc.setDrawColor(225); doc.setLineWidth(.2); doc.line(M + 9, y - 3, XP, y - 3); y += 1.5;
+        }
+        y += 2;
       }
       y += 4;
     }
-    page(10); doc.setFontSize(8.5); doc.setTextColor(110); doc.text("PROMO = promo relevée cette semaine. Les autres prix sont estimés. NN Coaching", M, y + 2);
+    page(14); doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(110);
+    doc.text(doc.splitTextToSize("Touche une case pour la cocher (dans Fichiers ou Livres sur iPhone). PROMO = promo relevée cette semaine dans le magasin ; les autres prix sont estimés et peuvent varier.", W - 2 * M), M, y + 2);
+    bas();
     const nom = `courses-${new Date().toISOString().slice(0, 10)}.pdf`, blob = doc.output("blob"), file = new File([blob], nom, {type: "application/pdf"}), url = URL.createObjectURL(blob);
     P.pdf = {file, url, nom};
     const peutPartager = navigator.canShare && navigator.canShare({files: [file]});
