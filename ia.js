@@ -47,7 +47,7 @@ function bulles(){
     if (!r) return moi + (now - q.at < ATTENTE_MAX ? `<div class="ia-b lui ia-dots"><i></i><i></i><i></i></div>`
       : `<div class="ia-b lui ia-soft"><div>Ton message est bien arrivé. Je n'ai pas encore pu répondre : Nathanael le voit aussi.</div></div>`);
     return moi + `<div class="ia-b lui"><span class="ia-who">Assistant</span><div>${txt(r.r)}</div>
-      ${r.prop ? decision(r) : ""}${r.alerte && !r.limite ? `<span class="ia-flag">Nathanael est prévenu</span>` : ""}</div>`;
+      ${r.prop ? decision(r) : ""}${r.planRepas ? `<button class="ia-flag ia-plan" data-a="ia-plan">🍽️ Plan de repas enregistré dans ton onglet Nutrition ›</button>` : ""}${r.alerte && !r.limite ? `<span class="ia-flag">Nathanael est prévenu</span>` : ""}</div>`;
   }).join("");
 }
 function renderChat(){
@@ -131,6 +131,9 @@ window.act = act = async function(a, ds){
   const v = ds.v;
   switch (a) {
     case "ia-open": IA.open = true; renderChat(); return;
+    case "ia-open-q": IA.open = true; renderChat(); return act("ia-chip", {v});
+    case "ia-gen": IA.open = true; IA.t = "Génère mon plan nutritionnel selon mes goûts, mes cibles et mes jours de séance."; renderChat(); return envoyer();
+    case "ia-plan": IA.open = false; renderChat(); return act("tab", {v: "nutrition"});
     case "ia-close": IA.open = false; renderChat(); return;
     case "ia-chip": { IA.t = v; const ta = document.querySelector("#ia-chat textarea"); if (ta) { ta.value = v; ta.style.height = "auto"; ta.style.height = Math.min(ta.scrollHeight, 140) + "px"; ta.focus(); } return; }
     case "ia-send": return envoyer();

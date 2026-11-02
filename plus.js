@@ -11,7 +11,7 @@
 (function(){
 "use strict";
 const P = {seg: "muscles", vue: "face", muscle: null, periode: "faites", nutDay: null, photos: null, photosErr: null, sheet: null, wz: null, introLater: false};
-const DATA_TYPES = ["jour", "mesure", "profil"];
+const DATA_TYPES = ["jour", "mesure", "profil", "gouts"];
 window.NN_DATA_TYPES = DATA_TYPES;
 const today = () => iso(new Date());
 const num = v => { const n = Number(String(v ?? "").replace(",", ".")); return isFinite(n) ? n : 0; };
@@ -41,6 +41,58 @@ function profil(){
     seances: Number(obj.rythme) || Number(String(S.cur.member?.cycle?.rythme || "").match(/\d/)?.[0]) || 2, principal: obj.principal || buts[0] || "", buts, at: pr.at || 0};
 }
 const profilOk = p => !!(p.sexe && p.age && p.taille && p.poids);
+/* Plan nutrition : option payante 39 €/mois (Nathanael, 02/11/2026). Accès = members.nutritionPlan {offert, at} ;
+   offert pendant la période test à Nathanael, Mélanie, Soan, Noam et Kylian. */
+const NUT_PRIX = 39;
+const nutAcces = m => !!(m && m.nutritionPlan);
+function nutVerrou(){
+  const asked = S.cur.notes.some(n => n.auteur === "adherent" && n.offre === "nutrition");
+  return `<section class="sec"><h2>Nutrition</h2>
+    <div class="card px-intro-card px-nlock"><span class="px-emo">🔒</span><b>Plan nutrition · ${NUT_PRIX} €/mois</b>
+      <span class="small muted">Tes calories et tes protéines calculées pour toi, ton journal de repas, et des repères ajustés par Nathanael selon tes séances et ton objectif.</span>
+      <ul class="off-feat"><li>Cibles du jour (calories, protéines, glucides, lipides)</li><li>Journal des repas en quelques secondes</li><li>Cibles et conseils réglés par Nathanael</li><li>Sans engagement, au mois</li></ul>
+      ${asked ? `<div class="off-done">✓ Demande envoyée à Nathanael</div>` : `<button class="btn solid" data-a="want-offre" data-v="nutrition" ${S.owner || S.writeBlocked ? "disabled" : ""}>Ça m'intéresse</button>`}
+      <span class="small muted">Paiement directement auprès de Nathanael.</span></div></section>${askBar()}`;
+}
+const nutOffertChip = m => m?.nutritionPlan?.offert ? `<span class="off-alt px-noff">✦ Plan nutrition offert pendant la période test (ensuite ${NUT_PRIX} €/mois)</span>` : "";
+/* goûts alimentaires (notes/gouts), demandés au premier accès au Plan nutrition (Nathanael, 02/11/2026) */
+const REGIMES = ["Aucun", "Végétarien", "Végan", "Sans porc", "Halal", "Sans lactose", "Sans gluten"];
+/* les 14 allergènes à déclaration obligatoire en Europe (règlement INCO 1169/2011) */
+const ALLERGENES = ["Gluten", "Lait", "Œufs", "Arachides", "Fruits à coque", "Soja", "Poisson", "Crustacés", "Mollusques", "Sésame", "Céleri", "Moutarde", "Lupin", "Sulfites"];
+const MIDI = [["maison", "À la maison"], ["gamelle", "Gamelle au travail"], ["cantine", "Cantine / self"], ["dehors", "Restaurant, sandwich"]];
+const CUISINE = [["rapide", "Moins de 15 min"], ["moyen", "15 à 30 min"], ["aime", "J'aime cuisiner"]];
+const goutsDoc = () => S.cur.notes.find(n => n.id === "gouts");
+function goutsForm(){
+  const g = goutsDoc() || {}, f = P.g || (P.g = {regime: g.regime || [], repas: g.repas || 4, cuisine: g.cuisine || "moyen", allergenes: g.allergenes || [], midi: g.midi || ""}), d = (k, x) => S.drafts["pxg." + k] ?? x ?? "";
+  const chip = (a, v, on, l) => `<button class="${on ? "on" : ""}" data-a="${a}" data-v="${esc(v)}">${esc(l || v)}</button>`;
+  return `<div class="card px-gouts"><b>🥗 ${g.at ? "Tes goûts" : "Avant ton plan : parle-moi de tes goûts"}</b>
+    <span class="small muted">Ton plan de repas sera fait avec ça. Tu pourras le modifier quand tu veux.</span>
+    <label class="f">Ce que tu aimes manger<textarea rows="2" data-d="pxg.aime" placeholder="Ex. poulet, riz, pâtes, œufs, fruits, chocolat noir">${esc(d("aime", g.aime))}</textarea></label>
+    <label class="f">Ce que tu n'aimes pas ou ne manges pas<textarea rows="2" data-d="pxg.naime" placeholder="Ex. poisson, champignons, brocolis">${esc(d("naime", g.naime))}</textarea></label>
+    <span class="small muted">Allergies ou intolérances (touche celles qui te concernent)</span><div class="px-chips">${ALLERGENES.map(a => chip("px-gall", a, f.allergenes.includes(a))).join("")}</div>
+    <label class="f">Autre allergie ou intolérance<input type="text" data-d="pxg.allergies" placeholder="Ex. kiwi, fructose… ou rien" value="${esc(d("allergies", g.allergies))}"></label>
+    <span class="small muted">Régime</span><div class="px-chips">${REGIMES.map(r => chip("px-greg", r, r === "Aucun" ? !f.regime.length : f.regime.includes(r))).join("")}</div>
+    <span class="small muted">Repas par jour (collations comprises)</span><div class="px-chips">${[3, 4, 5].map(n => chip("px-grep", n, f.repas === n, n + " repas")).join("")}</div>
+    <span class="small muted">Le midi, tu manges surtout</span><div class="px-chips">${MIDI.map(([k, l]) => chip("px-gmidi", k, f.midi === k, l)).join("")}</div>
+    <span class="small muted">Temps pour cuisiner</span><div class="px-chips">${CUISINE.map(([k, l]) => chip("px-gcui", k, f.cuisine === k, l)).join("")}</div>
+    <label class="f">Autre chose à savoir (horaires, budget, cantine…)<input type="text" data-d="pxg.autre" placeholder="Facultatif" value="${esc(d("autre", g.autre))}"></label>
+    <div class="row"><button class="btn solid" data-a="px-gsave">Enregistrer mes goûts</button>${g.at ? `<button class="btn ghost" data-a="px-gcancel">Annuler</button>` : ""}</div></div>`;
+}
+/* plan de repas préparé par l'assistant (members.planRepas), visible par l'adhérent et par Nathanael */
+function planRepasCard(m, coach){
+  const pl = m?.planRepas, ia = !coach && window.NN_IA_ACTIF && window.NN_IA && !m.iaOff, g = goutsDoc();
+  if (!coach && (!g || P.gEdit)) return goutsForm();
+  const gen = ia ? `<button class="btn solid" data-a="ia-gen">${pl ? "Générer un nouveau plan" : "Générer mon plan nutritionnel"}</button>` : "";
+  const edit = coach ? "" : `<button class="btn link sm" data-a="px-gedit">Modifier mes goûts</button>`;
+  if (!pl) return coach ? (g ? `<div class="small muted">Goûts notés, pas encore de plan de repas.</div>` : "") : `<div class="card px-plan"><b>🍽️ Ton plan nutritionnel</b>
+    <span class="small muted">${ia ? "Ton assistant prépare des menus selon tes goûts, tes cibles et tes jours de séance. Nathanael les voit." : "Nathanael prépare ton plan de repas selon tes goûts."}</span><div class="row">${gen}${edit}</div></div>`;
+  const M = [["matin", "Matin"], ["midi", "Midi"], ["collation", "Collation"], ["soir", "Soir"]];
+  return `<div class="card px-plan"><div class="sec-h"><b>🍽️ ${esc(pl.titre || "Ton plan de repas")}</b><span class="small muted">${esc(fmtWhen(pl.at))}</span></div>
+    <span class="small muted">${pl.par === "assistant" ? (coach ? "Préparé par l'assistant (tu l'as autorisé pour le Plan nutrition)." : "Préparé par ton assistant, selon tes goûts et tes cibles. Nathanael le voit.") : "Préparé par Nathanael."}</span>
+    ${(pl.jours || []).map((d, k) => `<details${k === 0 ? " open" : ""}><summary>${esc(d.nom)}</summary><dl class="kv">${M.filter(([x]) => d[x]).map(([x, l]) => `<dt>${l}</dt><dd>${esc(d[x])}</dd>`).join("")}</dl></details>`).join("")}
+    ${pl.conseils ? `<div class="small"><b>Conseils</b> · ${esc(pl.conseils)}</div>` : ""}
+    ${coach ? `<button class="btn sm ghost" data-a="px-plandel" style="align-self:flex-start">Effacer ce plan</button>` : `<div class="row">${gen}${ia ? `<button class="btn sm ghost" data-a="ia-open-q" data-v="Je voudrais changer mon plan de repas : ">Changer un repas</button>` : ""}${edit}</div>`}</div>`;
+}
 /* cibles du jour : calcul (Mifflin-St Jeor) sauf si Nathanael a réglé les chiffres dans la fiche */
 const FQ = {assis: 1.3, debout: 1.45, physique: 1.6};
 const ADJ = {perte: {modere: -.18, leger: -.1}, prise: {modere: .1, leger: .05}, recompo: {modere: -.07, leger: -.04}, maintien: {modere: 0, leger: 0}};
@@ -325,7 +377,8 @@ function accueil(){
     ${fo ? `<button class="card tap px-forme" data-a="tab" data-v="corps" data-seg="forme">${gauge(fo.score, formeLbl(fo.score))}<span class="small muted" style="text-align:center">${esc(formeMot(fo))}</span></button>`
       : `<button class="card tap px-forme-ask" data-a="px-forme"><span class="px-emo">🌤️</span><span><b>Comment tu te sens aujourd'hui ?</b><span class="small muted" style="display:block">15 secondes : sommeil, énergie, courbatures, moral. Nathanael adapte ta séance si besoin.</span></span><span class="px-go">›</span></button>`}</section>
   <section class="sec"><div class="sec-h"><h2>Nutrition</h2><button class="btn link sm" data-a="tab" data-v="nutrition">Ouvrir ›</button></div>
-    ${c ? `<button class="card tap px-nutmini" data-a="tab" data-v="nutrition">${ring(tot.kcal, c.kcal, 92, 10, "var(--a1)", `<text x="46" y="48" text-anchor="middle" class="px-rv">${fr(tot.kcal)}</text><text x="46" y="62" text-anchor="middle" class="px-rl">/ ${fr(c.kcal)}</text>`)}
+    ${!nutAcces(m) ? `<button class="card tap" data-a="tab" data-v="nutrition"><b>🔒 Plan nutrition · ${NUT_PRIX} €/mois</b><span class="small muted">Tes calories, tes protéines et ton journal de repas, suivis par Nathanael.</span><span class="small" style="color:var(--a1);font-weight:700">Découvrir ›</span></button>`
+    : c ? `<button class="card tap px-nutmini" data-a="tab" data-v="nutrition">${ring(tot.kcal, c.kcal, 92, 10, "var(--a1)", `<text x="46" y="48" text-anchor="middle" class="px-rv">${fr(tot.kcal)}</text><text x="46" y="62" text-anchor="middle" class="px-rl">/ ${fr(c.kcal)}</text>`)}
       <div class="px-macros">${macroLine("Protéines", tot.p, c.p, "var(--a3)")}${macroLine("Glucides", tot.g, c.g, "var(--a2)")}${macroLine("Lipides", tot.l, c.l, "var(--a4)")}
       ${(jt?.repas || []).length ? "" : `<span class="small muted">Rien de noté aujourd'hui · ajoute ton premier repas</span>`}</div></button>`
     : `<button class="card tap" data-a="tab" data-v="nutrition"><b>Tes calories et protéines du jour</b><span class="small muted">Réponds à 6 questions et l'appli calcule tes repères. Nathanael peut les ajuster.</span><span class="small" style="color:var(--a1);font-weight:700">Commencer ›</span></button>`}</section>
@@ -377,7 +430,8 @@ const ALIMENTS = [
 ];
 function nutrition(){
   const m = S.cur.member, p = profil();
-  if (!profilOk(p) && !(m.nutrition?.kcal > 0)) return `<section class="sec"><h2>Nutrition</h2>
+  if (!nutAcces(m)) return nutVerrou();
+  if (!profilOk(p) && !(m.nutrition?.kcal > 0)) return `<section class="sec"><h2>Nutrition</h2>${nutOffertChip(m)}
     <div class="card px-intro-card"><span class="px-emo">🍽️</span><b>Tes repères de la journée</b>
       <span class="small muted">6 questions rapides (taille, poids, ton quotidien, ton objectif) et l'appli calcule tes calories et tes protéines. Nathanael les voit et peut les ajuster pour toi.</span>
       <button class="btn solid" data-a="px-wz" data-v="nutrition">C'est parti</button></div></section>${askBar()}`;
@@ -388,6 +442,8 @@ function nutrition(){
   const e = profilOk(p) ? depense(p) : null, sport = allSeances().some(s => s.date === day) ? e?.seance || 0 : 0;
   const dep = e ? r10(e.bmr + e.quot + sport) : null;
   return `<section class="sec"><div class="sec-h"><h2>Nutrition</h2><button class="btn link sm" data-a="px-wz" data-v="nutrition">Mes infos</button></div>
+    ${nutOffertChip(m)}
+    ${!goutsDoc() ? planRepasCard(m) : ""}
     <div class="px-ndays"><button class="px-nav" data-a="px-nweek" data-v="-7" aria-label="Semaine précédente">‹</button>${days}<button class="px-nav" data-a="px-nweek" data-v="7" aria-label="Semaine suivante">›</button></div>
     <div class="card px-apports"><div class="px-ap-l"><span class="eyebrow">${day === today() ? "Aujourd'hui" : esc(fmtLong(parseIso(day)))}</span>
       <b class="px-big">${reste >= 0 ? fr(reste) : "+" + fr(-reste)}<small> kcal</small></b><span class="small muted">${reste >= 0 ? "il te reste" : "au-dessus de ta cible"}</span>
@@ -396,6 +452,7 @@ function nutrition(){
     ${c.mot ? `<div class="note coach"><div class="meta"><b style="color:var(--ink)">Nathanael</b></div><div class="txt">${esc(c.mot)}</div></div>` : ""}
     <div class="px-mac3">${[["Protéines", "p", "var(--a3)"], ["Glucides", "g", "var(--a2)"], ["Lipides", "l", "var(--a4)"]].map(([l, k, col]) => `<div class="card"><span class="small muted">${l}</span><b>${fr(tot[k])}<small> / ${fr(c[k])} g</small></b>${bar(tot[k], c[k], col)}</div>`).join("")}</div>
     ${c.mineur ? `<span class="small muted">Avant 18 ans, pas de régime : ces chiffres sont des repères pour bien manger et bien grandir.</span>` : ""}</section>
+  ${goutsDoc() ? `<section class="sec">${planRepasCard(m)}</section>` : ""}
   <section class="sec"><div class="sec-h"><h2>Ton journal</h2><button class="btn sm solid" data-a="px-add" data-v="">+ Ajouter</button></div>
     ${REPAS.map(([k, l]) => { const xs = (j?.repas || []).filter(x => x.r === k), t = xs.reduce((s, x) => s + num(x.kcal), 0);
       return `<div class="card px-repas"><div class="h"><b>${l}</b><span class="small muted">${t ? fr(t) + " kcal" : ""}</span><button class="btn link sm" data-a="px-add" data-v="${k}">+ Ajouter</button></div>
@@ -708,7 +765,11 @@ function ficheCorps(){
   const p = profil(), c = cibles(p, m), calc = cibles(p, {}), k = "pxn.", fo = notesType("jour").filter(j => j.forme).pop(), ms = mesures();
   const sem = Array.from({length: 7}, (_, i) => { const dd = iso(addD(new Date(), i - 6)); return {dd, t: totJour(jourDoc(dd))}; });
   const v = volume("faites"), top = Object.entries(v.sets).sort((a, b) => b[1] - a[1]).slice(0, 5), zs = zonesSensibles();
+  const np = m.nutritionPlan;
   return `<section class="sec"><div class="sec-h"><h2>Corps & nutrition</h2></div><div class="card">
+    <div class="row" style="justify-content:space-between;align-items:center;gap:8px"><span><b>Plan nutrition (${NUT_PRIX} €/mois)</b><span class="small muted" style="display:block">${np ? (np.offert ? "Accès offert (période test)" : "Accès payant") : "Pas d'accès : il voit l'offre verrouillée"}</span></span>
+      <button class="btn sm ${np ? "ghost" : "solid"}" data-a="px-nplan" data-v="${np ? "off" : "on"}">${np ? "Retirer l'accès" : "Donner l'accès"}</button></div>
+    ${np ? planRepasCard(m, true) : ""}
     <dl class="kv"><dt>Profil</dt><dd>${profilOk(p) ? `${p.sexe === "F" ? "Femme" : "Homme"}, ${p.age} ans, ${p.taille} cm, ${fr(p.poids, 1)} kg` : "incomplet (l'adhérent n'a pas encore rempli ses infos)"}</dd>
       ${p.poidsVise ? `<dt>Poids visé</dt><dd>${fr(p.poidsVise, 1)} kg (${p.rythmePoids === "leger" ? "léger" : "modéré"})</dd>` : ""}
       ${calc ? `<dt>Calcul auto</dt><dd>${fr(calc.kcal)} kcal · P ${calc.p} · G ${calc.g} · L ${calc.l} <span class="small muted">(repos ${fr(calc.bmr)}, dépense ${fr(calc.tdee)})</span></dd>` : ""}
@@ -847,6 +908,18 @@ window.act = act = async function(a, ds){
       const n = {kcal: num(g("kcal") ?? c.kcal), p: num(g("p") ?? c.p), g: num(g("g") ?? c.g), l: num(g("l") ?? c.l), mot: String(g("mot") ?? m.nutrition?.mot ?? "").trim().slice(0, 400)};
       if (!(n.kcal > 0)) return toast("Indique les calories.");
       if (await run(S.db.doc("members/" + S.fiche).update({nutrition: n}), "Cibles enregistrées")) clearDrafts(k); return; }
+    case "px-nplan": if (await run(S.db.doc("members/" + S.fiche).update({nutritionPlan: v === "on" ? {offert: false, at: Date.now()} : firebase.firestore.FieldValue.delete()}), v === "on" ? "Plan nutrition activé" : "Accès retiré")) return; return;
+    case "px-greg": { const f = P.g; if (v === "Aucun") f.regime = []; else f.regime = f.regime.includes(v) ? f.regime.filter(x => x !== v) : [...f.regime, v]; return render(); }
+    case "px-gall": { const f = P.g; f.allergenes = f.allergenes.includes(v) ? f.allergenes.filter(x => x !== v) : [...f.allergenes, v]; return render(); }
+    case "px-gmidi": P.g.midi = P.g.midi === v ? "" : v; return render();
+    case "px-grep": P.g.repas = Number(v); return render();
+    case "px-gcui": P.g.cuisine = v; return render();
+    case "px-gedit": P.gEdit = true; P.g = null; return render();
+    case "px-gcancel": P.gEdit = false; P.g = null; clearDrafts("pxg."); return render();
+    case "px-gsave": { const g = goutsDoc() || {}, t = k => String(S.drafts["pxg." + k] ?? g[k] ?? "").trim().slice(0, 400);
+      const doc = {type: "gouts", auteur: "adherent", seance: null, aime: t("aime"), naime: t("naime"), allergies: t("allergies"), autre: t("autre"), regime: P.g.regime, allergenes: P.g.allergenes, midi: P.g.midi, repas: P.g.repas, cuisine: P.g.cuisine, at: g.at || Date.now(), maj: Date.now()};
+      if (await run(S.db.doc(`members/${memberId()}/notes/gouts`).set(doc), "Goûts enregistrés")) { clearDrafts("pxg."); P.gEdit = false; P.g = null; render(); } return; }
+    case "px-plandel": if (!confirm("Effacer le plan de repas ?")) return; await run(S.db.doc("members/" + S.fiche).update({planRepas: firebase.firestore.FieldValue.delete()}), "Plan effacé"); return;
     case "px-nauto": if (await run(S.db.doc("members/" + S.fiche).update({nutrition: firebase.firestore.FieldValue.delete()}), "Retour au calcul auto")) clearDrafts("pxn."); return;
   }
 };

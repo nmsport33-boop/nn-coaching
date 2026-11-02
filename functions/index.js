@@ -45,7 +45,7 @@ exports.assistant = onDocumentCreated({
   try {
     const rep = await client.beta.messages.create({
       model: MODELE,
-      max_tokens: 4000,
+      max_tokens: 8000,
       betas: ["server-side-fallback-2026-07-01"],
       fallbacks: "default",
       output_config: {effort: "medium", format: {type: "json_schema", schema: A.SCHEMA}},
@@ -63,7 +63,10 @@ exports.assistant = onDocumentCreated({
     if (rep.stop_reason === "max_tokens" || !bloc) throw new Error("réponse incomplète (" + rep.stop_reason + ")");
     const r = A.lireReponse(bloc.text);
     logger.info("réponse", {mid, nid, prop: !!r.prop, alerte: r.alerte, entree: rep.usage?.input_tokens, cache: rep.usage?.cache_read_input_tokens, sortie: rep.usage?.output_tokens});
-    return ecrire({r: r.r, prop: r.prop, statut: r.prop ? "attente" : null, alerte: r.alerte, pourCoach: r.pourCoach});
+    /* plan de repas : seule chose que l'assistant applique lui-même, et seulement avec le Plan nutrition (délégation de Nathanael, 02/11/2026) */
+    let plan = false;
+    if (r.plan && member.nutritionPlan && !r.alerte) { await base.update({planRepas: {...r.plan, at: Date.now(), par: "assistant", nid}}); plan = true; }
+    return ecrire({r: r.r, prop: r.prop, statut: r.prop ? "attente" : null, alerte: r.alerte, pourCoach: r.pourCoach, planRepas: plan});
   } catch (e) {
     const quoi = e instanceof Anthropic.AuthenticationError ? "clé API refusée" : e instanceof Anthropic.RateLimitError ? "trop de demandes"
       : e instanceof Anthropic.APIError ? `erreur API ${e.status}` : e instanceof SyntaxError ? "réponse illisible" : String(e.message || e);

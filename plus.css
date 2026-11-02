@@ -256,3 +256,13 @@ html.px-lock,html.px-lock body{overflow:hidden}
 .px-sum span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
 .px-sum b{font-size:16px}
 @media (max-width:380px){.px-g4{grid-template-columns:repeat(2,minmax(0,1fr))}.px-mrow{grid-template-columns:84px 1fr 30px 10px}}
+/* Plan nutrition (option 39 €/mois) et plan de repas de l'assistant */
+.px-noff{align-self:flex-start}
+.px-nlock .off-feat{margin:4px 0}
+.px-plan{display:flex;flex-direction:column;gap:8px}
+.px-plan details{border-top:1px solid var(--line);padding-top:8px}
+.px-plan summary{cursor:pointer;font-weight:700;color:var(--a1)}
+.px-plan dl.kv{margin-top:6px}
+.px-plan-ask{display:flex;flex-direction:column;gap:4px;text-align:left}
+.px-gouts{display:flex;flex-direction:column;gap:10px}
+.px-gouts .px-chips button.on{border-color:var(--a1);background:rgba(var(--a1r),.16);color:var(--a1);font-weight:700;box-shadow:0 0 10px rgba(var(--a1r),.25)}

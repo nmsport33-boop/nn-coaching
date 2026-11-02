@@ -15,6 +15,14 @@ CE QUE TU FAIS
 - Expliquer les exercices de SON programme : placement, respiration, amplitude, ce qu'il doit sentir, erreurs fréquentes. Tu t'appuies sur les consignes déjà écrites par Nathanael dans la séance.
 - L'aider à organiser sa semaine avec ce qui est prévu : quand caser ses séances (créneaux coachés lundi, mercredi, vendredi 14 h - 19 h et samedi 9 h - 12 h, sinon en autonomie), quoi prévoir, comment utiliser l'appli (onglets Accueil, Séances, Nutrition, Corps, Planning ; séance guidée avec chrono ; questionnaire santé après chaque séance, obligatoire pour débloquer la suivante).
 - Nutrition pratique, dans le cadre des cibles affichées dans son onglet Nutrition : idées de repas simples, où trouver des protéines, s'hydrater. Pas de régime, pas de compléments, pas de chiffres nouveaux : les cibles, c'est Nathanael.
+
+PLAN NUTRITION (délégation de Nathanael, 2 novembre 2026)
+Le dossier indique « Plan nutrition : OUI » ou « NON ».
+- OUI : Nathanael t'autorise à faire toi-même sa programmation nutritionnelle. Quand l'adhérent demande un plan de repas, des menus ou une organisation de ses repas, ou quand c'est clairement utile, tu remplis plan_repas (existe = true) : il est enregistré directement dans son onglet Nutrition, sans attendre Nathanael, qui le voit dans la fiche. C'est la seule chose que tu peux appliquer toi-même.
+  Le plan respecte ses cibles du jour (calories et protéines du dossier) en restant simple, avec des aliments courants en France et des quantités faciles (grammes, cuillères, portions). Tu tiens compte de ses goûts, allergies, horaires, budget et de ses jours de séance quand tu les connais ; s'il manque une info importante (allergie, régime végétarien, horaires), tu la demandes avant de faire le plan. 7 jours au plus ; souvent 3 à 4 journées types suffisent (jour de séance, jour de repos, week-end).
+  Tu ne changes jamais les cibles elles-mêmes : si elles te semblent à revoir, c'est une proposition pour Nathanael. Mineur : aucune restriction, aucun déficit, aucun complément, des repas pour bien grandir. Trouble alimentaire évoqué, perte de poids très rapide ou malaise : pas de plan, passer_la_main = true.
+  Dans reponse, tu résumes le plan en 2 ou 3 phrases et tu dis qu'il est dans son onglet Nutrition.
+- NON : pas de plan de repas ni de menus détaillés (plan_repas.existe = false). Tu peux donner une idée de repas ponctuelle. S'il veut un vrai suivi nutrition, tu lui dis gentiment, sans insister, que le Plan nutrition (39 € par mois, à voir avec Nathanael ou dans la page Offres) le permet.
 - Motiver, rassurer, féliciter les efforts réels (séances faites, régularité).
 - Préparer le travail de Nathanael : dans note_pour_nathanael, une ou deux phrases sur ce qu'il doit savoir (ressenti, difficulté, besoin, idée). Vide si rien d'utile.
 
@@ -50,10 +58,30 @@ const SCHEMA = {
       required: ["existe", "quoi", "titre", "detail"],
       additionalProperties: false
     },
+    plan_repas: {
+      type: "object",
+      description: "Plan de repas enregistré directement dans l'onglet Nutrition. Seulement si le dossier indique Plan nutrition : OUI.",
+      properties: {
+        existe: {type: "boolean"},
+        titre: {type: "string", description: "Ex. « Ta semaine type, objectif prise de muscle ». Vide si existe = false."},
+        jours: {type: "array", description: "1 à 7 journées. Vide si existe = false.", items: {
+          type: "object",
+          properties: {
+            nom: {type: "string", description: "Ex. « Jour de séance », « Lundi »."},
+            matin: {type: "string"}, midi: {type: "string"}, collation: {type: "string"}, soir: {type: "string"}
+          },
+          required: ["nom", "matin", "midi", "collation", "soir"],
+          additionalProperties: false
+        }},
+        conseils: {type: "string", description: "2 à 4 conseils courts (hydratation, préparation, astuces). Vide si existe = false."}
+      },
+      required: ["existe", "titre", "jours", "conseils"],
+      additionalProperties: false
+    },
     passer_la_main: {type: "boolean", description: "true si Nathanael doit intervenir lui-même (santé, douleur, situation hors de ton rôle)."},
     note_pour_nathanael: {type: "string", description: "Une ou deux phrases pour le coach, ou une chaîne vide."}
   },
-  required: ["reponse", "proposition", "passer_la_main", "note_pour_nathanael"],
+  required: ["reponse", "proposition", "plan_repas", "passer_la_main", "note_pour_nathanael"],
   additionalProperties: false
 };
 
@@ -96,6 +124,10 @@ function contexte({member: m, seances, notes, maintenant = Date.now()}){
   if (m.option) L.push(`Formule : ${m.option === "coache" ? "séances coachées en salle" : m.option}`);
   if (obj?.texte) L.push(`Questionnaire de départ (santé, niveau, objectifs) :\n${court(obj.texte, 2500)}`);
   L.push(`Cibles nutrition : ${nut}.`);
+  L.push(`Plan nutrition : ${m.nutritionPlan ? "OUI" + (m.nutritionPlan.offert ? " (offert pendant la période test)" : "") : "NON (option à 39 €/mois)"}.`);
+  const go = notes.find(n => n.id === "gouts");
+  if (m.nutritionPlan) L.push(go ? `Goûts alimentaires (questionnaire de l'adhérent) : aime ${court(go.aime, 300) || "?"} ; n'aime pas / ne mange pas ${court(go.naime, 300) || "rien de précisé"} ; allergies et intolérances ${[...(go.allergenes || []), go.allergies].filter(Boolean).join(", ") || "aucune déclarée"} ; le midi ${({maison: "à la maison", gamelle: "gamelle au travail", cantine: "cantine ou self", dehors: "restaurant ou sandwich"})[go.midi] || "?"} ; régime ${(go.regime || []).join(", ") || "aucun"} ; ${go.repas || "?"} repas par jour ; temps pour cuisiner ${({rapide: "moins de 15 min", moyen: "15 à 30 min", aime: "aime cuisiner"})[go.cuisine] || "?"}${go.autre ? " ; autre : " + court(go.autre, 300) : ""}. Le plan de repas suit ces goûts : jamais un aliment qu'il ne mange pas, ni un aliment contenant un de ses allergènes (pense aux sources cachées : gluten dans le pain, les pâtes, la semoule, la panure ; lait dans le fromage, le beurre, la whey ; fruits à coque dans les barres et le pesto ; soja dans le tofu et les sauces). Le midi s'adapte à l'endroit où il mange (gamelle facile à transporter, choix malins à la cantine ou au restaurant).` : "Goûts alimentaires : pas encore remplis (lui demander ses goûts et allergies avant un plan).");
+  if (m.nutritionPlan && m.planRepas) L.push(`Plan de repas actuel (${quand(m.planRepas.at || 0)}) : ${court(m.planRepas.titre, 120)} · ${(m.planRepas.jours || []).map(j => j.nom).join(", ")}`);
   if (m.iaConsignes) L.push(`CONSIGNES DE NATHANAEL POUR L'ASSISTANT (à respecter) :\n${court(m.iaConsignes, 1500)}`);
   L.push(`\nSÉANCES FAITES (${faites.length}) :\n${faites.slice(-4).map(seanceTxt).join("\n") || "aucune"}`);
   L.push(`\nSÉANCES À VENIR (${aVenir.length}) :\n${aVenir.slice(0, 4).map(seanceTxt).join("\n") || "aucune visible pour le moment"}`);
@@ -124,7 +156,10 @@ function lireReponse(texte){
   const j = JSON.parse(texte);
   const p = j.proposition || {};
   const prop = p.existe && String(p.titre || "").trim() ? {quoi: p.quoi || "autre", titre: court(p.titre, 90), detail: court(p.detail, 1200)} : null;
-  return {r: String(j.reponse || "").trim().slice(0, 3000), prop, alerte: !!j.passer_la_main, pourCoach: court(j.note_pour_nathanael, 600)};
+  const pl = j.plan_repas || {};
+  const jours = Array.isArray(pl.jours) ? pl.jours.slice(0, 7).map(d => ({nom: court(d.nom, 60), matin: court(d.matin, 400), midi: court(d.midi, 400), collation: court(d.collation, 400), soir: court(d.soir, 400)})).filter(d => d.nom) : [];
+  const plan = pl.existe && jours.length ? {titre: court(pl.titre, 120) || "Ton plan de repas", jours, conseils: court(pl.conseils, 800)} : null;
+  return {r: String(j.reponse || "").trim().slice(0, 3000), prop, plan, alerte: !!j.passer_la_main, pourCoach: court(j.note_pour_nathanael, 600)};
 }
 
 /* le message envoyé au modèle porte la date (hors du dossier, pour garder le cache) */
