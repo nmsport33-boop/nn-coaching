@@ -29,7 +29,7 @@
       const w = m && +m[1] >= 5 ? +m[1] : 20, r = m && +m[2] >= 0 ? +m[2] : 10;
       const seq = n >= 2 ? todo : cycle(todo, num(all, /(\d+)\s*(?:intervalles?|rounds?)/, 8));
       seq.forEach((y, i) => { go(w, y, `Intervalle ${i + 1} / ${seq.length}`); if (i < seq.length - 1) rest(r, "Repos", seq[i + 1]); });
-      titre = "Tabata"; info = `${w} s d'effort, ${r} s de repos, ${seq.length} intervalles`;
+      titre = `HIIT ${w}/${r}`; info = `${w} s d'effort, ${r} s de repos, ${seq.length} intervalles`;
     } else if (/\bemom\b|e\d\s*mom|toutes les\s*\d*\s*min/.test(all)) {
       mode = "emom"; const every = num(all, /e(\d)\s*mom/, 0) || num(all, /toutes les\s*(\d+)\s*min/, 1);
       const mins = num(all, /emom\s*(?:de\s*|sur\s*)?(\d+)/, 0) || num(all, /(\d+)\s*(?:min|')\s*(?:en\s*)?emom/, 0);
@@ -96,25 +96,29 @@
       if (first >= 0) try { focusSur(f.sid, st[first].k); } catch (e) {} }
     render(); }
   const reste = f => Math.max(0, (f.pause != null ? f.pause : f.fin - Date.now())) / 1000 + f.P.slice(f.pi + 1).reduce((a, p) => a + p.sec, 0);
-  const txt = l => l >= 60 ? mmss(l) : String(l);
+  const txt = l => mmss(l);
   function maj() { const f = S.fin, p = f.P[f.pi], ms = f.pause != null ? f.pause : f.fin - Date.now(), l = Math.max(0, Math.ceil(ms / 1000));
     majRing("fin", ms / (p.sec * 1000), txt(l)); document.querySelectorAll(".fin-tot").forEach(b => b.textContent = mmss(Math.ceil(reste(f)))); }
 
   function vue() { const f = S.fin, el = $("go"), p = f.P[f.pi], s = S.cur.seances[f.sid], b = s.blocs[f.bi];
     const ms = f.pause != null ? f.pause : f.fin - Date.now(), l = Math.max(0, Math.ceil(ms / 1000));
-    const nGo = f.P.filter(q => q.ph === "go").length, iGo = f.P.slice(0, f.pi + 1).filter(q => q.ph === "go").length, pct = Math.round(iGo / nGo * 100);
-    const nx = f.P.slice(f.pi + 1).find(q => q.ph === "go");
-    const lbl = p.ph === "pret" ? "Prépare-toi" : p.ph === "rest" ? p.lbl : f.mode === "emom" ? "Go · ta récup après" : f.mode === "amrap" ? "AMRAP" : "Effort";
-    const corps = p.liste ? `<div class="fin-liste">${p.liste.map(e => `<div><b>${esc(e.n)}</b>${e.d ? ` <i>${esc(e.d)}</i>` : ""}</div>`).join("")}</div>`
-      : p.e ? `<h3>${esc(p.e.n)}</h3>${p.e.d && (f.mode === "emom" || f.mode === "tabata") ? `<div class="go-dose">${esc(p.e.d)}</div>` : ""}` : "";
-    el.innerHTML = `<div class="in"><div class="go-top"><button class="go-x" data-a="go-close" aria-label="Quitter">✕</button><div class="go-prog"><i style="width:${pct}%"></i></div><span class="go-cnt">${iGo} / ${nGo}</span></div>
-      <div class="go-bloc"><span class="code">${esc(f.titre)}${b.nom && low(b.nom) !== low(f.titre) ? " · " + esc(b.nom) : ""}</span></div>
-      <div class="go-rest fin ${p.ph}"><span class="go-lbl">${esc(lbl)}</span>${p.ph === "rest" && p.e ? `<div class="go-suiv"><span>À suivre</span><b>${esc(p.e.n)}</b></div>` : corps}
-        <div class="go-ring">${ring("fin", ms / (p.sec * 1000))}<b class="fin-t">${txt(l)}</b></div>
-        <div class="fin-info">${p.ph === "go" && p.lbl ? `<span>${esc(p.lbl)}</span>` : ""}<span>Reste <b class="fin-tot">${mmss(Math.ceil(reste(f)))}</b></span></div>
-        ${p.ph === "go" && nx && nx.e && (!p.e || nx.e !== p.e) ? `<div class="go-next">Ensuite : <b>${esc(nx.e.n)}</b></div>` : ""}
-        <div class="go-rbtn"><button data-a="fin-pause">${f.pause != null ? "▶ Reprendre" : "❚❚ Pause"}</button><button class="pass" data-a="fin-skip">Passer ›</button></div>
-        <button class="btn link" data-a="fin-stop" style="color:var(--muted)">Arrêter le minuteur</button></div></div>`;
+    const gos = f.P.filter(q => q.ph === "go"), iGo = f.P.slice(0, f.pi + 1).filter(q => q.ph === "go").length, pct = Math.round((f.pi + 1) / f.P.length * 100);
+    const resteGo = gos.length - iGo + (p.ph === "go" ? 1 : 0), nx = f.P.slice(f.pi + 1).find(q => q.ph === "go");
+    const tours = (() => { const ts = gos.map(q => (String(q.lbl).match(/Tour (\d+) \/ (\d+)/) || [])).filter(m => m[1]); if (!ts.length) return null;
+      const cur = (String((p.ph === "go" ? p : nx || p).lbl).match(/Tour (\d+) \/ (\d+)/) || [])[1]; return cur ? {cur: +cur, n: +ts[0][2]} : null; })();
+    const mot = p.ph === "pret" ? "En place" : p.ph === "rest" ? (p.lbl === "Change de côté" ? "Change de côté" : p.lbl === "Exo suivant" ? "Exo suivant" : "Récup") : f.mode === "amrap" ? "Max de tours" : f.mode === "emom" ? "Go" : "Effort";
+    const quoi = p.ph === "rest" ? nx : p;
+    const corps = p.liste ? `<div class="fx-liste">${p.liste.map(e => `<div><b>${esc(e.n)}</b>${e.d ? ` <i>${esc(e.d)}</i>` : ""}</div>`).join("")}</div>`
+      : quoi && quoi.e ? `<div class="fx-exo">${p.ph === "rest" ? "<small>Ensuite</small>" : ""}<b>${esc(quoi.e.n)}</b>${quoi.e.d && /emom|tabata/.test(f.mode) ? `<i>${esc(quoi.e.d)}</i>` : ""}</div>` : "";
+    const gauche = tours ? `<div class="fx-cpt"><b>${tours.n - tours.cur + 1}</b><span>${tours.n - tours.cur + 1 > 1 ? "tours restants" : "dernier tour"}</span></div>`
+      : `<div class="fx-cpt"><b>${resteGo}</b><span>${f.mode === "emom" ? "minutes restantes" : f.mode === "amrap" ? "bloc" : "efforts restants"}</span></div>`;
+    el.innerHTML = `<div class="finx ${p.ph}${f.pause != null ? " pause" : ""}"><div class="fx-top"><button class="fx-x" data-a="go-close" aria-label="Quitter">✕</button>
+        <div class="fx-titre">${esc(f.titre)}${b.nom && low(b.nom) !== low(f.titre) ? " · " + esc(b.nom) : ""}<span>Reste <b class="fin-tot">${mmss(Math.ceil(reste(f)))}</b></span></div><button class="fx-x" data-a="fin-skip" aria-label="Passer">⏭</button></div>
+      <div class="fx-bar"><i style="width:${pct}%"></i></div>
+      <div class="fx-main"><div class="fx-mot">${esc(mot)}</div><div class="fx-t fin-t">${mmss(l)}</div>${corps}${p.ph === "go" && p.lbl && !tours ? `<div class="fx-sous">${esc(p.lbl)}</div>` : ""}</div>
+      <div class="fx-bas">${gauche}<button class="fx-play" data-a="fin-pause" aria-label="${f.pause != null ? "Reprendre" : "Pause"}">${f.pause != null ? "▶" : "❚❚"}</button>
+        <div class="fx-cpt"><b class="fx-nx">${nx && nx.e && p.ph === "go" ? esc(nx.e.n) : "—"}</b><span>à suivre</span></div></div>
+      <button class="fx-stop" data-a="fin-stop">Arrêter le minuteur</button></div>`;
     el.hidden = false; document.body.classList.add("going"); }
 
   /* --- branchement sur la séance guidée --- */
@@ -148,10 +152,24 @@
   css.textContent = `.go-fait.gofin{background:radial-gradient(circle at 35% 30%,#ffb3c7,#ff4d7a 45%,#c2185b);color:#fff;box-shadow:0 0 0 6px rgba(255,77,122,.14),0 0 40px rgba(255,77,122,.5)}
 .go-fait.gofin small{font-size:13px;opacity:.85;font-weight:700}
 .fin-auto{margin-top:12px;font-size:13px;line-height:1.4;color:var(--muted);border-top:1px solid rgba(var(--ov),.08);padding-top:10px}
-.go-rest.fin.go .go-lbl{color:#3ddc84}.go-rest.fin.go .ring .fg{stroke:#3ddc84}
-.go-rest.fin.rest .go-lbl{color:#ff5c7a}.go-rest.fin.rest .ring .fg{stroke:#ff5c7a}
-.go-rest.fin.pret .go-lbl{color:#ffd166}.go-rest.fin.pret .ring .fg{stroke:#ffd166}
-.fin-info{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;font-size:14px;color:var(--muted);font-weight:700}.fin-info b{color:var(--ink);font-variant-numeric:tabular-nums}
-.fin-liste{display:flex;flex-direction:column;gap:6px;font-size:16px}.fin-liste b{text-transform:uppercase;letter-spacing:.03em}.fin-liste i{font-style:normal;color:var(--a1l);font-weight:700}`;
+.finx{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;color:#0b0f14;transition:background .3s;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.finx.pret{background:#ffc94a}.finx.go{background:#2fd47e}.finx.rest{background:#ff6b6b}.finx.pause{filter:saturate(.35) brightness(.9)}
+.fx-top{display:flex;align-items:center;gap:10px;padding:12px 14px 6px}
+.fx-x{width:44px;height:44px;border-radius:50%;border:0;background:rgba(0,0,0,.14);color:inherit;font-size:20px;font-weight:800;flex:none}
+.fx-titre{flex:1;text-align:center;font-family:var(--display);font-weight:800;text-transform:uppercase;letter-spacing:.06em;font-size:15px;display:flex;flex-direction:column;gap:2px}
+.fx-titre span{font-family:inherit;font-size:13px;letter-spacing:.04em;opacity:.75}.fx-titre b{font-variant-numeric:tabular-nums}
+.fx-bar{height:6px;margin:4px 14px 0;border-radius:6px;background:rgba(0,0,0,.14);overflow:hidden}.fx-bar i{display:block;height:100%;background:#0b0f14;transition:width .3s}
+.fx-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 16px;gap:6px;min-height:0}
+.fx-mot{font-family:var(--display);font-weight:900;text-transform:uppercase;letter-spacing:.04em;font-size:clamp(34px,12vw,64px);line-height:1}
+.fx-t{font-family:var(--display);font-weight:900;font-variant-numeric:tabular-nums;font-size:clamp(96px,34vw,220px);line-height:.95;letter-spacing:-.02em}
+.fx-exo{display:flex;flex-direction:column;gap:2px;margin-top:6px}.fx-exo small{font-size:13px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;opacity:.7}
+.fx-exo b{font-family:var(--display);font-size:clamp(22px,7vw,34px);text-transform:uppercase;letter-spacing:.03em}.fx-exo i{font-style:normal;font-weight:800;opacity:.8}
+.fx-sous{font-weight:800;opacity:.75}
+.fx-liste{display:flex;flex-direction:column;gap:6px;font-size:18px}.fx-liste b{text-transform:uppercase;letter-spacing:.03em}.fx-liste i{font-style:normal;font-weight:800;opacity:.75}
+.fx-bas{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;padding:14px 16px 6px;background:rgba(0,0,0,.1)}
+.fx-cpt{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;min-width:0}.fx-cpt b{font-family:var(--display);font-size:clamp(30px,10vw,48px);line-height:1;font-weight:900}
+.fx-cpt b.fx-nx{font-size:15px;line-height:1.2;text-transform:uppercase;overflow-wrap:anywhere}.fx-cpt span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;opacity:.7}
+.fx-play{width:88px;height:88px;border-radius:50%;border:0;background:#0b0f14;color:#fff;font-size:30px;font-weight:900;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.fx-stop{border:0;background:none;color:inherit;opacity:.7;font-weight:700;padding:12px;font-size:14px}`;
   document.head.appendChild(css);
 })();
