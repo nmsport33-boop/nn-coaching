@@ -104,12 +104,13 @@ function vueSeances(_view){
 /* ================= coaching privé (lien vers l'appli NN Coaching) ================= */
 const COACH_PRIVE = "nmsport33@gmail.com";
 function carteCoachPrive(court){
-  const m = S.cur.member || {}, sujet = "Bilan personnalisé - coaching privé",
-    corps = `Bonjour,\n\nJ'utilise Orvéa et j'aimerais aller plus loin avec un coaching privé.\nJe souhaite prendre rendez-vous pour un bilan personnalisé d'une heure.\n\nPrénom : ${m.prenom || ""}\nMon objectif : \nMes disponibilités : \n\nMerci !`,
+  const m = S.cur.member || {}, sujet = "Bilan complet - coaching privé",
+    corps = `Bonjour,\n\nJ'utilise Orvéa et j'aimerais aller plus loin avec un coaching privé.\nJe souhaite prendre rendez-vous pour un bilan complet d'une heure (coach sportif et coach en nutrition).\n\nPrénom : ${m.prenom || ""}\nMon objectif : \nMes disponibilités : \n\nMerci !`,
     href = `mailto:${COACH_PRIVE}?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`;
-  return `<div class="card ov-prive"><div class="ov-prive-h"><span class="ov-prive-e">🤝</span><div><span class="eyebrow">Envie d'aller plus loin ?</span><b>Coaching privé avec un vrai coach</b></div></div>
-    ${court ? "" : `<span class="small">Un coach diplômé te reçoit pour un <b>bilan personnalisé d'une heure</b> sur rendez-vous : tes objectifs, ta posture, tes douleurs. Ensuite il te suit dans son appli de coaching privé, NN Coaching.</span>`}
-    <a class="btn solid" href="${href}">✉️ Demander mon bilan par mail</a></div>`;
+  return `<div class="card ov-prive"><div class="ov-prive-h"><span class="ov-prive-e">🤝</span><div><span class="eyebrow">Envie d'aller plus loin ?</span><b>Bilan complet avec notre équipe</b></div></div>
+    ${court ? `<span class="small muted">Coach sportif diplômé et coach en nutrition, sur rendez-vous.</span>` : `<span class="small">Un <b>coach sportif diplômé</b> et un <b>coach en nutrition</b> te reçoivent pour un <b>bilan complet et personnalisé d'une heure</b>, sur rendez-vous :</span>
+    <ul class="off-feat"><li>Tes objectifs, ton rythme de vie, tes contraintes</li><li>Ta posture, ta mobilité, tes douleurs</li><li>Ton alimentation et tes habitudes</li><li>Un plan sur mesure, puis un suivi en coaching privé dans l'appli NN Coaching</li></ul>`}
+    <a class="btn solid" href="${href}">✉️ Demander mon bilan complet</a></div>`;
 }
 
 /* ================= offres ================= */
