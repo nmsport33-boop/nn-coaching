@@ -7,6 +7,8 @@ import {minify as minJs} from "terser";
 import CleanCSS from "clean-css";
 
 const OUT = "_site";
+// Compactage désactivé (03/11) : le site compacté restait bloqué sur « Chargement… » sur iPhone. On publie les fichiers web tels quels, sans le code serveur.
+const COMPACTER = process.env.COMPACTER === "1";
 const EXCLU = [/^\./, /^_site/, /^node_modules/, /^functions/, /^agenda\//, /firestore\.rules$/, /^regles\.txt$/, /^firebase\.json$/, /^README\.md$/, /^LICENSE$/, /\/node_modules\//];
 const entete = f => `/*! © 2026 ${f.startsWith("orvea/") ? "Orvéa" : "NN Coaching"}. Tous droits réservés. Reproduction interdite. */`;
 const opts = f => ({compress: {passes: 2}, mangle: true, toplevel: false, format: {comments: /^!/, preamble: entete(f)}});
@@ -18,6 +20,7 @@ for (const f of tous()) {
   const dest = join(OUT, f); mkdirSync(dirname(dest), {recursive: true});
   const ext = extname(f), src = readFileSync(f);
   let out = null;
+  if (!COMPACTER) { copyFileSync(f, dest); continue; }
   if (ext === ".js" && !f.endsWith(".min.js")) out = (await minJs(src.toString(), opts(f))).code;
   else if (ext === ".css") out = entete(f) + new CleanCSS({level: 1}).minify(src.toString()).styles;
   else if (ext === ".html") out = await minHtml(src.toString(), {collapseWhitespace: true, conservativeCollapse: true, removeComments: true,
