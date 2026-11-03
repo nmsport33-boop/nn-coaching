@@ -58,7 +58,7 @@ function bienvenue(){
 /* ================= bandeau d'essai / de formule ================= */
 function bandeau(){
   const m = S.cur.member, a = acces(m), j = joursEssai(m);
-  if (a.essai) return `<section class="sec"><button class="ov-band" data-a="tab" data-v="offres"><span><b>Essai gratuit · ${j} jour${j > 1 ? "s" : ""}</b> · tout est débloqué</span><span>Voir les formules ›</span></button></section>`;
+  if (a.essai) return `<section class="sec"><button class="ov-band" data-a="tab" data-v="offres"><span><b>${m && m.offert ? "Accès offert" : "Essai gratuit"} · ${j} jour${j > 1 ? "s" : ""}</b> · tout est débloqué</span><span>Voir les formules ›</span></button></section>`;
   if (a.formule === "decouverte" && m && m.essaiFin) return `<section class="sec"><button class="ov-band off" data-a="tab" data-v="offres"><span><b>Formule Découverte</b> · ton essai est terminé</span><span>Tout débloquer ›</span></button></section>`;
   return "";
 }
@@ -124,7 +124,7 @@ function offres(){
       <ul class="off-feat">${f.feat.map(x => `<li>${esc(x)}</li>`).join("")}</ul>
       ${cur ? `<span class="chip ok">Ta formule</span>` : f.mois ? `<button class="btn ${f.top ? "solid" : "ghost"}" data-a="ov-choisir" data-v="${f.id}">Choisir ${esc(f.nom)}</button>` : ""}</div>`; };
   return `<section class="sec"><h2>Formules</h2>
-    ${a.essai ? `<div class="ov-band"><span><b>Essai gratuit en cours · ${j} jour${j > 1 ? "s" : ""}</b> · tu as tout Premium</span></div>` : ""}
+    ${a.essai ? `<div class="ov-band"><span><b>${m && m.offert ? "Accès offert" : "Essai gratuit en cours"} · ${j} jour${j > 1 ? "s" : ""}</b> · tu as tout Premium</span></div>` : ""}
     <div class="px-seg ov-per"><button class="${an ? "" : "on"}" data-a="ov-per" data-v="mois">Au mois</button><button class="${an ? "on" : ""}" data-a="ov-per" data-v="an">À l'année · jusqu'à −${Math.max(...FORMULES.filter(f => f.mois).map(f => Math.round(100 - f.an / (f.mois * 12) * 100)))} %</button></div>
     ${FORMULES.map(carte).join("")}
     <h2 style="margin-top:8px">Options</h2>
@@ -156,7 +156,7 @@ function compte(){
   const google = u && !u.isAnonymous ? (u.email || "Compte Google") : "";
   return `<section class="sec"><h2>Mon compte</h2>
     <div class="card"><label class="f">Prénom<input type="text" maxlength="40" data-d="ov.prenom" value="${esc(d("ov.prenom", m.prenom || ""))}"></label><button class="btn sm solid" data-a="ov-prenom" style="align-self:flex-start">Enregistrer</button></div>
-    <div class="card"><span class="eyebrow">Formule</span><b>${a.essai ? `Essai gratuit Premium · encore ${joursEssai(m)} j` : esc(f.nom)}</b><button class="btn sm ghost" data-a="tab" data-v="offres" style="align-self:flex-start">Changer de formule ›</button></div>
+    <div class="card"><span class="eyebrow">Formule</span><b>${a.essai ? `${m.offert ? "Accès Premium offert" : "Essai gratuit Premium"} · encore ${joursEssai(m)} j` : esc(f.nom)}</b><button class="btn sm ghost" data-a="tab" data-v="offres" style="align-self:flex-start">Changer de formule ›</button></div>
     <div class="card"><span class="eyebrow">Sauvegarde</span>${google ? `<b>✓ Relié à ${esc(google)}</b><span class="small muted">Tu retrouves tout sur un autre téléphone en te connectant avec ce compte.</span>`
       : `<b>Sécurise ton compte</b><span class="small muted">Relie-le à Google pour ne rien perdre si tu changes de téléphone.</span><button class="btn sm solid" data-a="ov-lier" style="align-self:flex-start">Relier à Google</button>`}</div>
     <div class="card" id="ov-themes"><span class="eyebrow">🎨 Thème de l'appli</span><span class="small muted">Touche un thème : l'appli change de couleurs tout de suite.</span>

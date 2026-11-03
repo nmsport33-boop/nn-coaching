@@ -673,7 +673,7 @@ body.ecran-on .repos{display:none!important}
 <script src="config.js?v=2026-11-03o1"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-03o5";
+const BUILD = "2026-11-03o6";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD ?= ?"([^"]+)"/)?.[1];
@@ -2488,6 +2488,7 @@ function startData(isCoach, cid){
   S.db = window.OV_DB();
   if (location.hostname === "localhost" || location.hostname === "127.0.0.1") { auth.useEmulator("http://127.0.0.1:9099", {disableWarnings:true}); S.db.useEmulator("127.0.0.1", 8080); }
   const url = new URL(location.href);
+  const inv = url.searchParams.get("invite"); if (inv) { try { localStorage.setItem("orvea-invite", inv.slice(0, 40)); } catch (e) {} url.searchParams.delete("invite"); history.replaceState(null, "", url.toString()); }
   const ec = url.searchParams.get("ecran"); if (ec) S.ecran = {sid: ec.split("~").pop(), mid: ec.includes("~") ? ec.split("~")[0] : null};
   try { await auth.getRedirectResult(); } catch (e) { S.err = e && (e.code || e.message); }
   let started = false;
@@ -2498,6 +2499,8 @@ function startData(isCoach, cid){
     try {
       const ref = S.db.doc("members/" + u.uid), snap = await ref.get();
       if (!snap.exists) await ref.set({prenom: "", objectifsRequis: true, at: Date.now()});
+      let invite = null; try { invite = localStorage.getItem("orvea-invite"); } catch (e) {}
+      if (invite) { const d = snap.exists ? snap.data() : {}; if (d.invite !== invite) await ref.set({invite}, {merge: true}); try { localStorage.removeItem("orvea-invite"); } catch (e) {} }
       started = true; startData(false, u.uid);
     } catch (e) { S.mode = "offline"; S.err = e && (e.code || e.message); render(true); }
   });

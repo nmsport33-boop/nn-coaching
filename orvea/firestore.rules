@@ -6,7 +6,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
     function connecte() { return request.auth != null; }
     function moi(uid) { return connecte() && request.auth.uid == uid; }
-    function serveur() { return ['essaiFin', 'cree', 'abo', 'cycle', 'programmeEtat', 'planRepas', 'medecinOk', 'familleCourses']; }
+    function serveur() { return ['essaiFin', 'cree', 'abo', 'cycle', 'programmeEtat', 'planRepas', 'medecinOk', 'familleCourses', 'illimiteFin', 'offert', 'inviteVue', 'inviteEtat']; }
 
     match /members/{uid} {
       allow read: if moi(uid);
