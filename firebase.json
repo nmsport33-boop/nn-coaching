@@ -4,6 +4,17 @@
       "source": "functions",
       "codebase": "default",
       "ignore": ["node_modules", ".git", "*.local"]
+    },
+    {
+      "source": "functions-orvea",
+      "codebase": "orvea",
+      "ignore": ["node_modules", ".git", "*.local"]
+    }
+  ],
+  "firestore": [
+    {
+      "database": "orvea",
+      "rules": "orvea/firestore.rules"
     }
   ]
 }
