@@ -57,25 +57,46 @@
   }
   window.planFin = planFin;
 
+  /* --- son : sur iPhone, jouer même en mode silencieux (Safari 17+) --- */
+  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+  const T = (f, t0, d, v, type, f2) => { try { ton(f, t0, d, v, type, f2); } catch (e) {} };
+  const SON = {
+    tic: () => { T(1046, 0, .12, .5, "square"); try { navigator.vibrate && navigator.vibrate(60); } catch (e) {} },
+    go: () => { T(784, 0, .12, .5, "square"); T(1046, .12, .12, .5, "square"); T(1568, .24, .55, .55, "square"); try { navigator.vibrate && navigator.vibrate([250, 80, 250]); } catch (e) {} },
+    repos: () => { T(988, 0, .2, .45, "triangle"); T(659, .2, .45, .45, "triangle"); try { navigator.vibrate && navigator.vibrate(300); } catch (e) {} },
+    cote: () => { T(880, 0, .15, .45, "triangle"); T(880, .22, .15, .45, "triangle"); },
+    alerte: () => { T(1318, 0, .08, .35, "square"); T(1318, .14, .08, .35, "square"); }
+  };
   /* --- voix (si dispo) --- */
-  function parle(txt) { try { const v = window.speechSynthesis; if (!v || !txt) return; v.cancel(); const u = new SpeechSynthesisUtterance(txt); u.lang = "fr-FR"; u.rate = 1.05; v.speak(u); } catch (e) {} }
+  let voix = null;
+  const choisir = () => { try { const vs = speechSynthesis.getVoices(); voix = vs.find(v => /^fr(-|_)FR/i.test(v.lang) && /google|thomas|amélie|audrey|marie/i.test(v.name)) || vs.find(v => /^fr/i.test(v.lang)) || null; } catch (e) {} };
+  try { choisir(); speechSynthesis.addEventListener && speechSynthesis.addEventListener("voiceschanged", choisir); } catch (e) {}
+  function parle(txt, vite) { try { const v = window.speechSynthesis; if (!v || !txt) return; v.cancel(); const u = new SpeechSynthesisUtterance(txt); u.lang = "fr-FR"; if (voix) u.voice = voix; u.rate = vite ? 1.25 : 1.08; u.pitch = 1.05; u.volume = 1; v.speak(u); } catch (e) {} }
+  const ENC = ["Allez, on lâche rien !", "Tiens bon !", "Plus que dix secondes !", "Encore un peu !"];
   function annonce(p) { if (!p) return;
     if (p.ph === "pret") parle("Prépare-toi" + (p.e ? ". " + p.e.n : ""));
-    else if (p.ph === "rest") parle(p.lbl === "Change de côté" ? "Change de côté" : "Repos" + (p.e ? ". Ensuite, " + p.e.n : ""));
-    else parle(p.liste ? "C'est parti, un max de tours" : "Go" + (p.e ? ", " + p.e.n : "")); }
+    else if (p.ph === "rest") parle(p.lbl === "Change de côté" ? "Change de côté" : p.lbl === "Exo suivant" ? "Exo suivant" + (p.e ? ", " + p.e.n : "") : "Repos" + (p.e ? ". Ensuite, " + p.e.n : ""));
+    else parle(p.liste ? "Top départ ! Un max de tours" : "Top départ !" + (p.e ? " " + p.e.n : "")); }
+  /* chaque seconde : 3-2-1 parlé + bip, rappels pendant l'effort */
+  function seconde(f, p, left) {
+    if (left <= 3) { SON.tic(); parle(["", "Un", "Deux", "Trois"][left], true); pulse(); return; }
+    if (p.ph !== "go") return;
+    if (left === 10 && p.sec >= 25) { SON.alerte(); parle("Plus que dix secondes !"); }
+    else if (p.sec >= 40 && left === Math.round(p.sec / 2)) parle(f.mode === "amrap" ? "Moitié du temps, continue !" : "Moitié, on lâche rien !");
+    else if (f.mode === "amrap" && left % 60 === 0 && left > 10) parle(`Plus que ${left / 60} minute${left > 60 ? "s" : ""}`); }
+  function pulse() { document.querySelectorAll(".fx-t").forEach(el => { el.classList.remove("tic"); void el.offsetWidth; el.classList.add("tic"); }); }
 
   /* --- moteur --- */
   function finGo(sid, bi) { const s = S.cur.seances[sid], p = s && planFin(s, Number(bi)); if (!p) return;
     try { if (S.repos) stopRepos(); } catch (e) {} try { if (S.chrono) stopChrono(); } catch (e) {} audioOn();
     S.fin = {sid, bi: Number(bi), mode: p.mode, titre: p.titre, P: p.P, pi: 0, fin: Date.now() + p.P[0].sec * 1000, bip: 99, pause: null};
-    annonce(p.P[0]); tick(); }
+    SON.go(); annonce(p.P[0]); tick(); }
   function stop() { S.fin = null; clearInterval(S.finH); S.finH = null; try { window.speechSynthesis && speechSynthesis.cancel(); } catch (e) {} }
   function tick() { const f = S.fin; if (!f) { clearInterval(S.finH); S.finH = null; return; }
     if (!S.finH) S.finH = setInterval(tick, 200);
     if (f.pause != null) return;
     const left = Math.ceil((f.fin - Date.now()) / 1000);
-    if (left > 0) { if (left <= 3 && left < f.bip) { f.bip = left; bip(false); }
-      /* EMOM et AMRAP : petit rappel à mi-parcours des longues phases */
+    if (left > 0) { if (left < f.bip) { const p = f.P[f.pi]; if (f.bip !== 99 || left <= 3) seconde(f, p, left); f.bip = left; }
       return maj(); }
     suivant(); }
   function marque(p) { if (!p || p.ph !== "go") return; const ks = p.ks || (p.k ? [p.k] : []); if (!ks.length) return;
@@ -85,7 +106,7 @@
     try { S.db.doc(`members/${memberId()}/seances/${f.sid}`).update(...args).catch(() => {}); } catch (e) {} }
   function suivant() { const f = S.fin; if (!f) return; marque(f.P[f.pi]); f.pi++; f.bip = 99;
     if (f.pi >= f.P.length) return fini();
-    const p = f.P[f.pi]; f.fin = Date.now() + p.sec * 1000; bip(true); annonce(p);
+    const p = f.P[f.pi]; f.fin = Date.now() + p.sec * 1000; (p.ph === "go" ? SON.go : p.lbl === "Change de côté" ? SON.cote : SON.repos)(); annonce(p);
     if (p.k || (p.ph === "rest" && p.e)) { const st = etapes(S.cur.seances[f.sid]), y = st.find(z => z.k === p.k) || st.find(z => !z.ok && z.bi === f.bi); if (y) try { focusSur(f.sid, y.k); } catch (e) {} }
     render(); }
   function fini() { const f = S.fin, s = S.cur.seances[f.sid], b = s && s.blocs[f.bi]; stop();
@@ -170,6 +191,10 @@
 .fx-cpt{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;min-width:0}.fx-cpt b{font-family:var(--display);font-size:clamp(30px,10vw,48px);line-height:1;font-weight:900}
 .fx-cpt b.fx-nx{font-size:15px;line-height:1.2;text-transform:uppercase;overflow-wrap:anywhere}.fx-cpt span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;opacity:.7}
 .fx-play{width:88px;height:88px;border-radius:50%;border:0;background:#0b0f14;color:#fff;font-size:30px;font-weight:900;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.fx-t.tic{animation:fxtic .5s ease-out}@keyframes fxtic{0%{transform:scale(1.18)}100%{transform:scale(1)}}
+.finx{animation:fxflash .45s ease-out}@keyframes fxflash{0%{filter:brightness(1.6)}100%{filter:none}}
+.finx.go .fx-mot{animation:fxmot .6s ease-out}@keyframes fxmot{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}
+@media (prefers-reduced-motion: reduce){.fx-t.tic,.finx,.finx.go .fx-mot{animation:none}}
 .fx-stop{border:0;background:none;color:inherit;opacity:.7;font-weight:700;padding:12px;font-size:14px}`;
   document.head.appendChild(css);
 })();
