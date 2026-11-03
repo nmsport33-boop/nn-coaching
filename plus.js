@@ -530,6 +530,42 @@ function trajCard(p){
     <span class="small muted">${t.sem > 0 ? `Au rythme choisi (${t.sens > 0 ? "+" : "−"}${fr(t.pct * 100, 2)} % par semaine), arrivée vers le ${esc(t.arrivee.toLocaleDateString("fr-FR", {day: "numeric", month: "long"}))}.` : "Objectif atteint 🎉 Parle à Nathanael de la suite."}</span></div></section>`;
 }
 
+/* ================= Ta transformation (03/11/2026, idée de Nathanael d'après une pub d'appli calories) =================
+   Deux bonshommes : « aujourd'hui » (silhouette selon l'IMC actuel) et « objectif » (selon le poids visé),
+   avec les muscles qui s'allument selon le but : abdos pour perte/recompo, haut du corps et cuisses pour la prise. */
+const imc = (kg, cm) => kg && cm ? kg / ((cm / 100) ** 2) : null;
+const ventreK = (x, F) => x == null ? 0 : Math.max(0, Math.min(1, (x - (F ? 23 : 22.5)) / 9));
+function ventre(k, F){
+  if (k < .04) return "";
+  const rx = 27 + k * 15 + (F ? 2 : 0), ry = 28 + k * 9, cy = 158 + k * 4, ex = k * 7;
+  /* ventre + hanches arrondies, par-dessus les abdos ; nombril */
+  return `<defs><radialGradient id="pxvg" cx=".42" cy=".38" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></radialGradient></defs>
+    <g class="px-ventre"><path d="M${100 - rx + 4},${cy - ry} C${100 - rx - ex},${cy - ry * .4} ${100 - rx - ex},${cy + ry * .55} ${100 - rx * .55},${cy + ry} C${100 - 10},${cy + ry * 1.12} ${100 + 10},${cy + ry * 1.12} ${100 + rx * .55},${cy + ry} C${100 + rx + ex},${cy + ry * .55} ${100 + rx + ex},${cy - ry * .4} ${100 + rx - 4},${cy - ry} C${100 + 12},${cy - ry - 6} ${100 - 12},${cy - ry - 6} ${100 - rx + 4},${cy - ry} Z"/>
+    <path class="px-vsh" d="M${100 - rx + 4},${cy - ry} C${100 - rx - ex},${cy - ry * .4} ${100 - rx - ex},${cy + ry * .55} ${100 - rx * .55},${cy + ry} C${100 - 10},${cy + ry * 1.12} ${100 + 10},${cy + ry * 1.12} ${100 + rx * .55},${cy + ry} C${100 + rx + ex},${cy + ry * .55} ${100 + rx + ex},${cy - ry * .4} ${100 + rx - 4},${cy - ry} C${100 + 12},${cy - ry - 6} ${100 - 12},${cy - ry - 6} ${100 - rx + 4},${cy - ry} Z"/>
+    <ellipse class="px-nombril" cx="100" cy="${cy + ry * .25}" rx="1.6" ry="2.4"/></g>`;
+}
+function transfoCard(p, c){
+  if (!profilOk(p)) return "";
+  const F = p.sexe === "F", vise = p.poidsVise || null, but = p.but || "maintien", prise = but === "prise";
+  const kNow = ventreK(imc(p.poids, p.taille), F);
+  const kObj = prise ? Math.min(kNow, ventreK(imc(vise || p.poids, p.taille), F)) * .5 : 0;   /* objectif : ventre plat, abdos visibles */
+  const lime = "#b8ff3a", glow = prise ? {pecs: lime, epaules: lime, biceps: lime, quadriceps: lime, abdos: lime} : {abdos: lime, obliques: lime};
+  const t = trajInfo(p);
+  const quand = t && t.sem > 0 ? `vers le ${esc(t.arrivee.toLocaleDateString("fr-FR", {day: "numeric", month: "long"}))}` : vise ? "objectif atteint 🎉" : "";
+  const mot = {perte: "Moins de ventre, des abdos qui se dessinent", recompo: "Moins de gras, plus de muscle", prise: "Plus de muscle, sans prendre de ventre", maintien: "Garder ta forme et la renforcer"}[but] || "Ton corps, en mieux";
+  return `<section class="sec"><div class="sec-h"><h2>Ta transformation</h2>${vise ? "" : `<button class="btn link sm" data-a="px-wz" data-v="nutrition">Fixer mon objectif</button>`}</div>
+    <div class="card px-transfo">
+      <div class="px-tf-duo">
+        <figure>${bodySVG("face", {}, {cls: "px-tf gris", sexe: p.sexe, extra: ventre(kNow, F), label: "Toi aujourd'hui"})}<figcaption><span class="eyebrow">Aujourd'hui</span><b>${fr(p.poids, 1)} kg</b></figcaption></figure>
+        <span class="px-tf-arrow">›</span>
+        <figure>${bodySVG("face", glow, {cls: "px-tf obj", sexe: p.sexe, extra: ventre(kObj, F), label: "Ton objectif"})}<figcaption><span class="eyebrow">Objectif</span><b>${vise ? fr(vise, 1) + " kg" : esc(mot)}</b>${quand ? `<span class="small muted">${quand}</span>` : ""}</figcaption></figure>
+      </div>
+      ${t ? bar(t.f, 1, `linear-gradient(90deg,var(--a2),${lime})`) : ""}
+      <b class="px-tf-mot">${esc(mot)}</b>
+      <span class="small muted">Ce qui t'y amène : ${c ? `<b style="color:var(--ink)">${fr(c.kcal)} kcal</b> et <b style="color:var(--ink)">${fr(c.p)} g de protéines</b> par jour, ` : ""}tes séances avec Nathanael, et ton journal pour suivre. Illustration indicative : chaque corps change à son rythme.</span>
+    </div></section>`;
+}
+
 /* ================= Nutrition ================= */
 const REPAS = [["matin", "Petit-déjeuner"], ["midi", "Déjeuner"], ["collation", "Collation"], ["soir", "Dîner"]];
 /* valeurs moyennes par portion : [nom, portion, kcal, protéines, glucides, lipides] */
@@ -572,6 +608,7 @@ function nutrition(){
     ${c.mot ? `<div class="note coach"><div class="meta"><b style="color:var(--ink)">Nathanael</b></div><div class="txt">${esc(c.mot)}</div></div>` : ""}
     <div class="px-mac3">${[["Protéines", "p", "var(--a3)"], ["Glucides", "g", "var(--a2)"], ["Lipides", "l", "var(--a4)"]].map(([l, k, col]) => `<div class="card"><span class="small muted">${l}</span><b>${fr(tot[k])}<small> / ${fr(c[k])} g</small></b>${bar(tot[k], c[k], col)}</div>`).join("")}</div>
     ${c.mineur ? `<span class="small muted">Avant 18 ans, pas de régime : ces chiffres sont des repères pour bien manger et bien grandir.</span>` : ""}</section>
+  ${c.mineur ? "" : transfoCard(p, c)}
   ${goutsDoc() ? `<section class="sec">${planRepasCard(m)}</section>` : ""}
   <section class="sec"><div class="sec-h"><h2>Ton journal</h2><button class="btn sm solid" data-a="px-add" data-v="">+ Ajouter</button></div>
     <button class="card tap px-pr-cta" data-a="px-pr" data-v=""><span class="px-pr-ic">📸</span><span><b>Photographie ton assiette</b><span class="small muted">L'appli estime les calories, protéines, glucides et lipides de ton repas.</span></span><span class="px-ask-go">›</span></button>

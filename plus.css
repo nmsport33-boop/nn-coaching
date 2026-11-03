@@ -354,3 +354,25 @@ html.px-lock,html.px-lock body{overflow:hidden}
 .px-apj{float:right;font-size:13px;font-weight:700;color:var(--a1)}
 .px-aptot{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:8px;margin-top:6px}
 .px-aptot b{color:var(--a1)}
+
+/* ta transformation (03/11/2026) */
+.px-transfo{gap:10px!important;background:radial-gradient(80% 60% at 70% 40%,rgba(184,255,58,.10),transparent 70%),var(--surface)!important}
+.px-tf-duo{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4px}
+.px-tf-duo figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.px-tf-duo figcaption{display:flex;flex-direction:column;align-items:center;text-align:center;gap:1px}
+.px-tf-duo figcaption b{font-size:17px}
+.px-tf-arrow{font-size:30px;color:#b8ff3a;text-shadow:0 0 12px rgba(184,255,58,.7)}
+.px-body.px-tf{max-width:150px}
+.px-body.px-tf .px-aura{display:none}
+.px-body.gris .px-sil path,.px-body.gris .px-ventre path{fill:#3a3d45;stroke:#6b7080;stroke-opacity:.7}
+.px-body.gris .px-sil{filter:none}
+.px-body.gris .px-ten path{fill:rgba(255,255,255,.06);stroke:rgba(255,255,255,.12)}
+.px-body.gris .px-m path:not(.px-sh){fill:rgba(255,255,255,.05)}
+.px-body.gris .px-m path.px-sh{stroke:rgba(255,255,255,.1)}
+.px-body.gris .px-deco{opacity:.35}
+.px-ventre path{fill:url(#pxsil);stroke:rgb(var(--a1r));stroke-width:1;stroke-opacity:.6}
+.px-nombril{fill:rgba(0,0,0,.45)}
+.px-body.obj{filter:drop-shadow(0 0 14px rgba(184,255,58,.25))}
+.px-tf-mot{font-size:15px}
+.px-ventre .px-vsh{fill:url(#pxvg)!important;stroke:none!important}
+.px-tf-duo figure{align-self:stretch;justify-content:flex-end}
