@@ -6,6 +6,7 @@
    - photoRepas : photo d'assiette → aliments, calories, macros.
    - promosEnseigne / promosHebdo : promos de la semaine par enseigne (recherche web), partagées entre utilisateurs.
    - nouveauCompte : essai gratuit de 21 jours à la création du compte.
+   - invitation : lien ?invite=CODE, accès complet offert (ex. 30 jours pour une testeuse).
    La clé API reste dans les secrets de Firebase : jamais dans le site public. */
 "use strict";
 const {onDocumentCreated, onDocumentWritten} = require("firebase-functions/v2/firestore");
@@ -45,7 +46,31 @@ const cleEnseigne = e => String(e || "").normalize("NFD").replace(/[̀-ͯ]/g, ""
 /* ---------- essai gratuit à la création du compte ---------- */
 exports.nouveauCompte = onDocumentCreated(opts({document: "members/{mid}", secrets: [], timeoutSeconds: 30}), async event => {
   const m = event.data?.data(); if (!m || m.essaiFin) return;
-  await event.data.ref.update({essaiFin: Date.now() + ESSAI_JOURS * 864e5, cree: Date.now()});
+  const fin = Date.now() + ESSAI_JOURS * 864e5;
+  await db.runTransaction(async t => { const cur = (await t.get(event.data.ref)).data() || {};
+    if (!(Number(cur.essaiFin) >= fin)) t.update(event.data.ref, {essaiFin: fin, cree: cur.cree || Date.now()}); });
+});
+
+/* ---------- invitations : lien ?invite=CODE (accès Premium complet offert, sans limite de messages) ----------
+   Seule l'empreinte SHA-256 du code est dans le dépôt (invitations.json). Chaque code ne sert qu'une fois (max). */
+const INVITATIONS = require("./invitations.json");
+exports.invitation = onDocumentWritten(opts({document: "members/{mid}", secrets: [], timeoutSeconds: 30}), async event => {
+  const avant = event.data?.before?.data() || {}, apres = event.data?.after?.data();
+  const code = apres && typeof apres.invite === "string" ? apres.invite.trim() : "";
+  if (!code || code === avant.invite || apres.inviteVue === code) return;
+  const ref = event.data.after.ref, h = require("node:crypto").createHash("sha256").update(code).digest("hex"), inv = INVITATIONS[h];
+  if (!inv) { await ref.update({inviteVue: code, inviteEtat: "inconnue"}); return; }
+  const fin = Date.now() + inv.jours * 864e5, uref = db.doc(`invitationsUtilisees/${h}`);
+  const etat = await db.runTransaction(async t => {
+    const u = await t.get(uref), uids = (u.exists && u.data().uids) || [];
+    if (!uids.includes(event.params.mid) && uids.length >= (inv.max || 1)) return "deja-utilisee";
+    t.set(uref, {uids: [...new Set([...uids, event.params.mid])], nom: inv.nom, at: Date.now()});
+    const cur = (await t.get(ref)).data() || {};
+    t.update(ref, {essaiFin: Math.max(Number(cur.essaiFin) || 0, fin), illimiteFin: fin, offert: {par: "invitation", nom: inv.nom, fin}, inviteVue: code, inviteEtat: "ok", cree: cur.cree || Date.now()});
+    return "ok";
+  });
+  if (etat !== "ok") await ref.update({inviteVue: code, inviteEtat: etat});
+  logger.info("invitation", {mid: event.params.mid, nom: inv.nom, etat});
 });
 
 /* ---------- coach IA ---------- */
@@ -58,7 +83,7 @@ exports.coach = onDocumentCreated(opts({document: "members/{mid}/notes/{nid}"}),
   if (!msnap.exists) return;
   const member = {id: mid, ...msnap.data()}, ac = A.acces(member);
   if (!ac.ia) return ecrire({r: "Le coach IA fait partie des formules payantes. Tu peux en choisir une dans la page Offres.", verrou: true});
-  if (A.messagesDuJour(notes) > A.LIMITE_JOUR) return ecrire({r: "On a beaucoup échangé aujourd'hui ! Je reprends demain.", limite: true});
+  if (!(Number(member.illimiteFin) > Date.now()) && A.messagesDuJour(notes) > A.LIMITE_JOUR) return ecrire({r: "On a beaucoup échangé aujourd'hui ! Je reprends demain.", limite: true});
   const go = notes.find(n => n.id === "gouts"), promos = ac.nutrition && go ? await promosDe(go.magasins || (go.proches || []).map(x => x.enseigne)) : {};
   const client = new Anthropic({apiKey: CLE.value()});
   try {
@@ -141,7 +166,7 @@ exports.photoRepas = onDocumentCreated(opts({document: "members/{mid}/notes/{nid
     const [msnap, notes] = await Promise.all([base.get(), lister(base.collection("notes"))]);
     if (!msnap.exists) return;
     if (!A.acces(msnap.data()).nutrition) return ecrire({erreur: "La photo d'assiette fait partie des formules avec nutrition."});
-    if (PR.photosDuJour(notes) > PR.LIMITE_JOUR) return ecrire({erreur: "Beaucoup de photos aujourd'hui ! Je reprends demain. Note ce repas à la main."});
+    if (!(Number(msnap.data().illimiteFin) > Date.now()) && PR.photosDuJour(notes) > PR.LIMITE_JOUR) return ecrire({erreur: "Beaucoup de photos aujourd'hui ! Je reprends demain. Note ce repas à la main."});
     const client = new Anthropic({apiKey: CLE.value()});
     const rep = await client.beta.messages.create({
       model: MODELE, max_tokens: 4000, ...FALLBACK,
