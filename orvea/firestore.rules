@@ -1,0 +1,45 @@
+rules_version = '2';
+// Règles de la base « orvea » (appli commerciale Orvéa), séparée de la base de l'appli privée NN Coaching.
+// Chaque utilisateur ne voit et ne modifie que son propre espace : members/{son uid}.
+// Les champs payants ou écrits par le serveur (essai, abonnement, programme, plan de repas) ne sont jamais modifiables depuis le téléphone.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function connecte() { return request.auth != null; }
+    function moi(uid) { return connecte() && request.auth.uid == uid; }
+    function serveur() { return ['essaiFin', 'cree', 'abo', 'cycle', 'programmeEtat', 'planRepas', 'medecinOk', 'familleCourses']; }
+
+    match /members/{uid} {
+      allow read: if moi(uid);
+      allow create: if moi(uid) && !request.resource.data.keys().hasAny(serveur());
+      allow update: if moi(uid) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(serveur());
+      allow delete: if moi(uid);
+
+      match /seances/{sid} {
+        allow read: if moi(uid);
+        // le contenu de la séance vient du serveur ; le téléphone note seulement ce qui a été fait
+        allow update: if moi(uid) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['blocs', 'num', 'semaine', 'adaptee', 'cree']);
+        allow delete: if moi(uid);
+      }
+      match /notes/{nid} {
+        allow read: if moi(uid);
+        allow create, update: if moi(uid) && !nid.matches('.*-r$')
+          && request.resource.data.auteur == 'adherent'
+          && !(request.resource.data.type in ['ia-r', 'photo-repas-r'])
+          && (!('texte' in request.resource.data) || request.resource.data.texte.size() <= 4000)
+          && (!('q' in request.resource.data) || request.resource.data.q.size() <= 1500);
+        allow delete: if moi(uid);
+      }
+      match /photos/{pid} {
+        allow read, delete: if moi(uid);
+        allow create: if moi(uid) && request.resource.data.img.size() < 900000;
+      }
+    }
+    // enseignes choisies par les utilisateurs (le serveur relève leurs promos de la semaine)
+    match /enseignes/{cle} {
+      allow create, update: if connecte() && request.resource.data.keys().hasOnly(['nom', 'at']) && request.resource.data.nom is string && request.resource.data.nom.size() <= 40;
+    }
+    match /promos/{cle} {
+      allow read: if connecte();
+    }
+  }
+}

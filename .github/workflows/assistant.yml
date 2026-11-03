@@ -56,5 +56,5 @@ jobs:
         if: env.PRET == 'true'
         run: |
           # le tout premier déploiement échoue parfois le temps que Google active ses services : on réessaie une fois
-          npx -y firebase-tools@15 deploy --only functions --project "$PROJET" --non-interactive --force \
-            || (sleep 60 && npx -y firebase-tools@15 deploy --only functions --project "$PROJET" --non-interactive --force)
+          npx -y firebase-tools@15 deploy --only functions:default --project "$PROJET" --non-interactive --force \
+            || (sleep 60 && npx -y firebase-tools@15 deploy --only functions:default --project "$PROJET" --non-interactive --force)

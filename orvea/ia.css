@@ -1,0 +1,51 @@
+/* © 2026 Nathanael Neuville, NN Coaching. Assistant (ia.js) */
+.ia-entry{display:flex;flex-direction:column;gap:8px}
+.ia-bar-t{display:flex;flex-direction:column;line-height:1.2}
+.ia-bar-t small{font-weight:500;font-size:12.5px;color:var(--muted)}
+.ia-chip{border:1px solid var(--line);background:rgba(var(--ov),.05);color:var(--ink);border-radius:14px;padding:9px 12px;font-size:13.5px;font-weight:600;text-align:left}
+.ia-chip.att{border-color:rgba(var(--a1r),.45);background:rgba(var(--a1r),.08)}
+.ia-chip.validee{border-color:rgba(var(--a4r),.5);background:rgba(var(--a4r),.1)}
+body.ia-lock{overflow:hidden}
+#ia-chat{position:fixed;inset:0;z-index:45;background:var(--b0);display:flex;justify-content:center;animation:pxup .2s ease-out}
+.ia-in{width:100%;max-width:560px;display:flex;flex-direction:column;height:100%;color:var(--ink)}
+.ia-top{display:flex;align-items:center;gap:12px;padding:calc(12px + env(safe-area-inset-top,0px)) 16px 12px;border-bottom:1px solid var(--line)}
+.ia-top-t{display:flex;flex-direction:column;flex:1;min-width:0;line-height:1.2}
+.ia-top-t b{font-family:var(--display);font-size:20px;letter-spacing:.04em}
+.ia-top-t small{color:var(--muted);font-size:12.5px}
+.ia-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.ia-pacte{display:flex;flex-direction:column;gap:6px;border:1px solid rgba(var(--a1r),.35);background:rgba(var(--a1r),.07);border-radius:18px;padding:12px 14px;font-size:13.5px;line-height:1.45}
+.ia-pacte>b{font-family:var(--display);letter-spacing:.05em;font-size:14px;color:var(--a1)}
+.ia-msgs{display:flex;flex-direction:column;gap:10px}
+.ia-b{max-width:86%;border-radius:18px;padding:10px 13px;font-size:15px;line-height:1.45;display:flex;flex-direction:column;gap:6px;word-wrap:break-word}
+.ia-b.moi{align-self:flex-end;background:var(--a1);color:var(--on-a1);border-bottom-right-radius:6px}
+.ia-b.moi span{font-size:11px;opacity:.7;align-self:flex-end}
+.ia-b.lui{align-self:flex-start;background:rgba(var(--ov),.07);border:1px solid var(--line);border-bottom-left-radius:6px}
+.ia-who{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ia-soft{color:var(--muted);font-size:13.5px}
+.ia-flag{align-self:flex-start;font-size:12px;font-weight:700;color:var(--warn);background:var(--warn-soft);border-radius:99px;padding:3px 10px}
+.ia-prop{display:flex;flex-direction:column;gap:4px;border-radius:14px;padding:10px 12px;border:1px dashed rgba(var(--a1r),.6);background:rgba(var(--a1r),.06)}
+.ia-prop.validee{border-style:solid;border-color:rgba(var(--a4r),.6);background:rgba(var(--a4r),.08)}
+.ia-prop.refusee{border-style:solid;border-color:var(--line)}
+.ia-prop-h{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ia-stat{font-size:13px;font-weight:700}
+.ia-prop.attente .ia-stat{color:var(--a1)}
+.ia-prop.validee .ia-stat{color:var(--a4)}
+.ia-mot{font-size:13.5px}
+.ia-mot i{color:var(--muted);font-style:normal}
+.ia-dots{flex-direction:row;gap:5px;padding:14px 16px}
+.ia-dots i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:iadot 1.2s infinite ease-in-out}
+.ia-dots i:nth-child(2){animation-delay:.15s}.ia-dots i:nth-child(3){animation-delay:.3s}
+@keyframes iadot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+.ia-vide{display:flex;flex-direction:column;gap:8px}
+.ia-foot{border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:4px;background:var(--b0)}
+.ia-row{display:flex;gap:8px;align-items:flex-end}
+.ia-row textarea{flex:1;resize:none;min-height:44px;height:44px;line-height:1.35;border:1px solid var(--line);background:rgba(var(--ov),.05);color:var(--ink);border-radius:20px;padding:10px 14px;font:inherit;font-size:16px;max-height:140px}
+.ia-send{flex:none;width:44px;height:44px;border-radius:50%;border:0;background:var(--a1);color:var(--on-a1);font-size:18px;font-weight:800}
+.ia-send:disabled{opacity:.5}
+.ia-direct{align-self:center;color:var(--muted)}
+.ia-cprop{display:flex;flex-direction:column;gap:6px;border:1px solid rgba(var(--a1r),.4);border-radius:14px;padding:12px;background:rgba(var(--a1r),.05)}
+.ia-pc{color:var(--gold)}
+.ia-conv{display:flex;flex-direction:column;gap:12px;margin-top:8px}
+.ia-conv>div{display:flex;flex-direction:column;gap:3px;border-left:2px solid var(--line);padding-left:10px}
+.ia-ban{width:100%;justify-content:space-between;border:0;cursor:pointer;text-align:left}
+.ia-plan{border:0;cursor:pointer;color:var(--a1);background:rgba(var(--a1r),.12)}
