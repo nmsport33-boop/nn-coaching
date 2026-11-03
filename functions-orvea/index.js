@@ -52,12 +52,14 @@ exports.nouveauCompte = onDocumentCreated(opts({document: "members/{mid}", secre
 });
 
 /* ---------- invitations : lien ?invite=CODE (accès Premium complet offert, sans limite de messages) ----------
-   Seule l'empreinte SHA-256 du code est dans le dépôt (invitations.json). Chaque code ne sert qu'une fois (max). */
+   Seule l'empreinte SHA-256 du code est dans le dépôt (invitations.json). Chaque code ne sert qu'à « max » comptes (1 par défaut), au premier qui remplit son prénom. */
 const INVITATIONS = require("./invitations.json");
 exports.invitation = onDocumentWritten(opts({document: "members/{mid}", secrets: [], timeoutSeconds: 30}), async event => {
   const avant = event.data?.before?.data() || {}, apres = event.data?.after?.data();
   const code = apres && typeof apres.invite === "string" ? apres.invite.trim() : "";
-  if (!code || code === avant.invite || apres.inviteVue === code) return;
+  if (!code || apres.inviteVue === code) return;
+  // l'invitation n'est prise qu'une fois le prénom rempli (questionnaire commencé) : un simple passage par le lien ne la consomme pas
+  if (!String(apres.prenom || "").trim()) return;
   const ref = event.data.after.ref, h = require("node:crypto").createHash("sha256").update(code).digest("hex"), inv = INVITATIONS[h];
   if (!inv) { await ref.update({inviteVue: code, inviteEtat: "inconnue"}); return; }
   const fin = Date.now() + inv.jours * 864e5, uref = db.doc(`invitationsUtilisees/${h}`);
