@@ -173,7 +173,13 @@ function planRepasCard(m, coach){
   const rec = pl.recettes || [], co = pl.courses || [], seg = (rec.length || co.length) ? (P.planSeg || "menus") : "menus";
   const tabs = rec.length || co.length ? `<div class="px-seg px-plan-seg">${[["menus", "Menus"], ["recettes", `Recettes${rec.length ? " (" + rec.length + ")" : ""}`], ["courses", "Courses"]].map(([k, l]) => `<button class="${seg === k ? "on" : ""}" data-a="px-pseg" data-v="${k}">${l}</button>`).join("")}</div>` : "";
   let body = "";
-  if (seg === "menus") body = `${(pl.jours || []).map((d, k) => `<details${k === 0 ? " open" : ""}><summary>${esc(d.nom)}</summary><dl class="kv">${M.filter(([x]) => d[x]).map(([x, l]) => `<dt>${l}</dt><dd>${esc(d[x])}</dd>`).join("")}</dl></details>`).join("")}
+  /* calories et macros par repas (apports, 03/11/2026) ; les anciens plans n'en ont pas */
+  const apL = a => a && a.kcal ? `<span class="px-apm"><b>${fr(a.kcal)} kcal</b> · P ${fr(a.p)} · G ${fr(a.g)} · L ${fr(a.l)}</span>` : "";
+  const apJ = d => { if (!d.apports) return ""; const t = M.reduce((s, [x]) => { const a = d.apports[x] || {}; return {kcal: s.kcal + num(a.kcal), p: s.p + num(a.p), g: s.g + num(a.g), l: s.l + num(a.l)}; }, {kcal: 0, p: 0, g: 0, l: 0});
+    return t.kcal ? ` <span class="px-apj">${fr(t.kcal)} kcal</span>` : ""; };
+  const apT = d => { if (!d.apports) return ""; const t = M.reduce((s, [x]) => { const a = d.apports[x] || {}; return {kcal: s.kcal + num(a.kcal), p: s.p + num(a.p), g: s.g + num(a.g), l: s.l + num(a.l)}; }, {kcal: 0, p: 0, g: 0, l: 0});
+    return t.kcal ? `<div class="px-aptot"><span class="small muted">Total de la journée</span><b>${fr(t.kcal)} kcal</b><span class="small">P ${fr(t.p)} g · G ${fr(t.g)} g · L ${fr(t.l)} g</span></div>` : ""; };
+  if (seg === "menus") body = `${(pl.jours || []).map((d, k) => `<details${k === 0 ? " open" : ""}><summary>${esc(d.nom)}${apJ(d)}</summary><dl class="kv">${M.filter(([x]) => d[x]).map(([x, l]) => `<dt>${l}</dt><dd>${esc(d[x])}${apL(d.apports && d.apports[x])}</dd>`).join("")}</dl>${apT(d)}</details>`).join("")}
     ${pl.conseils ? `<div class="small"><b>Conseils</b> · ${esc(pl.conseils)}</div>` : ""}`;
   else if (seg === "recettes") body = rec.map((r, k) => `<details${k === 0 ? " open" : ""}><summary>${esc(r.nom)}${r.temps ? ` <span class="small muted">· ${esc(r.temps)}</span>` : ""}</summary>
       <span class="eyebrow">Ingrédients (1 portion)</span><ul class="px-ing">${(r.ingredients || []).map(x => `<li>${esc(x)}</li>`).join("")}</ul>
