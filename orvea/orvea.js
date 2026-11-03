@@ -26,12 +26,14 @@ const FORMULES = [
     pitch: "Premium pour 4 personnes, une seule liste de courses.", feat: ["4 comptes Premium", "Une liste de courses commune, par magasin", "Chacun son programme et ses cibles"]}];
 const OPTIONS = [
   ["Programme spécial", "24,99 € une fois", "Un cycle de 8 semaines pour un objectif précis : genou, épaules, dos, reprise après une pause, préparation d'une course."],
-  ["Coach IA illimité", "+ 4,99 €/mois", "Pour les gros utilisateurs : plus de 25 messages par jour et plus de 15 photos d'assiette par jour."]];
+  ["Coach IA illimité", "+ 4,99 €/mois", "Pour les gros utilisateurs : plus de 25 messages par jour et plus de 15 photos d'assiette par jour."],
+  ["Panier drive", "+ 3,99 €/mois", "Ta liste de courses prête pour le drive le plus proche ou celui de ton choix : chaque produit s'ouvre en un geste pour l'ajouter à ton panier."]];
 const ESSAI_JOURS = 21;
 function acces(m){
-  if (m && Number(m.essaiFin) > Date.now()) return {entrainement: true, nutrition: true, ia: true, essai: true, formule: "complet"};
-  const f = m && m.abo && Number(m.abo.fin) > Date.now() ? m.abo.formule : "decouverte";
-  return {...(FORMULES.find(x => x.id === f) || FORMULES[0]).droits, formule: f};
+  if (m && Number(m.essaiFin) > Date.now()) return {entrainement: true, nutrition: true, ia: true, drive: true, essai: true, formule: "complet"};
+  const actif = m && m.abo && Number(m.abo.fin) > Date.now(), f = actif ? m.abo.formule : "decouverte";
+  const d = (FORMULES.find(x => x.id === f) || FORMULES[0]).droits;
+  return {...d, drive: !!(actif && d.nutrition && (m.abo.options || []).includes("drive")), formule: f};
 }
 const joursEssai = m => m && m.essaiFin ? Math.max(0, Math.ceil((m.essaiFin - Date.now()) / 864e5)) : null;
 const prixMin = feat => { const l = FORMULES.filter(f => f.mois && f.droits[feat]).sort((a, b) => a.mois - b.mois)[0]; return l ? eur(l.mois) + "/mois" : ""; };
@@ -224,6 +226,36 @@ function suivrePromos(){
 }
 const promosItems = mags => (mags || []).flatMap(mg => ((O.promos[mg] && O.promos[mg].items) || []).map(x => ({...x, magasin: mg})));
 
+/* ================= panier drive (option) : la liste de courses prête pour le drive choisi =================
+   Les drives n'ont pas d'accès public pour remplir un panier à distance : chaque produit ouvre la recherche
+   du site (ou de l'appli) du drive, la personne n'a plus qu'à toucher « Ajouter ». */
+const DRIVES = {
+  "E.Leclerc": q => "https://www.e.leclerc/recherche?q=" + encodeURIComponent(q),
+  "Carrefour": q => "https://www.carrefour.fr/s?q=" + encodeURIComponent(q),
+  "Intermarché": q => "https://www.intermarche.com/recherche/" + encodeURIComponent(q),
+  "Auchan": q => "https://www.auchan.fr/recherche?text=" + encodeURIComponent(q),
+  "Super U": q => "https://www.coursesu.com/recherche?q=" + encodeURIComponent(q)};
+const driveChoix = proches => { const l = LS.get("orvea-drive"); if (l && DRIVES[l]) return l; const p = (proches || []).find(x => DRIVES[x.enseigne]); return p ? p.enseigne : "E.Leclerc"; };
+const driveFaits = cle => { try { return JSON.parse(LS.get("orvea-drive-ok") || "{}")[cle] || {}; } catch (e) { return {}; } };
+function driveMarque(cle, k){ try { const t = JSON.parse(LS.get("orvea-drive-ok") || "{}"); t[cle] = {...(t[cle] || {}), [k]: 1}; for (const x of Object.keys(t)) if (x !== cle) delete t[x]; LS.set("orvea-drive-ok", JSON.stringify(t)); } catch (e) {} }
+function driveCarte(){
+  const v = PX.coursesVue; if (!v || !v.all || !v.all.length) return "";
+  if (!acces(S.cur.member).drive) return `<button class="card tap ov-drv lock" data-a="tab" data-v="offres"><b>🚗 Panier drive · option ${esc(OPTIONS.find(o => o[0] === "Panier drive")[1])}</b><span class="small muted">Ta liste prête pour ton drive, produit par produit, en un geste.</span></button>`;
+  if (!O.driveOn) return `<button class="btn solid ov-drv-go" data-a="ov-drive">🚗 Préparer mon panier drive</button>`;
+  const g = S.cur.notes.find(n => n.id === "gouts") || {}, proches = g.proches || [], dr = driveChoix(proches), cle = String(v.at || "") + dr, ok = driveFaits(cle);
+  const pp = proches.filter(x => x.enseigne === dr)[0], fait = v.all.filter(c => ok[c.key]).length;
+  const autres = Object.keys(DRIVES).sort((a, b) => { const i = x => { const k = proches.findIndex(p => p.enseigne === x); return k < 0 ? 99 : k; }; return i(a) - i(b); });
+  return `<div class="card ov-drv"><div class="sec-h"><b>🚗 Panier drive</b><button class="btn sm ghost" data-a="ov-drive">Fermer</button></div>
+    <span class="small muted">Choisis ton drive, puis touche « Ajouter » sur chaque produit : il s'ouvre sur le site du drive, tu l'ajoutes au panier et tu reviens ici.</span>
+    <div class="px-chips">${autres.map(e => { const p = proches.find(x => x.enseigne === e); return `<button class="${e === dr ? "on" : ""}" data-a="ov-drive-e" data-v="${esc(e)}">${esc(e)}${p ? ` · ${fr(p.km, 1)} km` : ""}</button>`; }).join("")}</div>
+    ${pp ? `<span class="small">📍 Le plus proche : <b>${esc(pp.nom)}</b>${pp.adresse ? " · " + esc(pp.adresse) : ""}</span>` : `<span class="small muted">Choisis ton magasin ${esc(dr)} sur son site au premier ajout, il le garde ensuite.</span>`}
+    <div class="ov-drv-bar"><i style="width:${Math.round(fait / v.all.length * 100)}%"></i></div><span class="small"><b>${fait}/${v.all.length}</b> produits ajoutés</span>
+    <div class="ov-drv-l">${v.all.map(c => `<div class="ov-drv-r ${ok[c.key] ? "ok" : ""}"><span><b>${esc(c.article)}</b> <span class="small muted">${esc(c.quantite || "")}</span></span>
+      <a class="ov-drv-a" data-cle="${esc(cle)}" data-k="${esc(c.key)}" href="${esc(DRIVES[dr](c.article))}" target="_blank" rel="noopener">${ok[c.key] ? "✓ Ajouté" : "Ajouter ›"}</a></div>`).join("")}</div>
+    <button class="btn sm ghost" data-a="ov-drive-copie" style="align-self:flex-start">📋 Copier la liste</button></div>`;
+}
+document.addEventListener("click", e => { const a = e.target.closest && e.target.closest("a.ov-drv-a"); if (!a) return; driveMarque(a.dataset.cle, a.dataset.k); setTimeout(() => render(), 400); });
+
 /* ================= Accueil ultra simple : UNE action à faire maintenant, puis 4 grosses tuiles ================= */
 const isoJ = () => iso(new Date());
 function prochaineAction(){
@@ -263,7 +295,9 @@ function accueilSimple(orig){
 /* ================= branchements ================= */
 window.OV = {accueilSimple, acces, paywall, prixMin, bandeau, essaiChip, carteProgramme, vueSeances, offres, compte, magasinsBloc, promosItems, bienvenue, bienvenueVue, icoIA, FORMULES};
 const _act = act, _render = render, _view = view;
-window.view = view = function(){ const out = _view(); return S.mode === "ready" && S.tab === "accueil" && S.cur.member && !isCoachUI() ? accueilSimple(out) : out; };
+window.view = view = function(){ let out = _view();
+  if (S.mode === "ready" && S.tab === "nutrition" && PX.planSeg === "courses" && out.includes('<div class="px-budget')) out = out.replace('<div class="px-budget', driveCarte() + '<div class="px-budget');
+  return S.mode === "ready" && S.tab === "accueil" && S.cur.member && !isCoachUI() ? accueilSimple(out) : out; };
 window.render = render = function(f){ _render(f); suivrePromos(); document.documentElement.dataset.ov = "1"; const r = document.getElementById("role"); if (r) r.textContent = ""; };
 /* séances verrouillées en formule Découverte au-delà des 2 séances d'essai : rien à faire ici, le serveur n'en écrit que 2 */
 window.act = act = async function(a, ds){
@@ -283,6 +317,10 @@ window.act = act = async function(a, ds){
     case "ov-prenom": { const p = String(S.drafts["ov.prenom"] ?? "").trim().slice(0, 40); if (!p) return toast("Écris ton prénom.");
       if (await run(S.db.doc("members/" + mid()).update({prenom: p}), "Prénom enregistré")) delete S.drafts["ov.prenom"]; return; }
     case "ov-themes": S.tab = "compte"; render(); setTimeout(() => { const e = document.getElementById("ov-themes"); if (e) e.scrollIntoView({behavior: "smooth", block: "center"}); }, 60); return;
+    case "ov-drive": O.driveOn = !O.driveOn; return render();
+    case "ov-drive-e": LS.set("orvea-drive", v); return render();
+    case "ov-drive-copie": { const l = (PX.coursesVue && PX.coursesVue.all || []).map(c => `- ${c.article}${c.quantite ? " (" + c.quantite + ")" : ""}`).join("\n");
+      try { await navigator.clipboard.writeText(l); toast("Liste copiée : colle-la dans l'appli de ton drive."); } catch (e) { toast("Copie impossible sur ce téléphone."); } return; }
     case "ov-theme": LS.set("orvea-theme", v); window.OV_THEME(); return render();
     case "ov-per": O.cycleAnnuel = v === "an"; return render();
     case "ov-choisir": { const f = FORMULES.find(x => x.id === v); if (!f) return;

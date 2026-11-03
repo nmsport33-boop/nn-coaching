@@ -13,6 +13,7 @@
 const P = {seg: "muscles", vue: "face", muscle: null, periode: "faites", nutDay: null, photos: null, photosErr: null, sheet: null, wz: null, introLater: false};
 const DATA_TYPES = ["jour", "mesure", "profil", "gouts", "courses"];
 window.NN_DATA_TYPES = DATA_TYPES;
+window.PX = P;   // état partagé avec orvea.js (onglet courses, panier drive)
 const today = () => iso(new Date());
 const num = v => { const n = Number(String(v ?? "").replace(",", ".")); return isFinite(n) ? n : 0; };
 const r0 = n => Math.round(n), r10 = n => Math.round(n / 10) * 10;
