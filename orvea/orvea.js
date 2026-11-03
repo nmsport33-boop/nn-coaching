@@ -152,7 +152,7 @@ const THEMES = [
   {k: "rose", n: "Rose poudré", d: "Clair, rose et prune", c: ["#fbf1f4", "#c2185b", "#8e3a9e", "#e05780"], clair: true},
   {k: "sable", n: "Sable", d: "Clair et zen, sauge", c: ["#f5f0e6", "#4f7d5c", "#b08950", "#c26a4a"], clair: true}];
 function compte(){
-  const m = S.cur.member || {}, u = firebase.auth().currentUser, a = acces(m), f = FORMULES.find(x => x.id === a.formule) || FORMULES[0], th = LS.get("orvea-theme") || "auto";
+  const m = S.cur.member || {}, u = firebase.auth().currentUser, a = acces(m), f = FORMULES.find(x => x.id === a.formule) || FORMULES[0], th = LS.get("orvea-theme") || "neon";
   const google = u && !u.isAnonymous ? (u.email || "Compte Google") : "";
   return `<section class="sec"><h2>Mon compte</h2>
     <div class="card"><label class="f">Prénom<input type="text" maxlength="40" data-d="ov.prenom" value="${esc(d("ov.prenom", m.prenom || ""))}"></label><button class="btn sm solid" data-a="ov-prenom" style="align-self:flex-start">Enregistrer</button></div>
@@ -283,7 +283,7 @@ window.act = act = async function(a, ds){
     case "ov-prenom": { const p = String(S.drafts["ov.prenom"] ?? "").trim().slice(0, 40); if (!p) return toast("Écris ton prénom.");
       if (await run(S.db.doc("members/" + mid()).update({prenom: p}), "Prénom enregistré")) delete S.drafts["ov.prenom"]; return; }
     case "ov-themes": S.tab = "compte"; render(); setTimeout(() => { const e = document.getElementById("ov-themes"); if (e) e.scrollIntoView({behavior: "smooth", block: "center"}); }, 60); return;
-    case "ov-theme": LS.set("orvea-theme", v === "auto" ? "" : v); window.OV_THEME(); return render();
+    case "ov-theme": LS.set("orvea-theme", v); window.OV_THEME(); return render();
     case "ov-per": O.cycleAnnuel = v === "an"; return render();
     case "ov-choisir": { const f = FORMULES.find(x => x.id === v); if (!f) return;
       /* le paiement (Stripe sur le web, achats intégrés sur les stores) se branche ici au lancement */
