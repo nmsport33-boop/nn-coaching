@@ -1064,6 +1064,17 @@ async function unlinkSlot(mid, obj, k){
   const e = Object.entries(obj || {}).find(([,x]) => x.slot === k && x.statut !== "faite"); if (!e) return;
   await run(S.db.doc(`members/${mid}/seances/${e[0]}`).update({date: null, heure: "", slot: firebase.firestore.FieldValue.delete()}));
 }
+/* zones fragiles suivies dans le ressenti : members.zonesSuivi (réglé par Claude), sinon déduites de l'objectif et du questionnaire d'accueil ; [] = pas de suivi */
+function zonesSuivi(){ const m = S.cur?.member || {}; if (Array.isArray(m.zonesSuivi)) return m.zonesSuivi.filter(Boolean);
+  const n = (S.cur?.notes || []).filter(x => x.type === "objectifs").pop(), q = n?.reponses || {};
+  const t = String([m.objectif, /^\s*(rien|non|aucune?|ras|pas de)\b/i.test(q.douleurs || "") ? "" : q.douleurs, q.santeDetail].filter(Boolean).join(" · ")).toLowerCase(), out = [];
+  [[/genou/, "genou"], [/épaule|epaule|coiffe/, "épaule"], [/lombaire|bas du dos|hernie|\bdos\b|sciatique/, "dos"], [/nuque|cervical|torticolis/, "nuque"], [/hanche/, "hanche"], [/cheville|pied/, "cheville"], [/poignet|coude/, "poignet / coude"]]
+    .forEach(([re, z]) => { if (!re.test(t)) return; const c = t.match(new RegExp("(" + z.split(" ")[0] + "s?)\\s+(gauche|droite?)")); out.push(c ? `${z} ${c[2]}` : z); });
+  return out; }
+function signeZones(zs){ const t = zs.join(" ").toLowerCase(), p = [];
+  if (/genou/.test(t)) p.push("genou gonflé ou qui se dérobe"); if (/épaule/.test(t)) p.push("épaule qui se bloque");
+  if (/dos|nuque/.test(t)) p.push("douleur qui descend dans un bras ou une jambe, fourmillements"); if (!p.length) p.push(`${zs[0]} gonflé(e) ou qui se bloque`);
+  const s = p.join(", ou "); return s[0].toUpperCase() + s.slice(1); }
 function hasAlert(s){ const r = s.ressenti || {}; return (r.pendant ?? 0) > 3 || (r.lendemain ?? 0) > 3 || (r.fondPendant ?? 0) > 4 || ((r.fondPendant ?? 0) - (r.fondDebut ?? r.fondPendant ?? 0)) >= 2 || r.gonfle || bilanAlerte(s); }
 /* ---------- questionnaires : santé après chaque séance (obligatoire pour débloquer la suivante), contrôle avant de commencer, objectifs en début de cycle ---------- */
 const BQ = {
@@ -1628,7 +1639,7 @@ function seanceBody(sid, s){
     const r = prev.ressenti || {};
     out += `<section class="sec"><div class="banner ${hasAlert(prev)?"warn":""}" style="flex-direction:column;align-items:flex-start">
       <b>À prendre en compte (séance ${prev.num})</b>
-      ${hasAlert(prev) ? `<span>Ressenti : ${r.fondPendant != null ? `douleur de fond ${r.fondDebut ?? "–"} → ${r.fondPendant}/10, ` : ""}douleur anormale ${r.pendant ?? "–"}/10 pendant, ${r.lendemain ?? "–"}/10 le lendemain${r.ou ? " (" + esc(r.ou) + ")" : ""}${r.gonfle ? ", genou gonflé" : ""}. Règle : 3/10 max, sinon on réduit l'amplitude ou on reprend la séance d'avant.</span>` : ""}
+      ${hasAlert(prev) ? `<span>Ressenti : ${r.fondPendant != null ? `douleur de fond ${r.fondDebut ?? "–"} → ${r.fondPendant}/10, ` : ""}douleur anormale ${r.pendant ?? "–"}/10 pendant, ${r.lendemain ?? "–"}/10 le lendemain${r.ou ? " (" + esc(r.ou) + ")" : ""}${r.gonfle ? ", gonflement / blocage" : ""}. Règle : 3/10 max, sinon on réduit l'amplitude ou on reprend la séance d'avant.</span>` : ""}
       ${prevNotes.map(n => `<span>« ${esc(n.texte)} » <span class="muted small">(${n.auteur==="coach"?"coach":esc(m.prenom||"adhérent")})</span></span>`).join("")}</div></section>`;
   }
   if (!(S.edit && coach)) out += `<section class="sec">${goBtn(sid, s)}</section>`;
@@ -1644,21 +1655,22 @@ function seanceBody(sid, s){
   }
   out += bilanSection(sid, s);
   // ressenti
-  const r = s.ressenti || {}, k = "rs." + sid + ".";
+  const r = s.ressenti || {}, k = "rs." + sid + "."; const zs = zonesSuivi();
   const sc = (f, hot) => `<div class="scale">${Array.from({length:11},(_,i) => `<button class="${d(k+f, r[f])===i?"on":""} ${hot&&i>(hot===true?3:hot)?"hot":""}" data-a="scale" data-f="${k+f}" data-v="${i}">${i}</button>`).join("")}</div>`;
-  out += `<section class="sec" id="ressenti">${coach ? "<h2>Ressenti</h2>" : `<details ${s.ressenti?.at ? "open" : ""}><summary class="small"><b>Ressenti détaillé (facultatif)</b> : forme, effort, douleur de fond</summary>`}<div class="card">
+  out += `<section class="sec" id="ressenti">${coach ? "<h2>Ressenti</h2>" : `<details ${s.ressenti?.at ? "open" : ""}><summary class="small"><b>Ressenti détaillé (facultatif)</b> : forme, effort${zs.length ? ", " + esc(zs.join(", ")) : ""}</summary>`}<div class="card">
     <label class="f">Forme en début de séance (0 = épuisé, 10 = au top)</label>${sc("formeDebut")}
     <label class="f">Effort ressenti (0 = rien, 10 = maximal)</label>${sc("rpe")}
     <label class="f">Forme en fin d'entraînement (0 = vidé, 10 = au top)</label>${sc("formeFin")}
-    <p class="small muted" style="margin:4px 0 0"><b>Douleur de fond</b> : celle que tu as déjà avant de commencer (genou, dos…), qui ne bouge pas ou peu pendant la séance. Note-la ici, ce n'est pas une alerte.</p>
+    ${zs.length ? `<p class="small muted" style="margin:4px 0 0"><b>Douleur de fond</b> : celle que tu as déjà avant de commencer (${esc(zs.join(", "))}), qui ne bouge pas ou peu pendant la séance. Note-la ici, ce n'est pas une alerte.</p>
     <label class="f">Douleur de fond au départ /10</label>${sc("fondDebut")}
     <label class="f">Douleur de fond pendant la séance /10</label>${sc("fondPendant", 4)}
     <p class="small muted" style="margin:4px 0 0"><b>Douleur anormale</b> : une douleur nouvelle ou qui augmente pendant l'effort (articulation qui pique, qui lance, qui ne ressemble pas à l'effort). Pas les courbatures, ni la brûlure du muscle qui travaille, ni ta douleur de fond habituelle. Si tu n'en as pas : 0.</p>
     <label class="f">Douleur anormale pendant la séance /10</label>${sc("pendant", true)}
     <label class="f">Douleur anormale le lendemain matin /10</label>${sc("lendemain", true)}
-    <label class="f">Où ? (si douleur anormale)<input id="ou-${sid}" data-d="${k}ou" maxlength="120" placeholder="Ex. genou gauche en descente" value="${esc(d(k+"ou", r.ou || ""))}"></label>
-    <label class="check"><input type="checkbox" id="gf-${sid}" data-d="${k}gonfle" ${d(k+"gonfle", !!r.gonfle)?"checked":""}> Genou gonflé ou qui se dérobe</label>
-    <p class="small muted" style="margin:0">Règle : 3/10 maximum pendant l'effort, et pas plus mal le lendemain. Si le genou gonfle, se bloque ou se dérobe plus souvent : avis médical.</p>
+    <label class="f">Où ? (si douleur anormale)<input id="ou-${sid}" data-d="${k}ou" maxlength="120" placeholder="Ex. ${esc(zs[0])}, en descente" value="${esc(d(k+"ou", r.ou || ""))}"></label>
+    <label class="check"><input type="checkbox" id="gf-${sid}" data-d="${k}gonfle" ${d(k+"gonfle", !!r.gonfle)?"checked":""}> ${esc(signeZones(zs))}</label>
+    <p class="small muted" style="margin:0">Règle : 3/10 maximum pendant l'effort, et pas plus mal le lendemain. Si ça gonfle, se bloque, fourmille ou te réveille la nuit : avis médical.</p>`
+    : coach ? `<p class="small muted" style="margin:4px 0 0">Pas de zone fragile notée pour ${esc(S.cur.member?.prenom || "cet adhérent")} : pas de suivi de douleur ici, le questionnaire santé de fin de séance suffit.</p>` : ""}
     <div class="row"><button class="btn solid" data-a="save-ressenti" data-v="${sid}" ${S.writeBlocked?"disabled":""}>Enregistrer le ressenti</button>
     ${coach ? `<button class="btn ${s.statut==="faite"?"ghost":"ink"}" data-a="toggle-faite" data-v="${sid}">${s.statut==="faite" ? "Remettre en prévue" : "Marquer comme faite"}</button>`
       : ""}</div></div>${coach ? "" : "</details>"}</section>`;
