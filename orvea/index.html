@@ -9,16 +9,16 @@
 <meta name="robots" content="noindex,nofollow,noarchive">
 <meta name="copyright" content="© 2026 Orvéa. Tous droits réservés.">
 <meta name="description" content="Orvéa : ton programme d'entraînement, ta nutrition et ton coach IA, au même endroit.">
-<meta name="theme-color" content="#0b0d12">
+<meta name="theme-color" content="#05060d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Orvéa">
 <link rel="manifest" href="manifest.webmanifest">
-<script>/* thème Orvéa : « auto » suit le téléphone (clair / sombre), sinon le thème choisi dans Mon compte */
+<script>/* thème Orvéa : Néon futuriste par défaut ; « auto » suit le téléphone (clair / sombre) ; sinon le thème choisi (palette 🎨) */
 window.OV_FONDS={light:"#f6f7f9",dark:"#0b0d12",neon:"#05060d",classique:"#f2f2f0",graphite:"#0e0e12",ocean:"#061626",energie:"#0a0a0a",rose:"#fbf1f4",sable:"#f5f0e6"};
 window.OV_THEME=function(){var h=document.documentElement,t="";try{t=localStorage.getItem("orvea-theme")||""}catch(e){}
-  if(!OV_FONDS[t])t="";var k=t||(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
+  if(t==="auto")t="";else if(!OV_FONDS[t])t="neon";var k=t||(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
   h.dataset.skin=k==="light"?"clair":k==="dark"?"sombre":k;if(t)h.dataset.theme=t;else delete h.dataset.theme;
   var m=document.querySelector('meta[name=theme-color]');if(m)m.content=OV_FONDS[k]};OV_THEME();
 try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",OV_THEME)}catch(e){}</script>
@@ -673,7 +673,7 @@ body.ecran-on .repos{display:none!important}
 <script src="config.js?v=2026-11-03o1"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-03o4";
+const BUILD = "2026-11-03o5";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD ?= ?"([^"]+)"/)?.[1];
