@@ -16,17 +16,17 @@ const O = {geo: null, promos: {}, promoSubs: {}, choix: null, cycleAnnuel: true}
 const FORMULES = [
   {id: "decouverte", nom: "Découverte", mois: 0, an: 0, droits: {entrainement: false, nutrition: false, ia: false},
     pitch: "Pour essayer, sans carte bancaire.", feat: ["2 séances guidées écrites pour toi", "Journal des repas et calcul de tes calories", "Suivi du corps : poids, mensurations, photos", "Écran projeté sur la télé"]},
-  {id: "entrainement", nom: "Training", mois: 9.99, an: 59.99, droits: {entrainement: true, nutrition: false, ia: true},
+  {id: "entrainement", nom: "Training", mois: 14.99, an: 99.99, droits: {entrainement: true, nutrition: false, ia: true},
     pitch: "Ton programme sur mesure, qui s'adapte à toi.", feat: ["Programme illimité, cycle après cycle", "Séance guidée : chrono, repos, vidéos", "Questionnaire santé et séances adaptées", "Coach IA 24 h/24 pour l'entraînement", "Corps : muscles travaillés, forme du jour"]},
-  {id: "nutrition", nom: "Nutrition", mois: 9.99, an: 59.99, droits: {entrainement: false, nutrition: true, ia: true},
+  {id: "nutrition", nom: "Nutrition", mois: 14.99, an: 99.99, droits: {entrainement: false, nutrition: true, ia: true},
     pitch: "Bien manger sans se prendre la tête.", feat: ["Calories et macros calculées pour toi", "Plan de repas, recettes et liste de courses", "Magasins près de chez toi et promos de la semaine", "Photo d'assiette : calories en 10 secondes", "Coach IA pour la nutrition"]},
-  {id: "complet", nom: "Complet", mois: 14.99, an: 89.99, top: true, droits: {entrainement: true, nutrition: true, ia: true},
+  {id: "complet", nom: "Premium", mois: 24.99, an: 179.99, top: true, droits: {entrainement: true, nutrition: true, ia: true},
     pitch: "Entraînement + nutrition + coach IA. Le plus choisi.", feat: ["Tout Training et tout Nutrition", "Le coach IA relie tes séances et tes repas", "Carte « Ta transformation »", "Liste de courses en PDF à partager"]},
-  {id: "famille", nom: "Famille", mois: 24.99, an: 149.99, droits: {entrainement: true, nutrition: true, ia: true},
-    pitch: "Complet pour 4 personnes, une seule liste de courses.", feat: ["4 comptes Complet", "Une liste de courses commune, par magasin", "Chacun son programme et ses cibles"]}];
+  {id: "famille", nom: "Premium Famille", mois: 39.99, an: 299.99, droits: {entrainement: true, nutrition: true, ia: true},
+    pitch: "Premium pour 4 personnes, une seule liste de courses.", feat: ["4 comptes Premium", "Une liste de courses commune, par magasin", "Chacun son programme et ses cibles"]}];
 const OPTIONS = [
-  ["Programme spécial", "14,99 € une fois", "Un cycle de 8 semaines pour un objectif précis : genou, épaules, dos, reprise après une pause, préparation d'une course."],
-  ["Coach IA illimité", "+ 2,99 €/mois", "Pour les gros utilisateurs : plus de 25 messages par jour et plus de 15 photos d'assiette par jour."]];
+  ["Programme spécial", "24,99 € une fois", "Un cycle de 8 semaines pour un objectif précis : genou, épaules, dos, reprise après une pause, préparation d'une course."],
+  ["Coach IA illimité", "+ 4,99 €/mois", "Pour les gros utilisateurs : plus de 25 messages par jour et plus de 15 photos d'assiette par jour."]];
 const ESSAI_JOURS = 7;
 function acces(m){
   if (m && Number(m.essaiFin) > Date.now()) return {entrainement: true, nutrition: true, ia: true, essai: true, formule: "complet"};
@@ -94,7 +94,7 @@ function carteSuite(){
   const reste = all.filter(s => s.statut !== "faite" && !seanceEntamee(s)).length, e = m.programmeEtat || {};
   if (e.statut === "en-cours") return `<div class="card ov-prog"><span class="ov-spin" aria-hidden="true"></span><b>Ton cycle suivant s'écrit…</b><span class="small muted">À partir de tes retours. Compte 1 à 2 minutes.</span></div>`;
   if (reste > 1) return "";
-  if (!acces(m).entrainement) return `<div class="card ov-prog"><b>${reste ? "Plus qu'une séance" : "Bravo, séances terminées 🎉"}</b><span class="small muted">La suite de ton programme, écrite à partir de tes retours, fait partie des formules Training et Complet.</span>${paywall("entrainement")}</div>`;
+  if (!acces(m).entrainement) return `<div class="card ov-prog"><b>${reste ? "Plus qu'une séance" : "Bravo, séances terminées 🎉"}</b><span class="small muted">La suite de ton programme, écrite à partir de tes retours, fait partie des formules Training et Premium.</span>${paywall("entrainement")}</div>`;
   return `<button class="card tap ov-prog" data-a="ov-suite"><span class="px-emo">🚀</span><b>${reste ? "Plus qu'une séance dans ce cycle" : "Cycle terminé, bravo 🎉"}</b><span class="small muted">Crée le cycle suivant : il tient compte de tes charges, de ton ressenti et de tes questionnaires.</span><span class="ov-go">Créer mon cycle suivant ›</span></button>`;
 }
 function vueSeances(_view){
@@ -123,15 +123,15 @@ function offres(){
       <ul class="off-feat">${f.feat.map(x => `<li>${esc(x)}</li>`).join("")}</ul>
       ${cur ? `<span class="chip ok">Ta formule</span>` : f.mois ? `<button class="btn ${f.top ? "solid" : "ghost"}" data-a="ov-choisir" data-v="${f.id}">Choisir ${esc(f.nom)}</button>` : ""}</div>`; };
   return `<section class="sec"><h2>Formules</h2>
-    ${a.essai ? `<div class="ov-band"><span><b>Essai gratuit en cours · ${j} jour${j > 1 ? "s" : ""}</b> · tu as tout Complet</span></div>` : ""}
-    <div class="px-seg ov-per"><button class="${an ? "" : "on"}" data-a="ov-per" data-v="mois">Au mois</button><button class="${an ? "on" : ""}" data-a="ov-per" data-v="an">À l'année · jusqu'à −50 %</button></div>
+    ${a.essai ? `<div class="ov-band"><span><b>Essai gratuit en cours · ${j} jour${j > 1 ? "s" : ""}</b> · tu as tout Premium</span></div>` : ""}
+    <div class="px-seg ov-per"><button class="${an ? "" : "on"}" data-a="ov-per" data-v="mois">Au mois</button><button class="${an ? "on" : ""}" data-a="ov-per" data-v="an">À l'année · jusqu'à −${Math.max(...FORMULES.filter(f => f.mois).map(f => Math.round(100 - f.an / (f.mois * 12) * 100)))} %</button></div>
     ${FORMULES.map(carte).join("")}
     <h2 style="margin-top:8px">Options</h2>
     ${OPTIONS.map(([t, p, d]) => `<div class="card ov-opt"><div class="ov-off-h"><b>${esc(t)}</b><span class="small" style="font-weight:700">${esc(p)}</span></div><span class="small muted">${esc(d)}</span></div>`).join("")}
     <h2 style="margin-top:8px">Coaching privé</h2>
     ${carteCoachPrive()}
     <details class="card ov-faq"><summary>Questions fréquentes</summary>
-      <p><b>L'essai est vraiment gratuit ?</b> Oui : ${ESSAI_JOURS} jours de Complet, sans carte bancaire. Ensuite tu passes en Découverte si tu ne choisis rien.</p>
+      <p><b>L'essai est vraiment gratuit ?</b> Oui : ${ESSAI_JOURS} jours de Premium, sans carte bancaire. Ensuite tu passes en Découverte si tu ne choisis rien.</p>
       <p><b>Je peux arrêter quand je veux ?</b> Oui, sans engagement au mois. À l'année, tu gardes l'accès jusqu'à la fin de la période payée.</p>
       <p><b>Il y a un vrai coach ?</b> Ton programme suit une méthode écrite par un coach diplômé, et un coach IA l'adapte avec toi chaque jour. Il ne remplace pas un médecin.</p>
       <p><b>Mes données ?</b> Elles servent seulement à ton programme. Tu peux tout supprimer dans « Mon compte ».</p></details>
@@ -139,15 +139,27 @@ function offres(){
 }
 
 /* ================= compte ================= */
+const THEMES = [
+  {k: "auto", n: "Auto", d: "Suit ton téléphone", c: ["linear-gradient(135deg,#4a5060,#0b0d12)", "#f6f7f9", "#ff5a36", "#0b0d12"]},
+  {k: "light", n: "Orvéa clair", d: "Blanc et corail", c: ["#f6f7f9", "#ff5a36", "#6c5ce7", "#12a150"], clair: true},
+  {k: "dark", n: "Orvéa nuit", d: "Nuit et corail", c: ["#0b0d12", "#ff6b47", "#8b7cf6", "#34d399"]},
+  {k: "neon", n: "Néon futuriste", d: "Nuit, cyan et violet", c: ["#05060d", "#22e3ff", "#7b5cff", "#ff2bd6"]},
+  {k: "classique", n: "Classique", d: "Blanc cassé et or", c: ["#f2f2f0", "#16161d", "#a8811a", "#c2185b"], clair: true},
+  {k: "graphite", n: "Graphite", d: "Noir et or", c: ["#0e0e12", "#d6b04c", "#ef5f97", "#62c497"]},
+  {k: "ocean", n: "Océan", d: "Bleu nuit et turquoise", c: ["#061626", "#2ec4b6", "#3a86ff", "#ff7a59"]},
+  {k: "energie", n: "Énergie", d: "Noir, orange et jaune", c: ["#0a0a0a", "#ff6b1a", "#ffb703", "#b8f135"]},
+  {k: "rose", n: "Rose poudré", d: "Clair, rose et prune", c: ["#fbf1f4", "#c2185b", "#8e3a9e", "#e05780"], clair: true},
+  {k: "sable", n: "Sable", d: "Clair et zen, sauge", c: ["#f5f0e6", "#4f7d5c", "#b08950", "#c26a4a"], clair: true}];
 function compte(){
   const m = S.cur.member || {}, u = firebase.auth().currentUser, a = acces(m), f = FORMULES.find(x => x.id === a.formule) || FORMULES[0], th = LS.get("orvea-theme") || "auto";
   const google = u && !u.isAnonymous ? (u.email || "Compte Google") : "";
   return `<section class="sec"><h2>Mon compte</h2>
     <div class="card"><label class="f">Prénom<input type="text" maxlength="40" data-d="ov.prenom" value="${esc(d("ov.prenom", m.prenom || ""))}"></label><button class="btn sm solid" data-a="ov-prenom" style="align-self:flex-start">Enregistrer</button></div>
-    <div class="card"><span class="eyebrow">Formule</span><b>${a.essai ? `Essai gratuit Complet · encore ${joursEssai(m)} j` : esc(f.nom)}</b><button class="btn sm ghost" data-a="tab" data-v="offres" style="align-self:flex-start">Changer de formule ›</button></div>
+    <div class="card"><span class="eyebrow">Formule</span><b>${a.essai ? `Essai gratuit Premium · encore ${joursEssai(m)} j` : esc(f.nom)}</b><button class="btn sm ghost" data-a="tab" data-v="offres" style="align-self:flex-start">Changer de formule ›</button></div>
     <div class="card"><span class="eyebrow">Sauvegarde</span>${google ? `<b>✓ Relié à ${esc(google)}</b><span class="small muted">Tu retrouves tout sur un autre téléphone en te connectant avec ce compte.</span>`
       : `<b>Sécurise ton compte</b><span class="small muted">Relie-le à Google pour ne rien perdre si tu changes de téléphone.</span><button class="btn sm solid" data-a="ov-lier" style="align-self:flex-start">Relier à Google</button>`}</div>
-    <div class="card"><span class="eyebrow">Affichage</span><div class="px-seg">${[["auto", "Auto"], ["light", "Clair"], ["dark", "Sombre"]].map(([k, l]) => `<button class="${th === k ? "on" : ""}" data-a="ov-theme" data-v="${k}">${l}</button>`).join("")}</div></div>
+    <div class="card" id="ov-themes"><span class="eyebrow">🎨 Thème de l'appli</span><span class="small muted">Touche un thème : l'appli change de couleurs tout de suite.</span>
+      <div class="ov-themes">${THEMES.map(t => `<button class="ov-th ${th === t.k ? "on" : ""}" data-a="ov-theme" data-v="${t.k}" style="background:${t.c[0]};color:${t.clair ? "#16161d" : "#f2f2f2"}"><span class="sw">${t.c.slice(1).map(c => `<i style="background:${c}"></i>`).join("")}</span>${esc(t.n)}<small>${esc(t.d)}</small></button>`).join("")}</div></div>
     ${carteCoachPrive()}
     <div class="card"><span class="eyebrow">Mes données</span><span class="small muted">Seul·e toi y as accès. Les photos d'assiette sont effacées juste après l'analyse. Pour trouver tes magasins, ta position est envoyée une fois à OpenStreetMap, sans ton nom.</span>
       <button class="btn sm ghost" data-a="ov-suppr" style="align-self:flex-start;color:var(--warn)">Supprimer mon compte et mes données</button></div>
@@ -269,6 +281,7 @@ window.act = act = async function(a, ds){
       catch (e) { if (/popup/.test(e.code || "")) return u.linkWithRedirect(p); toast(e.code === "auth/credential-already-in-use" ? "Ce compte Google a déjà un espace Orvéa : déconnecte-toi puis connecte-toi avec Google." : "Liaison impossible pour l'instant."); } return; }
     case "ov-prenom": { const p = String(S.drafts["ov.prenom"] ?? "").trim().slice(0, 40); if (!p) return toast("Écris ton prénom.");
       if (await run(S.db.doc("members/" + mid()).update({prenom: p}), "Prénom enregistré")) delete S.drafts["ov.prenom"]; return; }
+    case "ov-themes": S.tab = "compte"; render(); setTimeout(() => { const e = document.getElementById("ov-themes"); if (e) e.scrollIntoView({behavior: "smooth", block: "center"}); }, 60); return;
     case "ov-theme": LS.set("orvea-theme", v === "auto" ? "" : v); window.OV_THEME(); return render();
     case "ov-per": O.cycleAnnuel = v === "an"; return render();
     case "ov-choisir": { const f = FORMULES.find(x => x.id === v); if (!f) return;
