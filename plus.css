@@ -347,3 +347,10 @@ html.px-lock,html.px-lock body{overflow:hidden}
 .px-pr-al > span:nth-child(2){flex:1;display:flex;flex-direction:column;min-width:0}
 .px-pr-qte{flex-wrap:wrap}
 .px-pr-qte .small{flex-basis:100%}
+
+/* plan de repas : calories par repas (03/11/2026) */
+.px-apm{display:block;font-size:12.5px;color:var(--muted);margin-top:3px}
+.px-apm b{color:var(--a1);font-weight:700}
+.px-apj{float:right;font-size:13px;font-weight:700;color:var(--a1)}
+.px-aptot{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:8px;margin-top:6px}
+.px-aptot b{color:var(--a1)}
