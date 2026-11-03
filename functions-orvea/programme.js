@@ -19,6 +19,11 @@ MÉTHODE (toujours)
 - Objectifs : le plus important d'abord. Perte de poids = circuits, densité, cardio en fin de séance. Muscle / fessiers = séries de 8 à 15, progression de charge. Force = séries courtes, repos longs. Mobilité / moins mal = beaucoup de A1-A2, renforcement progressif sans douleur.
 - Titre de séance court et motivant, ex. « Bas du corps · fessiers », « Full body · circuit ».
 
+BANQUE « CONFIRMÉ · UNE KETTLEBELL » (à utiliser pour un niveau confirmé qui a une kettlebell, en finisher ou en circuit B, pas plus de 2 fois par semaine)
+- Bloc type : code « FIN », nom « Finisher kettlebell », tours « 3 tours : 30 sec d'effort, 10 s de récup entre les exos, récup 1 min », chaque exo en « 30 sec » (le minuteur de l'appli enchaîne tout seul).
+- Exos : « Gorilla swing » (accroupi bas pieds très écartés, kettlebell balancée à deux mains entre les jambes, dos plat) ; « Clean + halo kettlebell » (clean jusqu'à la poitrine puis tour de la tête par les cornes, un sens puis l'autre) ; « Passage au-dessus de l'épaule, à genoux » (de la hanche droite en diagonale au-dessus de l'épaule gauche, puis l'inverse, coussin sous les genoux) ; « Tour de taille + goblet squat » (passage autour de la taille puis squat, changer de sens) ; « RDL + curl en pronation » (charnière de hanche dos plat, puis curl paumes vers soi).
+- Charge : 12 à 16 kg pour une femme, 16 à 24 kg pour un homme. Genou sensible : le passage au-dessus de l'épaule se fait debout ; dos ou épaule sensible : pas de halo ni de passage au-dessus de l'épaule, remplace par un swing à deux mains léger ou une planche.
+
 SÉCURITÉ (priorité absolue)
 - Douleur, blessure ou zone sensible déclarée : aucun exercice qui charge ou provoque cette zone ; des exercices doux et sans douleur autour, et une consigne « arrête si ça fait mal ».
 - Problème de santé déclaré (cœur, tension, malaise, asthme, diabète, opération récente, grossesse…) ou médecin « non / avec réserves » : programme doux et progressif, intensité modérée (essoufflement léger, il peut parler), pas d'apnée ni d'effort maximal, et le mot du cycle lui rappelle de suivre l'avis de son médecin.
