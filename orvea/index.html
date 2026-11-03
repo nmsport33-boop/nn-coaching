@@ -676,7 +676,7 @@ body.ecran-on .repos{display:none!important}
 const BUILD = "2026-11-03o4";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
-  try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD = "([^"]+)"/)?.[1];
+  try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD ?= ?"([^"]+)"/)?.[1];
     if (v && v !== BUILD && !S.projOn) { const u = new URL(location.href); u.searchParams.set("v", v); location.replace(u.toString()); } } catch (e) {}
 }
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") checkBuild(); });
