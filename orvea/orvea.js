@@ -27,7 +27,7 @@ const FORMULES = [
 const OPTIONS = [
   ["Programme spécial", "24,99 € une fois", "Un cycle de 8 semaines pour un objectif précis : genou, épaules, dos, reprise après une pause, préparation d'une course."],
   ["Coach IA illimité", "+ 4,99 €/mois", "Pour les gros utilisateurs : plus de 25 messages par jour et plus de 15 photos d'assiette par jour."]];
-const ESSAI_JOURS = 7;
+const ESSAI_JOURS = 21;
 function acces(m){
   if (m && Number(m.essaiFin) > Date.now()) return {entrainement: true, nutrition: true, ia: true, essai: true, formule: "complet"};
   const f = m && m.abo && Number(m.abo.fin) > Date.now() ? m.abo.formule : "decouverte";

@@ -5,7 +5,7 @@
    - programme  : écrit le cycle d'entraînement (note {type:"objectifs"} au départ, {type:"suite"} pour le cycle suivant).
    - photoRepas : photo d'assiette → aliments, calories, macros.
    - promosEnseigne / promosHebdo : promos de la semaine par enseigne (recherche web), partagées entre utilisateurs.
-   - nouveauCompte : essai gratuit de 7 jours à la création du compte.
+   - nouveauCompte : essai gratuit de 21 jours à la création du compte.
    La clé API reste dans les secrets de Firebase : jamais dans le site public. */
 "use strict";
 const {onDocumentCreated, onDocumentWritten} = require("firebase-functions/v2/firestore");
@@ -25,7 +25,7 @@ const db = getFirestore(DB);
 const CLE = defineSecret("ANTHROPIC_API_KEY");
 const MODELE = "claude-opus-5-5";
 const REGION = process.env.REGION || "europe-west1";
-const ESSAI_JOURS = 7;
+const ESSAI_JOURS = 21;
 const FALLBACK = {betas: ["server-side-fallback-2026-07-01"], fallbacks: "default"};
 
 const lister = async ref => (await ref.get()).docs.map(d => ({id: d.id, ...d.data()}));
