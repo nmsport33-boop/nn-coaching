@@ -1,10 +1,10 @@
 {
-  "name": "NN Coaching",
-  "short_name": "NN Coaching",
+  "name": "Orvéa",
+  "short_name": "Orvéa",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#16161d",
-  "theme_color": "#16161d",
+  "background_color": "#05060d",
+  "theme_color": "#05060d",
   "lang": "fr",
   "icons": [
     {
@@ -23,5 +23,6 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "description": "Entraînement, nutrition et coach IA"
 }
