@@ -647,7 +647,7 @@ body.ecran-on .repos{display:none!important}
 </style>
 <link rel="stylesheet" href="plus.css?v=2026-11-03o1">
 <link rel="stylesheet" href="ia.css?v=2026-11-03o1">
-<link rel="stylesheet" href="orvea.css?v=2026-11-03o1">
+<link rel="stylesheet" href="orvea.css?v=2026-11-03o8">
 </head>
 <body>
 
@@ -673,7 +673,7 @@ body.ecran-on .repos{display:none!important}
 <script src="config.js?v=2026-11-03o1"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-03o7";
+const BUILD = "2026-11-03o8";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD ?= ?"([^"]+)"/)?.[1];
@@ -2507,8 +2507,8 @@ function startData(isCoach, cid){
 })();
 
 </script>
-<script src="plus.js?v=2026-11-03o1"></script>
-<script src="ia.js?v=2026-11-03o1"></script>
-<script src="orvea.js?v=2026-11-03o1"></script>
+<script src="plus.js?v=2026-11-03o8"></script>
+<script src="ia.js?v=2026-11-03o8"></script>
+<script src="orvea.js?v=2026-11-03o8"></script>
 </body>
 </html>
