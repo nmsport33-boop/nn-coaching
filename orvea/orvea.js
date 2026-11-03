@@ -101,6 +101,17 @@ function vueSeances(_view){
   return rappelBilan() + heroAdh() + seancesView() + `<section class="sec">${carteSuite()}<button class="btn sm ghost" data-a="tab" data-v="cycle" style="align-self:flex-start">Voir mon cycle ›</button></section>`;
 }
 
+/* ================= coaching privé (lien vers l'appli NN Coaching) ================= */
+const COACH_PRIVE = "nmsport33@gmail.com";
+function carteCoachPrive(court){
+  const m = S.cur.member || {}, sujet = "Bilan personnalisé - coaching privé",
+    corps = `Bonjour,\n\nJ'utilise Orvéa et j'aimerais aller plus loin avec un coaching privé.\nJe souhaite prendre rendez-vous pour un bilan personnalisé d'une heure.\n\nPrénom : ${m.prenom || ""}\nMon objectif : \nMes disponibilités : \n\nMerci !`,
+    href = `mailto:${COACH_PRIVE}?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`;
+  return `<div class="card ov-prive"><div class="ov-prive-h"><span class="ov-prive-e">🤝</span><div><span class="eyebrow">Envie d'aller plus loin ?</span><b>Coaching privé avec un vrai coach</b></div></div>
+    ${court ? "" : `<span class="small">Un coach diplômé te reçoit pour un <b>bilan personnalisé d'une heure</b> sur rendez-vous : tes objectifs, ta posture, tes douleurs. Ensuite il te suit dans son appli de coaching privé, NN Coaching.</span>`}
+    <a class="btn solid" href="${href}">✉️ Demander mon bilan par mail</a></div>`;
+}
+
 /* ================= offres ================= */
 function offres(){
   const m = S.cur.member, a = acces(m), an = O.cycleAnnuel, j = joursEssai(m);
@@ -117,6 +128,8 @@ function offres(){
     ${FORMULES.map(carte).join("")}
     <h2 style="margin-top:8px">Options</h2>
     ${OPTIONS.map(([t, p, d]) => `<div class="card ov-opt"><div class="ov-off-h"><b>${esc(t)}</b><span class="small" style="font-weight:700">${esc(p)}</span></div><span class="small muted">${esc(d)}</span></div>`).join("")}
+    <h2 style="margin-top:8px">Coaching privé</h2>
+    ${carteCoachPrive()}
     <details class="card ov-faq"><summary>Questions fréquentes</summary>
       <p><b>L'essai est vraiment gratuit ?</b> Oui : ${ESSAI_JOURS} jours de Complet, sans carte bancaire. Ensuite tu passes en Découverte si tu ne choisis rien.</p>
       <p><b>Je peux arrêter quand je veux ?</b> Oui, sans engagement au mois. À l'année, tu gardes l'accès jusqu'à la fin de la période payée.</p>
@@ -135,6 +148,7 @@ function compte(){
     <div class="card"><span class="eyebrow">Sauvegarde</span>${google ? `<b>✓ Relié à ${esc(google)}</b><span class="small muted">Tu retrouves tout sur un autre téléphone en te connectant avec ce compte.</span>`
       : `<b>Sécurise ton compte</b><span class="small muted">Relie-le à Google pour ne rien perdre si tu changes de téléphone.</span><button class="btn sm solid" data-a="ov-lier" style="align-self:flex-start">Relier à Google</button>`}</div>
     <div class="card"><span class="eyebrow">Affichage</span><div class="px-seg">${[["auto", "Auto"], ["light", "Clair"], ["dark", "Sombre"]].map(([k, l]) => `<button class="${th === k ? "on" : ""}" data-a="ov-theme" data-v="${k}">${l}</button>`).join("")}</div></div>
+    ${carteCoachPrive()}
     <div class="card"><span class="eyebrow">Mes données</span><span class="small muted">Seul·e toi y as accès. Les photos d'assiette sont effacées juste après l'analyse. Pour trouver tes magasins, ta position est envoyée une fois à OpenStreetMap, sans ton nom.</span>
       <button class="btn sm ghost" data-a="ov-suppr" style="align-self:flex-start;color:var(--warn)">Supprimer mon compte et mes données</button></div>
     <p class="off-foot">Orvéa · © 2026 · Ne remplace pas un avis médical.</p></section>`;
@@ -230,7 +244,7 @@ function accueilSimple(orig){
   const m = S.cur.member || {}, h = new Date().getHours(), salut = h < 12 ? "Bonjour" : h < 18 ? "Salut" : "Bonsoir";
   /* l'accueil d'origine sans son titre ni ses cartes déjà résumées plus haut */
   const reste = orig.replace(/^\s*<section class="sec px-hello">[\s\S]*?<\/section>/, "");
-  return `<section class="sec px-hello"><h2 class="px-h1">${salut}${m.prenom ? " " + esc(m.prenom) : ""} 👋</h2></section>${bandeau()}${maintenant()}${tuiles()}<div class="ov-plus">${reste}</div>`;
+  return `<section class="sec px-hello"><h2 class="px-h1">${salut}${m.prenom ? " " + esc(m.prenom) : ""} 👋</h2></section>${bandeau()}${maintenant()}${tuiles()}<div class="ov-plus">${reste}</div><section class="sec">${carteCoachPrive(true)}</section>`;
 }
 
 /* ================= branchements ================= */

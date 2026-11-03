@@ -132,3 +132,10 @@ html[data-skin="sombre"] .card,html[data-skin="sombre"] .sline,html[data-skin="s
 /* plus de place au doigt partout */
 .px-chips button{min-height:40px}
 input,textarea,select{font-size:16px!important}
+
+/* coaching privé */
+.ov-prive{border:1.5px solid color-mix(in srgb, var(--a1) 35%, transparent);gap:10px}
+.ov-prive-h{display:flex;align-items:center;gap:12px}
+.ov-prive-e{font-size:28px;line-height:1}
+.ov-prive-h b{display:block;font-size:16px}
+.ov-prive .btn{align-self:stretch;text-align:center;text-decoration:none}
