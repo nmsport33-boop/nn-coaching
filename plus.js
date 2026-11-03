@@ -568,9 +568,10 @@ function nutrition(){
     ${c.mineur ? `<span class="small muted">Avant 18 ans, pas de régime : ces chiffres sont des repères pour bien manger et bien grandir.</span>` : ""}</section>
   ${goutsDoc() ? `<section class="sec">${planRepasCard(m)}</section>` : ""}
   <section class="sec"><div class="sec-h"><h2>Ton journal</h2><button class="btn sm solid" data-a="px-add" data-v="">+ Ajouter</button></div>
+    <button class="card tap px-pr-cta" data-a="px-pr" data-v=""><span class="px-pr-ic">📸</span><span><b>Photographie ton assiette</b><span class="small muted">L'appli estime les calories, protéines, glucides et lipides de ton repas.</span></span><span class="px-ask-go">›</span></button>
     ${REPAS.map(([k, l]) => { const xs = (j?.repas || []).filter(x => x.r === k), t = xs.reduce((s, x) => s + num(x.kcal), 0);
       return `<div class="card px-repas"><div class="h"><b>${l}</b><span class="small muted">${t ? fr(t) + " kcal" : ""}</span><button class="btn link sm" data-a="px-add" data-v="${k}">+ Ajouter</button></div>
-        ${xs.map(x => `<div class="px-item"><span><b>${esc(x.n)}</b><span class="small muted">${fr(x.kcal)} kcal${x.p || x.g || x.l ? ` · P ${fr(x.p)} · G ${fr(x.g)} · L ${fr(x.l)}` : ""}</span></span><button class="px-del" data-a="px-del" data-v="${esc(x.id)}" aria-label="Retirer">✕</button></div>`).join("")}</div>`; }).join("")}
+        ${xs.map(x => `<div class="px-item"><span><b>${x.photo ? "📸 " : ""}${esc(x.n)}</b><span class="small muted">${fr(x.kcal)} kcal${x.p || x.g || x.l ? ` · P ${fr(x.p)} · G ${fr(x.g)} · L ${fr(x.l)}` : ""}</span></span><button class="px-del" data-a="px-del" data-v="${esc(x.id)}" aria-label="Retirer">✕</button></div>`).join("")}</div>`; }).join("")}
     <div class="card px-eau"><div class="h"><b>Eau</b><span class="small muted">${(j?.eau || 0) * .25} L</span></div><div class="px-verres">${Array.from({length: 10}, (_, i) => `<button class="${i < (j?.eau || 0) ? "on" : ""}" data-a="px-eau" data-v="${i + 1}" aria-label="${i + 1} verres">💧</button>`).join("")}</div></div></section>
   ${e ? `<section class="sec"><h2>Ton équilibre</h2><div class="card px-bilan"><b>Dépense prévue sur la journée</b>
     <div class="px-dep"><div><span><i class="px-dot" style="background:#ff4d6d"></i>Repos</span><b>${fr(r10(e.bmr))} kcal</b></div><div><span><i class="px-dot" style="background:#ffc83d"></i>Quotidien</span><b>${fr(r10(e.quot))} kcal</b></div><div><span><i class="px-dot" style="background:var(--a4)"></i>Séance</span><b>${fr(r10(sport))} kcal</b></div></div>
@@ -584,6 +585,7 @@ function addSheet(){
   const sh = P.sheet, q = norm(sh.q || ""), list = q ? ALIMENTS.filter(a => norm(a[0]).includes(q)) : ALIMENTS;
   return `<div class="px-sh-in"><div class="px-sh-top"><b>Ajouter</b><button class="px-x" data-a="px-close">Fermer</button></div>
     <div class="px-seg">${REPAS.map(([k, l]) => `<button class="${sh.r === k ? "on" : ""}" data-a="px-repas" data-v="${k}">${l}</button>`).join("")}</div>
+    <button class="btn solid px-pr-go" data-a="px-pr" data-v="${sh.r}">📸 Prendre mon assiette en photo</button>
     <div class="px-qte"><span class="small muted">Quantité</span>${[.5, 1, 1.5, 2].map(x => `<button class="${(sh.x || 1) === x ? "on" : ""}" data-a="px-qx" data-v="${x}">×${fr(x, 1)}</button>`).join("")}</div>
     <input type="search" class="px-search" placeholder="Chercher un aliment (riz, œuf, skyr…)" value="${esc(sh.q || "")}" data-px="q" autocomplete="off">
     <div class="px-alis">${list.map(a => `<button class="px-ali" data-a="px-ali" data-v="${ALIMENTS.indexOf(a)}"><span><b>${esc(a[0])}</b><span class="small muted">${esc(a[1])}</span></span><span class="px-k">${fr(a[2] * (sh.x || 1))} kcal</span><span class="px-plus">+</span></button>`).join("") || `<div class="small muted">Aucun aliment trouvé. Ajoute-le à la main ci-dessous.</div>`}</div>
@@ -593,6 +595,62 @@ function addSheet(){
       <label class="f">Gluc. g<input type="number" inputmode="decimal" data-px="g" value="${esc(sh.g || "")}"></label><label class="f">Lip. g<input type="number" inputmode="decimal" data-px="l" value="${esc(sh.l || "")}"></label></div>
       <button class="btn solid" data-a="px-manuel">Ajouter</button></details>
     <span class="small muted">Valeurs moyennes par portion, pour se repérer. Pas besoin d'être précis au gramme près.</span></div>`;
+}
+
+/* ================= Photo d'assiette (03/11/2026) =================
+   notes/pr-<ts> {type:"photo-repas", auteur, seance:null, at, date, r, img} → la fonction serveur photoRepas répond dans
+   notes/pr-<ts>-r {type:"photo-repas-r", plat, aliments[{nom,quantite,kcal,p,g,l}], total, confiance, conseil, pasRepas, erreur}.
+   La photo est effacée côté serveur une fois analysée. L'adhérent coche les aliments, règle la portion et ajoute au journal. */
+const PR_ATTENTE = 3 * 60e3;
+const CONF = {bonne: ["Estimation fiable", "ok"], moyenne: ["Estimation moyenne", "moy"], faible: ["Photo difficile à lire", "bas"]};
+const prDispo = () => !!window.NN_IA_ACTIF || S.owner;
+function prRep(nid){ return nid ? S.cur.notes.find(n => n.id === nid + "-r") : null; }
+async function envoyerPhotoRepas(file){
+  const sh = P.sheet; if (!sh || sh.type !== "photo") return;
+  sh.url && URL.revokeObjectURL(sh.url);
+  sh.url = URL.createObjectURL(file); sh.envoi = true; sh.nid = null; sh.off = {}; sh.x = 1; renderSh();
+  try {
+    const img = await new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ko; i.src = sh.url; });
+    const k = Math.min(1, 1024 / Math.max(img.width, img.height)), c = document.createElement("canvas");
+    c.width = r0(img.width * k); c.height = r0(img.height * k); c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    let q = .72, data = c.toDataURL("image/jpeg", q); while (data.length > 500000 && q > .3) { q -= .1; data = c.toDataURL("image/jpeg", q); }
+    const nid = "pr-" + Date.now();
+    await S.db.doc(`members/${memberId()}/notes/${nid}`).set({type: "photo-repas", auteur: S.owner ? "coach" : "adherent", seance: null, at: Date.now(), date: P.nutDay || today(), r: sh.r, img: data});
+    if (P.sheet === sh) { sh.nid = nid; sh.at = Date.now(); sh.envoi = false; renderSh(); }
+  } catch (e) { if (P.sheet === sh) { sh.envoi = false; sh.err = "Photo non envoyée : " + (e && (e.code || e.message) || "erreur"); renderSh(); } }
+}
+function photoSheet(){
+  const sh = P.sheet, rep = prRep(sh.nid), x = sh.x || 1;
+  const top = `<div class="px-sh-top"><b>Photo du repas</b><button class="px-x" data-a="px-close">Fermer</button></div>`;
+  const seg = `<div class="px-seg">${REPAS.map(([k, l]) => `<button class="${sh.r === k ? "on" : ""}" data-a="px-repas" data-v="${k}">${l}</button>`).join("")}</div>`;
+  const choisir = lib => `<div class="px-pr-btns"><label class="btn solid">📸 ${lib}<input type="file" accept="image/*" capture="environment" data-px-pr="1" hidden></label>
+    <label class="btn ghost">🖼️ Choisir dans mes photos<input type="file" accept="image/*" data-px-pr="1" hidden></label></div>`;
+  if (!prDispo()) return `<div class="px-sh-in px-pr-sh">${top}<span class="small muted">La photo d'assiette arrive très bientôt.</span></div>`;
+  if (!sh.url) return `<div class="px-sh-in px-pr-sh">${top}${seg}
+    <div class="px-pr-vide"><span class="px-emo">🍽️</span><b>Prends ton assiette en photo</b><span class="small muted">Vue de dessus, toute l'assiette dans le cadre, avec la lumière du jour si possible. L'appli reconnaît les aliments et estime les quantités.</span></div>
+    ${choisir("Prendre la photo")}
+    <span class="small muted">La photo sert seulement à l'analyse : elle est effacée juste après. Nathanael voit ce que tu ajoutes à ton journal.</span></div>`;
+  const pic = `<div class="px-pr-pic"><img src="${sh.url}" alt="Ton assiette">${!rep && !sh.err ? `<div class="px-pr-scan"><i></i></div>` : ""}</div>`;
+  if (sh.err || (!rep && sh.at && Date.now() - sh.at > PR_ATTENTE)) return `<div class="px-sh-in px-pr-sh">${top}${pic}<div class="banner warn"><span>${esc(sh.err || "L'analyse prend trop de temps.")}</span></div>
+    ${choisir("Reprendre la photo")}<button class="btn ghost" data-a="px-add" data-v="${sh.r}">Noter à la main</button></div>`;
+  if (!rep) return `<div class="px-sh-in px-pr-sh">${top}${pic}<div class="px-pr-wait"><div class="ia-dots"><i></i><i></i><i></i></div><span class="small muted">${sh.envoi ? "Envoi de la photo…" : "J'analyse ton assiette : aliments, quantités, calories… (10 à 30 secondes)"}</span></div></div>`;
+  if (rep.erreur || rep.pasRepas) return `<div class="px-sh-in px-pr-sh">${top}${pic}<div class="banner warn"><span>${esc(rep.erreur || rep.conseil || "Je ne vois pas de repas sur cette photo.")}</span></div>
+    ${choisir("Reprendre la photo")}<button class="btn ghost" data-a="px-add" data-v="${sh.r}">Noter à la main</button></div>`;
+  const al = rep.aliments || [], on = al.filter((a, i) => !sh.off[i]);
+  const t = on.reduce((s, a) => ({kcal: s.kcal + a.kcal * x, p: s.p + a.p * x, g: s.g + a.g * x, l: s.l + a.l * x}), {kcal: 0, p: 0, g: 0, l: 0});
+  const cf = CONF[rep.confiance] || CONF.moyenne;
+  return `<div class="px-sh-in px-pr-sh">${top}${pic}
+    <div class="px-pr-res"><div class="h"><b class="px-pr-plat">${esc(rep.plat)}</b><span class="px-pr-conf ${cf[1]}">${cf[0]}</span></div>
+      <div class="px-pr-tot"><b class="px-big">${fr(r0(t.kcal))}<small> kcal</small></b>
+        <div class="px-pr-mac"><span><i class="px-dot" style="background:var(--a3)"></i>P <b>${fr(r0(t.p))} g</b></span><span><i class="px-dot" style="background:var(--a2)"></i>G <b>${fr(r0(t.g))} g</b></span><span><i class="px-dot" style="background:var(--a4)"></i>L <b>${fr(r0(t.l))} g</b></span></div></div></div>
+    <span class="eyebrow">Ce que je vois · touche pour retirer</span>
+    <div class="px-alis">${al.map((a, i) => `<button class="px-ali px-pr-al ${sh.off[i] ? "off" : ""}" data-a="px-pral" data-v="${i}"><span class="px-box">${sh.off[i] ? "" : "✓"}</span><span><b>${esc(a.nom)}</b><span class="small muted">${esc(a.quantite)} · P ${fr(a.p)} · G ${fr(a.g)} · L ${fr(a.l)}</span></span><span class="px-k">${fr(r0(a.kcal * x))} kcal</span></button>`).join("")}</div>
+    <div class="px-qte px-pr-qte"><span class="small muted">Ma portion par rapport à la photo</span>${[.5, .75, 1, 1.25, 1.5].map(v => `<button class="${x === v ? "on" : ""}" data-a="px-qx" data-v="${v}">×${fr(v, 2)}</button>`).join("")}</div>
+    ${seg}
+    ${rep.conseil ? `<div class="note coach"><div class="meta"><b style="color:var(--ink)">Le conseil</b></div><div class="txt">${esc(rep.conseil)}</div></div>` : ""}
+    <button class="btn solid" data-a="px-prok" ${on.length ? "" : "disabled"}>Ajouter à mon journal</button>
+    <label class="btn sm ghost" style="align-self:center">📸 Reprendre la photo<input type="file" accept="image/*" capture="environment" data-px-pr="1" hidden></label>
+    <span class="small muted">Estimation à partir de la photo : comme pour le reste du journal, pas besoin d'être précis au gramme près.</span></div>`;
 }
 
 /* ================= Corps ================= */
@@ -862,7 +920,7 @@ function renderSh(){
   if (!P.sheet) { if (el) el.remove(); return; }
   if (!el) { el = document.createElement("div"); el.id = "px-sh"; el.className = "px-sh"; document.body.appendChild(el); }
   const t = P.sheet.type, keep = el.querySelector(".px-sh-in")?.scrollTop || 0;
-  el.innerHTML = t === "add" ? addSheet() : t === "forme" ? formeSheet() : t === "mesure" ? mesureSheet() : t === "ask" ? askSheet() : "";
+  el.innerHTML = t === "add" ? addSheet() : t === "forme" ? formeSheet() : t === "mesure" ? mesureSheet() : t === "ask" ? askSheet() : t === "photo" ? photoSheet() : "";
   const inn = el.querySelector(".px-sh-in"); if (inn) inn.scrollTop = keep;
 }
 function askSheet(){
@@ -958,6 +1016,7 @@ document.addEventListener("input", e => {
 document.addEventListener("change", e => {
   const t = e.target;
   if (t.dataset?.pxFile && t.files?.[0]) { ajouterPhoto(t.files[0]); t.value = ""; }
+  if (t.dataset?.pxPr && t.files?.[0]) { envoyerPhotoRepas(t.files[0]); t.value = ""; }
   if (t.dataset?.pxw === "naissance" && P.wz) { P.wz.d.naissance = t.value; renderWz(); }
 });
 
@@ -976,7 +1035,14 @@ window.act = act = async function(a, ds){
     case "px-add": P.sheet = {type: "add", r: v || (new Date().getHours() < 10 ? "matin" : new Date().getHours() < 15 ? "midi" : new Date().getHours() < 18 ? "collation" : "soir"), x: 1}; return;
     case "px-repas": P.sheet.r = v; return;
     case "px-qx": P.sheet.x = Number(v); return;
-    case "px-close": P.sheet = null; return;
+    case "px-close": if (P.sheet?.url) URL.revokeObjectURL(P.sheet.url); P.sheet = null; return;
+    case "px-pr": P.sheet = {type: "photo", r: v || P.sheet?.r || (new Date().getHours() < 10 ? "matin" : new Date().getHours() < 15 ? "midi" : new Date().getHours() < 18 ? "collation" : "soir"), x: 1, off: {}}; return;
+    case "px-pral": P.sheet.off[v] = !P.sheet.off[v]; return;
+    case "px-prok": { const s = P.sheet, rep = prRep(s.nid); if (!rep) return; const x = s.x || 1, day = P.nutDay || today(), j = jourDoc(day);
+      const on = (rep.aliments || []).filter((a, i) => !s.off[i]); if (!on.length) return;
+      const sum = k => on.reduce((t, a) => t + num(a[k]), 0) * x;
+      const it = {id: rid(8), r: s.r, n: String(rep.plat || "Repas").slice(0, 50) + (x !== 1 ? ` ×${fr(x, 2)}` : ""), kcal: r0(sum("kcal")), p: +sum("p").toFixed(1), g: +sum("g").toFixed(1), l: +sum("l").toFixed(1), photo: s.nid, detail: on.map(a => a.nom).join(", ").slice(0, 300)};
+      if (await saveJour(day, {repas: [...(j?.repas || []), it]})) { URL.revokeObjectURL(s.url); P.sheet = null; toast("Repas ajouté 📸"); } return; }
     case "px-ali": { const al = ALIMENTS[Number(v)], x = P.sheet.x || 1, day = P.nutDay || today(), j = jourDoc(day);
       const it = {id: rid(8), r: P.sheet.r, n: al[0] + (x !== 1 ? ` ×${fr(x, 1)}` : "") + ` (${al[1]})`, kcal: r0(al[2] * x), p: +(al[3] * x).toFixed(1), g: +(al[4] * x).toFixed(1), l: +(al[5] * x).toFixed(1)};
       if (await saveJour(day, {repas: [...(j?.repas || []), it]})) toast(`${al[0]} ajouté`); return; }

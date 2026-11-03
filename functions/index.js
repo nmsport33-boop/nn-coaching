@@ -9,7 +9,7 @@ const {onDocumentCreated} = require("firebase-functions/v2/firestore");
 const {defineSecret} = require("firebase-functions/params");
 const logger = require("firebase-functions/logger");
 const {initializeApp} = require("firebase-admin/app");
-const {getFirestore} = require("firebase-admin/firestore");
+const {getFirestore, FieldValue} = require("firebase-admin/firestore");
 const Anthropic = require("@anthropic-ai/sdk");
 const A = require("./assistant");
 
@@ -80,4 +80,52 @@ exports.assistant = onDocumentCreated({
     logger.error("assistant", {mid, nid, quoi});
     return ecrire({r: "Je n'arrive pas à répondre pour le moment. Ton message est transmis à Nathanael, il te répond dans l'appli.", erreur: true, alerte: true, pourCoach: `L'assistant a eu un souci (${quoi}). Message de l'adhérent : « ${A.court(q.q, 400)} »`});
   }
+});
+
+/* Photo d'assiette (03/11/2026) : note {type:"photo-repas", img} → estimation des aliments, calories et macros
+   dans notes/<id>-r. Réservé au Plan nutrition. La photo est effacée une fois analysée. */
+const PR = require("./photo-repas");
+exports.photoRepas = onDocumentCreated({
+  document: "members/{mid}/notes/{nid}",
+  region: process.env.REGION || "europe-west1",
+  secrets: [CLE],
+  timeoutSeconds: 120,
+  memory: "512MiB",
+  maxInstances: 3,
+  retry: false
+}, async event => {
+  const q = event.data?.data(); const {mid, nid} = event.params;
+  if (!q || q.type !== "photo-repas" || nid.endsWith("-r")) return;
+  const base = db.doc(`members/${mid}`), cible = base.collection("notes").doc(nid + "-r");
+  const ecrire = r => cible.create({type: "photo-repas-r", auteur: "assistant", seance: null, pour: nid, at: Date.now(), ...r})
+    .catch(e => { if (e.code !== 6) throw e; });
+  const effacerPhoto = () => event.data.ref.update({img: FieldValue.delete(), analysee: Date.now()}).catch(() => {});
+  try {
+    const img = PR.image(q.img);
+    if (!img) return ecrire({erreur: "Photo illisible. Reprends-la, ou note ton repas à la main."});
+    const [msnap, notes] = await Promise.all([base.get(), lister(base.collection("notes"))]);
+    if (!msnap.exists) return;
+    const member = msnap.data();
+    if (!member.nutritionPlan) return ecrire({erreur: "La photo d'assiette fait partie du Plan nutrition."});
+    if (member.iaOff === true) return ecrire({erreur: "L'analyse des photos est en pause pour toi. Note ton repas à la main."});
+    if (PR.photosDuJour(notes) > PR.LIMITE_JOUR) return ecrire({erreur: "Beaucoup de photos aujourd'hui ! Je reprends demain. Note ce repas à la main."});
+    const client = new Anthropic({apiKey: CLE.value()});
+    const rep = await client.beta.messages.create({
+      model: MODELE,
+      max_tokens: 4000,
+      betas: ["server-side-fallback-2026-07-01"],
+      fallbacks: "default",
+      output_config: {effort: "low", format: {type: "json_schema", schema: PR.SCHEMA}},
+      system: PR.CONSIGNES,
+      messages: [{role: "user", content: PR.message(q, PR.mineur(notes))}]
+    });
+    const bloc = rep.content.find(b => b.type === "text");
+    if (rep.stop_reason === "refusal" || rep.stop_reason === "max_tokens" || !bloc) throw new Error("réponse incomplète (" + rep.stop_reason + ")");
+    const r = PR.lireReponse(bloc.text);
+    logger.info("photo-repas", {mid, nid, kcal: r.total.kcal, confiance: r.confiance, entree: rep.usage?.input_tokens, sortie: rep.usage?.output_tokens});
+    return ecrire(r);
+  } catch (e) {
+    logger.error("photo-repas", {mid, nid, quoi: String(e.message || e)});
+    return ecrire({erreur: "Je n'arrive pas à analyser la photo pour le moment. Note ton repas à la main."});
+  } finally { await effacerPhoto(); }
 });
