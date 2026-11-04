@@ -684,7 +684,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-04a";
+const BUILD = "2026-11-04b";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD ?= ?"([^"]+)"/)?.[1];
@@ -2294,12 +2294,16 @@ function startRepos(b, sid){
 function stopRepos(){ const r = S.repos; if (r?.sid && S.db) S.db.doc(`members/${r.mid}/seances/${r.sid}`).update({repos: firebase.firestore.FieldValue.delete()}).catch(() => {});
   S.repos = null; try { localStorage.removeItem("nn.repos"); } catch (e) {} clearInterval(S.reposH); S.reposH = null; const el = $("repos"); el.hidden = true; el.className = "repos"; if (S.go) renderGo(); ecranTick(); }
 /* --- sons (Web Audio, rien à télécharger) --- */
-function audioOn(){ try { S.ac = S.ac || new (window.AudioContext || window.webkitAudioContext)(); if (S.ac.state !== "running") S.ac.resume(); } catch (e) {} }
+function audioOn(){ try { S.ac = S.ac || new (window.AudioContext || window.webkitAudioContext)(); if (S.ac.state !== "running") S.ac.resume();
+  if (!S.acOk) { const b = S.ac.createBuffer(1, 1, 22050), src = S.ac.createBufferSource(); src.buffer = b; src.connect(S.ac.destination); src.start(0); S.acOk = true; } } catch (e) {} }
+/* 04/11 : le son se réveille à chaque toucher (iPhone le coupe après un écran verrouillé), pour que le bip sonne dès le 1er tour */
+["touchend", "pointerdown", "keydown"].forEach(ev => document.addEventListener(ev, audioOn, {passive: true, capture: true}));
+document.addEventListener("visibilitychange", () => { if (!document.hidden && S.ac && S.ac.state !== "running") { try { S.ac.resume(); } catch (e) {} } });
 function ton(f, t0, dur, vol = .3, type = "sine", f2){ const ac = S.ac; if (!ac) return; const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + t0;
   o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
   g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .01); g.gain.exponentialRampToValueAtTime(.001, t + dur);
   o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + dur + .05); }
-const bip = (fort) => { try { fort ? (ton(1320, 0, .7, .45, "square"), navigator.vibrate?.([400])) : (ton(880, 0, .15, .35, "square"), navigator.vibrate?.(80)); } catch (e) {} };
+const bip = (fort) => { try { if (S.ac && S.ac.state !== "running") S.ac.resume(); fort ? (ton(1320, 0, .7, .45, "square"), navigator.vibrate?.([400])) : (ton(880, 0, .15, .35, "square"), navigator.vibrate?.(80)); } catch (e) {} };
 /* fin de bloc : petite fanfare + bravo */
 function bravoBloc(b){ sonBloc();
   celebre(`${/^fin/i.test(b.code) ? "Finisher" : b.code} terminé`, ["Bravo 💪", "Bien joué 🔥", "Top, continue 👊", "Solide 💥"][Math.floor(Math.random() * 4)], false); }
