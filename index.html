@@ -543,9 +543,10 @@ input[type=text],input[type=date],input[type=number],input[type=time],input[type
 .proj .x{background:rgba(var(--ov),.08);border-color:rgba(var(--a1r),.3)}
 .proj .lines{display:block;column-count:var(--lc,1);column-gap:1.6em;column-fill:balance}
 .proj .lines .pb{break-inside:avoid;margin:0 0 .75em}
-.proj{padding-bottom:58px}
+.proj{padding-bottom:max(40px,6vh)}
+.proj.full .lines .pb{margin-bottom:.45em}.proj.full .pe{padding:.08em .4em;line-height:1.12}.proj.full .box{gap:.5vh}
 .proj .ctl{position:fixed;z-index:2;bottom:10px;right:120px;display:flex;gap:8px}
-.proj .ctl button,.proj .tout1{background:rgba(var(--ov),.08);color:var(--ink);border:1px solid rgba(var(--a1r),.3);border-radius:999px;padding:8px 14px;font:inherit;font-size:14px;font-weight:700;opacity:.85}
+.proj .ctl button,.proj .tout1{background:rgba(var(--ov),.08);color:var(--ink);border:1px solid rgba(var(--a1r),.3);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;font-weight:700;opacity:.85}
 .proj .ctl .tout{background:linear-gradient(135deg,var(--a4),var(--a1));color:var(--on-a4);border:0;opacity:1}
 .proj .tout1{font-size:.55em;padding:.2em .7em;opacity:1;color:var(--a4);border-color:var(--a4)}
 .proj.full .pb{opacity:1!important}.proj.full .pe.ok{opacity:.5}
@@ -692,7 +693,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-04c";
+const BUILD = "2026-11-04d";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD ?= ?"([^"]+)"/)?.[1];
@@ -2237,7 +2238,7 @@ function showProj(cols, label){
   (S.projSubs || []).forEach(u => u()); S.projSubs = cols.filter(x => x.s?.id && x.mid).map(x =>
     S.db.doc(`members/${x.mid}/seances/${x.s.id}`).onSnapshot(q => { if (q.exists) { x.s = {id: q.id, ...q.data()}; drawProj(); } }, () => {}));
   drawProj();
-  el.hidden = false; S.projOn = true; fitProj();
+  el.hidden = false; S.projOn = true; fitProj(); try { document.fonts?.ready.then(() => S.projOn && fitProj()); } catch (e) {} setTimeout(() => S.projOn && fitProj(), 600);
   clearInterval(S.projH); S.projH = setInterval(projTick, 500);
   try { (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el)?.catch?.(() => {}); } catch (e) {}
   try { navigator.wakeLock?.request("screen").then(w => S.wake = w, () => {}); } catch (e) {}
@@ -2349,7 +2350,7 @@ try { const r = JSON.parse(localStorage.getItem("nn.repos") || "null"); if (r &&
 function fitProj(){ const el = $("proj"); if (el.hidden) return;
   let lo = 8, hi = 72;
   const fits = fs => { el.style.setProperty("--fs", fs + "px"); return [...el.querySelectorAll(".box")].every(b => b.scrollHeight <= b.clientHeight + 1) && el.scrollHeight <= el.clientHeight + 1; };
-  const best = lc => { el.style.setProperty("--lc", lc); let a = 8, b = 72; while (b - a > 1) { const mid = (a + b) >> 1; if (fits(mid)) a = mid; else b = mid; } return a; };
+  const best = lc => { el.style.setProperty("--lc", lc); let a = 4, b = 72; while (b - a > 1) { const mid = (a + b) >> 1; if (fits(mid)) a = mid; else b = mid; } return a; };
   const n = (S.projCols || []).length || 1, c = n <= 3 ? n : n === 4 ? 2 : 3, maxc = c === 1 ? 3 : c === 2 ? 2 : 2;
   let pick = 1, top = best(1); for (let lc = 2; lc <= maxc; lc++) { const f = best(lc); if (f > top + 1) { top = f; pick = lc; } }
   el.style.setProperty("--lc", pick); el.style.setProperty("--fs", top + "px"); }
