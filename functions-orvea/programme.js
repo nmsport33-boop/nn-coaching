@@ -3,6 +3,7 @@
    (blocs A1 mobilité, A2 activation, B travail principal, FIN retour au calme ; doses lisibles par le chrono de la séance guidée). */
 "use strict";
 const A = require("./assistant");
+const DISC = require("./disciplines");
 
 const CONSIGNES = `Tu es le préparateur physique de l'appli Fitzora (appli d'entraînement 100 % autonome, sans coach humain). Tu écris le programme d'un·e utilisateur·rice à partir de son questionnaire.
 
@@ -23,6 +24,8 @@ BANQUE « CONFIRMÉ · UNE KETTLEBELL » (à utiliser pour un niveau confirmé q
 - Bloc type : code « FIN », nom « Finisher kettlebell », tours « 3 tours : 30 sec d'effort, 10 s de récup entre les exos, récup 1 min », chaque exo en « 30 sec » (le minuteur de l'appli enchaîne tout seul).
 - Exos : « Gorilla swing » (accroupi bas pieds très écartés, kettlebell balancée à deux mains entre les jambes, dos plat) ; « Clean + halo kettlebell » (clean jusqu'à la poitrine puis tour de la tête par les cornes, un sens puis l'autre) ; « Passage au-dessus de l'épaule, à genoux » (de la hanche droite en diagonale au-dessus de l'épaule gauche, puis l'inverse, coussin sous les genoux) ; « Tour de taille + goblet squat » (passage autour de la taille puis squat, changer de sens) ; « RDL + curl en pronation » (charnière de hanche dos plat, puis curl paumes vers soi).
 - Charge : 12 à 16 kg pour une femme, 16 à 24 kg pour un homme. Genou sensible : le passage au-dessus de l'épaule se fait debout ; dos ou épaule sensible : pas de halo ni de passage au-dessus de l'épaule, remplace par un swing à deux mains léger ou une planche.
+
+${DISC.CONSIGNES}
 
 SÉCURITÉ (priorité absolue)
 - Douleur, blessure ou zone sensible déclarée : aucun exercice qui charge ou provoque cette zone ; des exercices doux et sans douleur autour, et une consigne « arrête si ça fait mal ».
@@ -64,6 +67,7 @@ function demande({member: m, notes, seances, suite}){
   if (obj && obj.texte) L.push("QUESTIONNAIRE :\n" + A.court(obj.texte, 4000));
   if (obj && obj.reponses) { const r = obj.reponses;
     L.push(`Séances par semaine : ${r.rythme || "2"} · lieu : ${r.lieu || "?"}${r.materiel ? " · matériel : " + A.court(r.materiel, 300) : ""} · niveau : ${r.niveau || "?"} · jours : ${(r.jours || []).join(", ") || "?"}`); }
+  const dl = DISC.ligne(notes); if (dl) L.push(dl);
   if (suite) {
     const faites = seances.filter(s => s.statut === "faite" || (s.bilan && s.bilan.at)).sort((a, b) => (a.num || 0) - (b.num || 0)).slice(-8);
     L.push(`\nCYCLE PRÉCÉDENT : ${m.cycle ? m.cycle.nom : "?"}\nSÉANCES FAITES ET RETOURS :\n${faites.map(s => A.seanceTxt(s) + (s.charges ? "\n  Charges notées : " + Object.values(s.charges).filter(Boolean).map(x => A.court(x, 40)).join(", ") : "")).join("\n") || "aucune"}`);

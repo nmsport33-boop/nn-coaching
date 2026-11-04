@@ -100,7 +100,7 @@ function carteSuite(){
   return `<button class="card tap ov-prog" data-a="ov-suite"><span class="px-emo">🚀</span><b>${reste ? "Plus qu'une séance dans ce cycle" : "Cycle terminé, bravo 🎉"}</b><span class="small muted">Crée le cycle suivant : il tient compte de tes charges, de ton ressenti et de tes questionnaires.</span><span class="ov-go">Créer mon cycle suivant ›</span></button>`;
 }
 function vueSeances(_view){
-  return rappelBilan() + heroAdh() + seancesView() + `<section class="sec">${carteSuite()}<button class="btn sm ghost" data-a="tab" data-v="cycle" style="align-self:flex-start">Voir mon cycle ›</button></section>`;
+  return rappelBilan() + heroAdh() + seancesView() + disciplinesCard(DISC_QUI) + `<section class="sec">${carteSuite()}<button class="btn sm ghost" data-a="tab" data-v="cycle" style="align-self:flex-start">Voir mon cycle ›</button></section>`;
 }
 
 /* ================= coaching privé (lien vers l'appli NN Coaching) ================= */
