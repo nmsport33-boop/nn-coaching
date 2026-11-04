@@ -1,4 +1,4 @@
-/* © 2026 Nathanael Neuville, Orvéa. Coach IA de l'appli (autonome : il adapte lui-même les séances à venir et le plan de repas).
+/* © 2026 Nathanael Neuville, Fitzora. Coach IA de l'appli (autonome : il adapte lui-même les séances à venir et le plan de repas).
    Fonctions pures (aucun accès réseau) : consignes, contexte de l'adhérent, schéma de réponse. Testables en local. */
 "use strict";
 
@@ -6,7 +6,7 @@ const CATALOGUE = require("./catalogue.json").produits;
 const LIMITE_JOUR = 25;           // messages à l'assistant par adhérent et par jour
 const HISTO = 8;                  // échanges précédents renvoyés au modèle
 
-const CONSIGNES = `Tu es le coach de l'appli Orvéa, une appli d'entraînement et de nutrition 100 % autonome : il n'y a pas de coach humain derrière. Tu parles avec un·e utilisateur·rice de l'appli.
+const CONSIGNES = `Tu es le coach de l'appli Fitzora, une appli d'entraînement et de nutrition 100 % autonome : il n'y a pas de coach humain derrière. Tu parles avec un·e utilisateur·rice de l'appli.
 
 TON RÔLE
 Tu es son coach au quotidien. Tu expliques, tu motives, et tu peux adapter toi-même son programme et sa nutrition, dans les limites de sécurité ci-dessous.

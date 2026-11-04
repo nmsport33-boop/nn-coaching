@@ -1,5 +1,5 @@
-/* © 2026 Orvéa (Nathanael Neuville). Tous droits réservés.
-   Couche « commerciale » de l'appli Orvéa, chargée en dernier (après index.html, plus.js et ia.js) :
+/* © 2026 Fitzora (Nathanael Neuville). Tous droits réservés.
+   Couche « commerciale » de l'appli Fitzora, chargée en dernier (après index.html, plus.js et ia.js) :
    accueil de bienvenue, essai gratuit, formules et tarifs, droits par formule, carte « ton programme »,
    magasins proches par géolocalisation (OpenStreetMap), promos de la semaine par enseigne, compte (Google, thème, suppression).
    Données : members/{uid}.essaiFin (serveur), members/{uid}.abo {formule, fin} (serveur, après paiement), members/{uid}.programmeEtat (serveur),
@@ -107,7 +107,7 @@ function vueSeances(_view){
 const COACH_PRIVE = "nmsport33@gmail.com";
 function carteCoachPrive(court){
   const m = S.cur.member || {}, sujet = "Bilan complet - coaching privé",
-    corps = `Bonjour,\n\nJ'utilise Orvéa et j'aimerais aller plus loin avec un coaching privé.\nJe souhaite prendre rendez-vous pour un bilan complet d'une heure (coach sportif et coach en nutrition).\n\nPrénom : ${m.prenom || ""}\nMon objectif : \nMes disponibilités : \n\nMerci !`,
+    corps = `Bonjour,\n\nJ'utilise Fitzora et j'aimerais aller plus loin avec un coaching privé.\nJe souhaite prendre rendez-vous pour un bilan complet d'une heure (coach sportif et coach en nutrition).\n\nPrénom : ${m.prenom || ""}\nMon objectif : \nMes disponibilités : \n\nMerci !`,
     href = `mailto:${COACH_PRIVE}?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`;
   return `<div class="card ov-prive"><div class="ov-prive-h"><span class="ov-prive-e">🤝</span><div><span class="eyebrow">Envie d'aller plus loin ?</span><b>Bilan complet avec notre équipe</b></div></div>
     ${court ? `<span class="small muted">Coach sportif diplômé et coach en nutrition, sur rendez-vous.</span>` : `<span class="small">Un <b>coach sportif diplômé</b> et un <b>coach en nutrition</b> te reçoivent pour un <b>bilan complet et personnalisé d'une heure</b>, sur rendez-vous :</span>
@@ -144,8 +144,8 @@ function offres(){
 /* ================= compte ================= */
 const THEMES = [
   {k: "auto", n: "Auto", d: "Suit ton téléphone", c: ["linear-gradient(135deg,#4a5060,#0b0d12)", "#f6f7f9", "#ff5a36", "#0b0d12"]},
-  {k: "light", n: "Orvéa clair", d: "Blanc et corail", c: ["#f6f7f9", "#ff5a36", "#6c5ce7", "#12a150"], clair: true},
-  {k: "dark", n: "Orvéa nuit", d: "Nuit et corail", c: ["#0b0d12", "#ff6b47", "#8b7cf6", "#34d399"]},
+  {k: "light", n: "Fitzora clair", d: "Blanc et corail", c: ["#f6f7f9", "#ff5a36", "#6c5ce7", "#12a150"], clair: true},
+  {k: "dark", n: "Fitzora nuit", d: "Nuit et corail", c: ["#0b0d12", "#ff6b47", "#8b7cf6", "#34d399"]},
   {k: "neon", n: "Néon futuriste", d: "Nuit, cyan et violet", c: ["#05060d", "#22e3ff", "#7b5cff", "#ff2bd6"]},
   {k: "classique", n: "Classique", d: "Blanc cassé et or", c: ["#f2f2f0", "#16161d", "#a8811a", "#c2185b"], clair: true},
   {k: "graphite", n: "Graphite", d: "Noir et or", c: ["#0e0e12", "#d6b04c", "#ef5f97", "#62c497"]},
@@ -166,7 +166,7 @@ function compte(){
     ${carteCoachPrive()}
     <div class="card"><span class="eyebrow">Mes données</span><span class="small muted">Seul·e toi y as accès. Les photos d'assiette sont effacées juste après l'analyse. Pour trouver tes magasins, ta position est envoyée une fois à OpenStreetMap, sans ton nom.</span>
       <button class="btn sm ghost" data-a="ov-suppr" style="align-self:flex-start;color:var(--warn)">Supprimer mon compte et mes données</button></div>
-    <p class="off-foot">Orvéa · © 2026 · Ne remplace pas un avis médical.</p></section>`;
+    <p class="off-foot">Fitzora · © 2026 · Ne remplace pas un avis médical.</p></section>`;
 }
 
 /* ================= magasins proches (géolocalisation + OpenStreetMap) ================= */
@@ -313,7 +313,7 @@ window.act = act = async function(a, ds){
     case "ov-google": LS.set("orvea-start", "1"); { const p = new firebase.auth.GoogleAuthProvider(); try { await firebase.auth().signInWithPopup(p); } catch (e) { if (/popup/.test(e.code || "")) return firebase.auth().signInWithRedirect(p); toast("Connexion impossible."); } } return;
     case "ov-lier": { const u = firebase.auth().currentUser, p = new firebase.auth.GoogleAuthProvider(); if (!u) return;
       try { await u.linkWithPopup(p); toast("Compte relié à Google ✓"); render(); }
-      catch (e) { if (/popup/.test(e.code || "")) return u.linkWithRedirect(p); toast(e.code === "auth/credential-already-in-use" ? "Ce compte Google a déjà un espace Orvéa : déconnecte-toi puis connecte-toi avec Google." : "Liaison impossible pour l'instant."); } return; }
+      catch (e) { if (/popup/.test(e.code || "")) return u.linkWithRedirect(p); toast(e.code === "auth/credential-already-in-use" ? "Ce compte Google a déjà un espace Fitzora : déconnecte-toi puis connecte-toi avec Google." : "Liaison impossible pour l'instant."); } return; }
     case "ov-prenom": { const p = String(S.drafts["ov.prenom"] ?? "").trim().slice(0, 40); if (!p) return toast("Écris ton prénom.");
       if (await run(S.db.doc("members/" + mid()).update({prenom: p}), "Prénom enregistré")) delete S.drafts["ov.prenom"]; return; }
     case "ov-themes": S.tab = "compte"; render(); setTimeout(() => { const e = document.getElementById("ov-themes"); if (e) e.scrollIntoView({behavior: "smooth", block: "center"}); }, 60); return;

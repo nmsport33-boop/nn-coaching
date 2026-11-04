@@ -1,7 +1,7 @@
-# Met en ligne le serveur de l'appli commerciale Orvéa (dossier functions-orvea/ et orvea/firestore.rules).
+# Met en ligne le serveur de l'appli commerciale Fitzora (dossier functions-orvea/ et orvea/firestore.rules).
 # Séparé de l'appli privée NN Coaching : base Firestore nommée « orvea », fonctions dans le codebase « orvea ».
 # Utilise les mêmes secrets que l'assistant privé (FIREBASE_SA, ANTHROPIC_API_KEY). Sans secrets, rien ne se passe.
-name: Orvéa (serveur)
+name: Fitzora (serveur)
 on:
   push:
     branches: [gh-pages]

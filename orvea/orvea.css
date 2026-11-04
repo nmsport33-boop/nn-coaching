@@ -1,4 +1,4 @@
-/* © 2026 Orvéa. Design épuré : blanc (ou nuit), une seule couleur forte (corail), gros boutons, peu de texte.
+/* © 2026 Fitzora. Design épuré : blanc (ou nuit), une seule couleur forte (corail), gros boutons, peu de texte.
    Chargé après index.html, plus.css et ia.css : il remplace les couleurs des thèmes « clair » et « sombre ». */
 html:root:not(#nn)[data-skin="clair"]{
   --a1:#ff5a36; --a1r:255,90,54; --a1l:#e0451f; --a2:#6c5ce7; --a2r:108,92,231; --a3:#e5488a; --a3r:229,72,138; --a3l:#d63a7c;

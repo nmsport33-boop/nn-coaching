@@ -1,10 +1,10 @@
-/* © 2026 Nathanael Neuville, Orvéa. Programme d'entraînement écrit par l'IA, sans coach humain.
+/* © 2026 Nathanael Neuville, Fitzora. Programme d'entraînement écrit par l'IA, sans coach humain.
    Fonctions pures : consignes, schéma, lecture. Le programme suit la méthode de l'appli privée de Nathanael
    (blocs A1 mobilité, A2 activation, B travail principal, FIN retour au calme ; doses lisibles par le chrono de la séance guidée). */
 "use strict";
 const A = require("./assistant");
 
-const CONSIGNES = `Tu es le préparateur physique de l'appli Orvéa (appli d'entraînement 100 % autonome, sans coach humain). Tu écris le programme d'un·e utilisateur·rice à partir de son questionnaire.
+const CONSIGNES = `Tu es le préparateur physique de l'appli Fitzora (appli d'entraînement 100 % autonome, sans coach humain). Tu écris le programme d'un·e utilisateur·rice à partir de son questionnaire.
 
 MÉTHODE (toujours)
 - Un cycle de 4 semaines, avec le nombre de séances par semaine qu'il a choisi (1 à 5). Donc 4 à 20 séances, numérotées 1, 2, 3… dans l'ordre où il les fera. semaine = 1 à 4.

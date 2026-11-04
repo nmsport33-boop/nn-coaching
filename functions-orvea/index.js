@@ -1,5 +1,5 @@
-/* © 2026 Nathanael Neuville, Orvéa.
-   Fonctions serveur de l'appli commerciale Orvéa (autonome, sans coach humain).
+/* © 2026 Nathanael Neuville, Fitzora.
+   Fonctions serveur de l'appli commerciale Fitzora (autonome, sans coach humain).
    Base de données Firestore séparée de l'appli privée NN Coaching : base nommée « orvea » (DB ci-dessous).
    - coach      : réponse du coach IA (note {type:"ia", q}) ; il peut adapter une séance à venir et écrire le plan de repas.
    - programme  : écrit le cycle d'entraînement (note {type:"objectifs"} au départ, {type:"suite"} pour le cycle suivant).

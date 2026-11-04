@@ -1,4 +1,4 @@
-# Publie le site (appli privée NN Coaching + Orvéa) à partir du dépôt privé :
+# Publie le site (appli privée NN Coaching + Fitzora) à partir du dépôt privé :
 # seulement les fichiers web, compactés (voir .github/site/build.mjs). Le code serveur n'est jamais publié.
 # Ne fait rien tant que GitHub Pages n'est pas réglé sur « GitHub Actions » (Settings › Pages › Source).
 name: Site (publication compactée)

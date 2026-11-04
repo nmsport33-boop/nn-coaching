@@ -1,5 +1,5 @@
 rules_version = '2';
-// Règles de la base « orvea » (appli commerciale Orvéa), séparée de la base de l'appli privée NN Coaching.
+// Règles de la base « orvea » (appli commerciale Fitzora), séparée de la base de l'appli privée NN Coaching.
 // Chaque utilisateur ne voit et ne modifie que son propre espace : members/{son uid}.
 // Les champs payants ou écrits par le serveur (essai, abonnement, programme, plan de repas) ne sont jamais modifiables depuis le téléphone.
 service cloud.firestore {

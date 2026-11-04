@@ -1,7 +1,7 @@
 {
   "name": "orvea-fonctions",
   "private": true,
-  "description": "Fonctions serveur de l'appli Orvéa (coach IA autonome).",
+  "description": "Fonctions serveur de l'appli Fitzora (coach IA autonome).",
   "main": "index.js",
   "engines": { "node": "22" },
   "dependencies": {
