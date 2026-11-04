@@ -543,7 +543,7 @@ input[type=text],input[type=date],input[type=number],input[type=time],input[type
 .proj .x{background:rgba(var(--ov),.08);border-color:rgba(var(--a1r),.3)}
 .proj .lines{display:block;column-count:var(--lc,1);column-gap:1.6em;column-fill:balance}
 .proj .lines .pb{break-inside:avoid;margin:0 0 .75em}
-.proj{padding-bottom:max(40px,6vh)}
+.proj{padding-bottom:max(52px,6vh)}
 .proj.full .lines .pb{margin-bottom:.45em}.proj.full .pe{padding:.08em .4em;line-height:1.12}.proj.full .box{gap:.5vh}
 .proj .ctl{position:fixed;z-index:2;bottom:10px;right:120px;display:flex;gap:8px}
 .proj .ctl button,.proj .tout1{background:rgba(var(--ov),.08);color:var(--ink);border:1px solid rgba(var(--a1r),.3);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;font-weight:700;opacity:.85}
@@ -693,7 +693,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-04d";
+const BUILD = "2026-11-04e";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD ?= ?"([^"]+)"/)?.[1];
