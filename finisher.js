@@ -59,11 +59,24 @@
 
   /* --- son : sur iPhone, jouer même en mode silencieux (Safari 17+) --- */
   try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+  /* bip de secours en <audio> (fichier WAV fabriqué ici) si le moteur Web Audio est endormi, fréquent sur iPhone au 1er tour */
+  function wav(freq, ms) { const sr = 22050, n = Math.round(sr * ms / 1000), buf = new DataView(new ArrayBuffer(44 + n * 2)), w = (o, t) => [...t].forEach((c, i) => buf.setUint8(o + i, c.charCodeAt(0)));
+    w(0, "RIFF"); buf.setUint32(4, 36 + n * 2, true); w(8, "WAVEfmt "); buf.setUint32(16, 16, true); buf.setUint16(20, 1, true); buf.setUint16(22, 1, true);
+    buf.setUint32(24, sr, true); buf.setUint32(28, sr * 2, true); buf.setUint16(32, 2, true); buf.setUint16(34, 16, true); w(36, "data"); buf.setUint32(40, n * 2, true);
+    for (let i = 0; i < n; i++) { const env = Math.min(1, i / 200, (n - i) / 400); buf.setInt16(44 + i * 2, Math.sin(2 * Math.PI * freq * i / sr) * env * 0.6 * 32767, true); }
+    let b = ""; new Uint8Array(buf.buffer).forEach(x => b += String.fromCharCode(x)); return "data:audio/wav;base64," + btoa(b); }
+  const SECOURS = {};
+  function secours(k, freq, ms) { try { let a = SECOURS[k]; if (!a) { a = SECOURS[k] = new Audio(wav(freq, ms)); a.preload = "auto"; } a.currentTime = 0; const pr = a.play(); if (pr && pr.catch) pr.catch(() => {}); } catch (e) {} }
+  const vivant = () => { try { return S.ac && S.ac.state === "running"; } catch (e) { return false; } };
+  function reveil() { try { audioOn(); const ac = S.ac; if (!ac) return; if (ac.state !== "running") ac.resume().catch(() => {});
+      const b = ac.createBuffer(1, 1, 22050), src = ac.createBufferSource(); src.buffer = b; src.connect(ac.destination); src.start(0); } catch (e) {}
+    ["tic", "go", "repos"].forEach(k => { try { const a = SECOURS[k] || (SECOURS[k] = new Audio(wav(k === "tic" ? 1046 : k === "go" ? 1568 : 659, k === "tic" ? 120 : 450))); a.muted = true; const pr = a.play(); if (pr && pr.then) pr.then(() => { a.pause(); a.muted = false; a.currentTime = 0; }, () => { a.muted = false; }); else a.muted = false; } catch (e) {} }); }
+  const reveil0 = () => { try { audioOn(); } catch (e) {} };
   const T = (f, t0, d, v, type, f2) => { try { ton(f, t0, d, v, type, f2); } catch (e) {} };
   const SON = {
-    tic: () => { T(1046, 0, .12, .5, "square"); try { navigator.vibrate && navigator.vibrate(60); } catch (e) {} },
-    go: () => { T(784, 0, .12, .5, "square"); T(1046, .12, .12, .5, "square"); T(1568, .24, .55, .55, "square"); try { navigator.vibrate && navigator.vibrate([250, 80, 250]); } catch (e) {} },
-    repos: () => { T(988, 0, .2, .45, "triangle"); T(659, .2, .45, .45, "triangle"); try { navigator.vibrate && navigator.vibrate(300); } catch (e) {} },
+    tic: () => { if (!vivant()) { reveil0(); secours("tic", 1046, 120); } T(1046, 0, .12, .5, "square"); try { navigator.vibrate && navigator.vibrate(60); } catch (e) {} },
+    go: () => { if (!vivant()) { reveil0(); secours("go", 1568, 450); } T(784, 0, .12, .5, "square"); T(1046, .12, .12, .5, "square"); T(1568, .24, .55, .55, "square"); try { navigator.vibrate && navigator.vibrate([250, 80, 250]); } catch (e) {} },
+    repos: () => { if (!vivant()) { reveil0(); secours("repos", 659, 450); } T(988, 0, .2, .45, "triangle"); T(659, .2, .45, .45, "triangle"); try { navigator.vibrate && navigator.vibrate(300); } catch (e) {} },
     cote: () => { T(880, 0, .15, .45, "triangle"); T(880, .22, .15, .45, "triangle"); },
     alerte: () => { T(1318, 0, .08, .35, "square"); T(1318, .14, .08, .35, "square"); }
   };
@@ -88,9 +101,11 @@
 
   /* --- moteur --- */
   function finGo(sid, bi) { const s = S.cur.seances[sid], p = s && planFin(s, Number(bi)); if (!p) return;
-    try { if (S.repos) stopRepos(); } catch (e) {} try { if (S.chrono) stopChrono(); } catch (e) {} audioOn();
+    try { if (S.repos) stopRepos(); } catch (e) {} try { if (S.chrono) stopChrono(); } catch (e) {} reveil();
     S.fin = {sid, bi: Number(bi), mode: p.mode, titre: p.titre, P: p.P, pi: 0, fin: Date.now() + p.P[0].sec * 1000, bip: 99, pause: null};
     SON.go(); annonce(p.P[0]); tick(); }
+  /* à chaque retour sur l'appli, on réveille le son */
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && S.fin) reveil0(); });
   function stop() { S.fin = null; clearInterval(S.finH); S.finH = null; try { window.speechSynthesis && speechSynthesis.cancel(); } catch (e) {} }
   function tick() { const f = S.fin; if (!f) { clearInterval(S.finH); S.finH = null; return; }
     if (!S.finH) S.finH = setInterval(tick, 200);
