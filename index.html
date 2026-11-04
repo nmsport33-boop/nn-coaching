@@ -541,6 +541,14 @@ input[type=text],input[type=date],input[type=number],input[type=time],input[type
 .proj .box.done{border-color:rgba(var(--a4r),.6);box-shadow:0 0 36px rgba(var(--a4r),.25)}
 .proj .sub{color:var(--muted)}
 .proj .x{background:rgba(var(--ov),.08);border-color:rgba(var(--a1r),.3)}
+.proj .lines{display:block;column-count:var(--lc,1);column-gap:1.6em;column-fill:balance}
+.proj .lines .pb{break-inside:avoid;margin:0 0 .75em}
+.proj{padding-bottom:58px}
+.proj .ctl{position:fixed;z-index:2;bottom:10px;right:120px;display:flex;gap:8px}
+.proj .ctl button,.proj .tout1{background:rgba(var(--ov),.08);color:var(--ink);border:1px solid rgba(var(--a1r),.3);border-radius:999px;padding:8px 14px;font:inherit;font-size:14px;font-weight:700;opacity:.85}
+.proj .ctl .tout{background:linear-gradient(135deg,var(--a4),var(--a1));color:var(--on-a4);border:0;opacity:1}
+.proj .tout1{font-size:.55em;padding:.2em .7em;opacity:1;color:var(--a4);border-color:var(--a4)}
+.proj.full .pb{opacity:1!important}.proj.full .pe.ok{opacity:.5}
 .sheet main > .sec:first-child h2{font-size:20px!important;line-height:1.25}
 .card h2,.card h3{font-size:18px;line-height:1.3}
 
@@ -2014,6 +2022,14 @@ async function act(a, ds){
       await run(db.doc("members/" + S.fiche).update({"abo.fin": fin}), `Renouvelé jusqu'au ${finAbo(parseIso(fin))}`); return; }
     case "project": return project(v, k);
     case "proj-close": closeProj(); return;
+    case "proj-full": S.projFull = !S.projFull; drawProj(); return;
+    case "proj-tout": { if (S.projConf !== v) { S.projConf = v; clearTimeout(S.projConfH); S.projConfH = setTimeout(() => { S.projConf = null; drawProj(); }, 5000); drawProj(); return; }
+      S.projConf = null; const qui = (S.projCols || []).filter(x => x.s?.id && x.mid && (v === "*" || x.s.id === v));
+      for (const x of qui) { const args = []; (x.s.blocs || []).forEach((b, bi) => { const n = nbTours(b.tours);
+          (b.exos || []).forEach((_, ei) => { if (n >= 2) { for (let t = 1; t <= n; t++) args.push(new firebase.firestore.FieldPath("coches", `${bi}-${ei}-t${t}`), true); } else args.push(new firebase.firestore.FieldPath("coches", `${bi}-${ei}`), true); });
+          if (n >= 2 && (b.exos || []).length) args.push(new firebase.firestore.FieldPath("toursFaits", String(bi)), n); });
+        if (args.length) try { await db.doc(`members/${x.mid}/seances/${x.s.id}`).update(...args); } catch (e) { toast(`Pas pu cocher pour ${x.prenom}`); } }
+      finSeance(); toast(qui.length > 1 ? "Séances cochées pour tout le monde 💪 Chacun remplit son questionnaire santé sur son téléphone." : "Séance cochée 💪 Pense au questionnaire santé."); drawProj(); return; }
     case "board-open": await openBoard(); return;
     case "board-go": boardGo(); return;
     case "repos-plus": if (S.repos) { S.repos.fin += 15000; S.repos.dur = (S.repos.dur || 60000) + 15000; S.repos.at = Date.now(); S.repos.bip = 99; reposPartage(); tickRepos(); } return;
@@ -2214,7 +2230,7 @@ async function project(kind, k){
 const creneauLbl = t => `Créneau de ${t.getHours()}H${pad(t.getMinutes())}`;
 function showProj(cols, label){
   if (!cols.length) { toast("Rien à projeter."); return; }
-  const el = $("proj"), n = cols.length, c = Math.min(n, 3), r = n >= 3 ? 2 : 1;
+  const el = $("proj"), n = cols.length, c = n <= 3 ? n : n === 4 ? 2 : 3, r = Math.ceil(n / c);
   el.style.setProperty("--c", c); el.style.setProperty("--r", r);
   S.projCols = cols; S.projLabel = label;
   /* en direct : chaque coche, chaque tour et chaque repos lancé sur le téléphone s'affiche ici */
@@ -2234,17 +2250,18 @@ function projBox(x){
     const n = nbTours(b.tours), tf = n >= 2 ? toursComplets(s, bi, b) : 0, fini = blocFini(s, bi, b), actif = cur && cur.bi === bi;
     return `<div class="pb ${fini ? "fini" : ""} ${actif ? "actif" : ""}"><div class="pb-h"><b>${/^fin/i.test(b.code) ? "Finisher" : esc(b.code)}</b><span>${esc(b.tours || "")}</span>
       ${n >= 2 ? `<span class="dots">${Array.from({length: n}, (_, i) => `<i class="${i < tf ? "on" : ""}"></i>`).join("")}</span>` : fini ? `<span class="okb">✓</span>` : ""}</div>
-      ${fini ? "" : ex.map((e, ei) => { const ok = exoFait(s, bi, ei, b), now = actif && cur.ei === ei;
+      ${fini && !S.projFull ? "" : ex.map((e, ei) => { const ok = exoFait(s, bi, ei, b), now = !S.projFull && actif && cur.ei === ei;
         return `<div class="pe ${ok ? "ok" : ""} ${now ? "cur" : ""}"><span class="n">${now ? "▶ " : ok ? "✓ " : ""}${esc(e.n)}</span>${e.d ? `<span class="d">${esc(e.d)}</span>` : ""}</div>`; }).join("")}</div>`; }).join("");
   return `<div class="box ${rest ? "rest" : ""} ${fait && fait === st.length ? "done" : ""}"><header><h3>${esc(x.prenom)}</h3><span class="ttl">${esc(s.titre || "")}</span>
-      ${st.length ? `<span class="pct">${fait === st.length ? "Terminé ✓" : `${fait}/${st.length}`}</span>` : ""}</header>
+      ${st.length ? `<span class="pct">${fait === st.length ? "Terminé ✓" : `${fait}/${st.length}`}</span>` : ""}${S.projFull && (S.projCols || []).length > 1 && st.length && fait < st.length ? `<button class="tout1" data-a="proj-tout" data-v="${esc(s.id)}">${S.projConf === s.id ? "Confirmer ?" : "✓ Tout"}</button>` : ""}</header>
     ${st.length ? `<div class="bar"><i style="width:${Math.round(fait / st.length * 100)}%"></i></div>` : ""}
     ${rest ? `<div class="pr-rest"><span>${esc(r.lbl || "Repos")}</span><b class="pr-t" data-fin="${r.fin}">${mmss(Math.max(0, Math.ceil((r.fin - Date.now()) / 1000)))}</b></div>` : ""}
     <div class="lines">${blocs}</div></div>`;
 }
 function drawProj(){ const el = $("proj"), cols = S.projCols || [], n = cols.length;
-  const cases = n >= 3 ? cols.concat(Array(Math.max(0, 6 - n)).fill(null)) : cols;
-  el.innerHTML = `<button class="x" data-a="proj-close">Fermer ✕</button>${S.projLabel ? `<div class="side">${esc(S.projLabel)}</div>` : ""}<div class="cols"><div class="wm">NN</div>${cases.map(projBox).join("")}</div>`;
+  const c = n <= 3 ? n : n === 4 ? 2 : 3, cases = cols.concat(Array(Math.ceil(n / c) * c - n).fill(null));
+  el.classList.toggle("full", !!S.projFull); const fini = cols.every(x => !x.s || etapes(x.s).every(y => y.ok));
+  el.innerHTML = `<button class="x" data-a="proj-close">Fermer ✕</button><div class="ctl"><button data-a="proj-full">${S.projFull ? "◉ Suivi en direct" : "☰ Séance complète"}</button>${fini ? "" : `<button class="tout" data-a="proj-tout" data-v="*">${S.projConf === "*" ? "Confirmer : tout cocher ?" : n > 1 ? "✓ Tout cocher (tout le monde)" : "✓ Tout cocher"}</button>`}</div>${S.projLabel ? `<div class="side">${esc(S.projLabel)}</div>` : ""}<div class="cols"><div class="wm">NN</div>${cases.map(projBox).join("")}</div>`;
   if (S.projOn) fitProj(); }
 function projTick(){ let fin = false;
   document.querySelectorAll("#proj .pr-t").forEach(t => { const left = Math.ceil((Number(t.dataset.fin) - Date.now()) / 1000);
@@ -2332,8 +2349,10 @@ try { const r = JSON.parse(localStorage.getItem("nn.repos") || "null"); if (r &&
 function fitProj(){ const el = $("proj"); if (el.hidden) return;
   let lo = 8, hi = 72;
   const fits = fs => { el.style.setProperty("--fs", fs + "px"); return [...el.querySelectorAll(".box")].every(b => b.scrollHeight <= b.clientHeight + 1) && el.scrollHeight <= el.clientHeight + 1; };
-  while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (fits(mid)) lo = mid; else hi = mid; }
-  el.style.setProperty("--fs", lo + "px"); }
+  const best = lc => { el.style.setProperty("--lc", lc); let a = 8, b = 72; while (b - a > 1) { const mid = (a + b) >> 1; if (fits(mid)) a = mid; else b = mid; } return a; };
+  const n = (S.projCols || []).length || 1, c = n <= 3 ? n : n === 4 ? 2 : 3, maxc = c === 1 ? 3 : c === 2 ? 2 : 2;
+  let pick = 1, top = best(1); for (let lc = 2; lc <= maxc; lc++) { const f = best(lc); if (f > top + 1) { top = f; pick = lc; } }
+  el.style.setProperty("--lc", pick); el.style.setProperty("--fs", top + "px"); }
 window.addEventListener("resize", () => { if (S.projOn) fitProj(); });
 document.addEventListener("fullscreenchange", () => { if (S.projOn) setTimeout(fitProj, 100); });
 function closeProj(){ const el = $("proj"); el.hidden = true; el.innerHTML = ""; S.projOn = false;
