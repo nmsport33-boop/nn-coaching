@@ -463,6 +463,14 @@ input[type=text],input[type=date],input[type=number],input[type=time],input[type
 /* vidéo dans un carré */
 .vbox{width:100%;aspect-ratio:1/1;max-height:46vh;border-radius:18px;overflow:hidden;background:#000;border:1px solid rgba(var(--a1r),.3);box-shadow:0 0 24px rgba(var(--a1r),.15)}
 .vbox iframe{width:100%;height:100%;border:0;display:block}
+.vidpop{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;padding:16px}
+.vidpop .in{width:min(100%,520px);background:var(--b0);color:var(--ink);border:1px solid rgba(var(--a1r),.35);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.vidpop .vp-h{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:17px}
+.vidpop .vp-h .vp-x{background:none;border:0;color:inherit;font-size:20px;padding:4px 8px}
+.vidpop .vbox{max-height:60vh}
+.vidpop .vp-b{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.vidpop .vp-b a{color:inherit;opacity:.8;font-size:14px}
+.vidpop .vp-b .vp-x{background:linear-gradient(135deg,var(--a3),var(--a2));color:#fff;border:0;border-radius:99px;padding:8px 18px;font-weight:700}
 .vrow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 .vrow a,.vrow button{font-size:13.5px;font-weight:700;border-radius:99px;padding:9px 14px;text-decoration:none;border:1px solid rgba(var(--a1r),.35);background:rgba(var(--ov),.05);color:var(--a1l)}
 .vrow .vid{border:0;color:var(--ink)}
@@ -1650,7 +1658,7 @@ function seanceBody(sid, s){
       ${tot ? `<p class="small muted" style="margin:0">« Projeter » affiche la séance en grand, fond noir, pour un écran ou une télé pendant que tu la fais.</p>` : ""}
       ${!coach && tot ? `<p class="small muted" style="margin:0">Quand un bloc a plusieurs exos, tu les enchaînes dans l'ordre : exo 1, puis exo 2 (sans repos entre les deux), puis repos, et tu recommences pour le tour suivant. Coche le rond de chaque exo au fur et à mesure : le repos démarre tout seul à la fin du tour.</p>` : ""}
       ${(s.blocs||[]).map((b,bi) => `<div class="bloc"><div class="bloc-h"><b>${esc(b.code)}${b.nom ? " · " + esc(b.nom) : ""}</b><span>${esc(b.tours||"")}</span></div>${tourBar(s, sid, b, bi)}
-        ${(b.exos||[]).length ? b.exos.map((e,ei) => `<div class="ex ${exoFait(s,bi,ei,b)?"done":""} ${nbTours(b.tours)>=2?"multi":""}">${nbTours(b.tours)>=2 ? "" : `<button class="tick ${co[bi+"-"+ei]?"on":""}" data-a="coche" data-v="${sid}" data-k="${bi}-${ei}" aria-label="Cocher ${esc(e.n)}" aria-pressed="${co[bi+"-"+ei]?"true":"false"}">✓</button>`}<span class="n">${esc(e.n)}</span><span class="d">${esc(e.d||"")}</span>${/^https:\/\//.test(e.v||"") ? `<a class="vid" href="${esc(e.v)}" target="_blank" rel="noopener">VIDÉO</a>` : ""}${nbTours(b.tours)>=2 ? rondsExo(s, sid, b, bi, ei) : ""}</div>${chargeRow(s, sid, bi, ei, e)}<div class="exbas">${e.c ? `<details class="how"><summary>Comment faire</summary><p>${esc(e.c)}</p></details>` : ""}${remarqueRow(s, sid, bi, ei)}</div>`).join("") : `<div class="ex"><span class="n muted">À compléter</span></div>`}</div>`).join("")}</section>`;
+        ${(b.exos||[]).length ? b.exos.map((e,ei) => `<div class="ex ${exoFait(s,bi,ei,b)?"done":""} ${nbTours(b.tours)>=2?"multi":""}">${nbTours(b.tours)>=2 ? "" : `<button class="tick ${co[bi+"-"+ei]?"on":""}" data-a="coche" data-v="${sid}" data-k="${bi}-${ei}" aria-label="Cocher ${esc(e.n)}" aria-pressed="${co[bi+"-"+ei]?"true":"false"}">✓</button>`}<span class="n">${esc(e.n)}</span><span class="d">${esc(e.d||"")}</span>${/^https:\/\//.test(e.v||"") ? `<a class="vid" href="${esc(e.v)}" target="_blank" rel="noopener" data-vid="${esc(e.n)}">VIDÉO</a>` : ""}${nbTours(b.tours)>=2 ? rondsExo(s, sid, b, bi, ei) : ""}</div>${chargeRow(s, sid, bi, ei, e)}<div class="exbas">${e.c ? `<details class="how"><summary>Comment faire</summary><p>${esc(e.c)}</p></details>` : ""}${remarqueRow(s, sid, bi, ei)}</div>`).join("") : `<div class="ex"><span class="n muted">À compléter</span></div>`}</div>`).join("")}</section>`;
   }
   out += bilanSection(sid, s);
   // ressenti
@@ -1749,6 +1757,21 @@ function lienEcran(sid){ const base = location.origin + location.pathname, mid =
   const code = S.owner ? (S.members[mid]?.code || S.cur.member?.code) : (() => { try { return localStorage.getItem("nn.code"); } catch (e) { return ""; } })() || new URL(location.href).searchParams.get("c");
   return code ? `${base}?c=${encodeURIComponent(code)}&ecran=${encodeURIComponent(sid)}` : `${base}?coach&ecran=${encodeURIComponent(mid + "~" + sid)}`; }
 function chargerQR(cb){ if (window.qrcode) return cb(); const s = document.createElement("script"); s.src = "qrcode.js"; s.onload = cb; s.onerror = () => {}; document.head.appendChild(s); }
+/* bouton VIDÉO d'un exo : lecteur dans l'appli, titré au nom de l'exo, un seul à la fois
+   (avant, le lien ouvrait YouTube : la vidéo de l'exo précédent pouvait rester en lecture flottante
+   au-dessus de l'exo suivant et laisser croire que c'était la sienne) */
+function vidPop(nom, url){
+  const id = ytId(url); if (!id) return false;
+  document.querySelectorAll(".vidpop").forEach(x => x.remove());
+  const w = document.createElement("div"); w.className = "vidpop";
+  w.innerHTML = `<div class="in"><div class="vp-h"><b>${esc(nom)}</b><button class="vp-x" aria-label="Fermer la vidéo">✕</button></div><div class="vbox"><iframe src="${esc(ytEmbed(id, true))}" allow="autoplay; encrypted-media; fullscreen" allowfullscreen title="Vidéo ${esc(nom)}"></iframe></div><div class="vp-b"><a href="${esc(url)}" target="_blank" rel="noopener">Ouvrir sur YouTube ↗</a><button class="vp-x">Fermer</button></div></div>`;
+  w.addEventListener("click", ev => { if (ev.target === w || ev.target.closest(".vp-x")) w.remove(); });
+  document.body.appendChild(w); return true;
+}
+document.addEventListener("click", e => {
+  const a = e.target.closest && e.target.closest("a.vid[data-vid]"); if (!a) return;
+  if (vidPop(a.dataset.vid, a.getAttribute("href"))) { e.preventDefault(); e.stopPropagation(); }
+}, true);
 /* icône « projeter » (la même que YouTube et les autres applis) */
 const CAST = `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 9V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6"/><path d="M3 13a7 7 0 0 1 7 7M3 17a3 3 0 0 1 3 3"/><circle cx="3.2" cy="20" r=".6" fill="currentColor"/></svg>`;
 const estApple = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && "ontouchend" in document);
