@@ -186,3 +186,20 @@ html[data-skin="graphite"] .card,html[data-skin="ocean"] .card,html[data-skin="e
 .ov-drv-r.ok{opacity:.6}
 .ov-drv-a{flex:none;text-decoration:none;font-weight:800;font-size:14px;padding:8px 14px;border-radius:12px;background:var(--a1);color:var(--on-a1)}
 .ov-drv-r.ok .ov-drv-a{background:rgba(var(--a4r),.18);color:var(--a4l)}
+
+/* Bouton « Commencer la séance » : mis en avant, style ultra futuriste (demandé le 04/11) */
+@keyframes ovGoFlux{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+@keyframes ovGoPulse{0%,100%{box-shadow:0 0 0 1px rgba(var(--a2r),.55),0 0 22px rgba(var(--a1r),.45),0 0 60px rgba(var(--a2r),.25)}50%{box-shadow:0 0 0 1px rgba(var(--a1r),.8),0 0 34px rgba(var(--a1r),.7),0 0 90px rgba(var(--a2r),.4)}}
+@keyframes ovGoReflet{0%{transform:translateX(-120%) skewX(-20deg)}60%,100%{transform:translateX(320%) skewX(-20deg)}}
+html .btn.xl.ov-go{position:relative;overflow:hidden;isolation:isolate;min-height:78px!important;margin:6px 0 4px;border-radius:22px!important;
+  font-family:var(--display,var(--body))!important;font-size:clamp(18px,5.6vw,23px)!important;font-weight:900;letter-spacing:.14em!important;text-transform:uppercase;
+  color:#fff!important;text-shadow:0 0 12px rgba(255,255,255,.55);
+  background:linear-gradient(100deg,var(--a1),var(--a3),var(--a2),var(--a1))!important;background-size:200% 100%!important;
+  animation:ovGoFlux 4s linear infinite,ovGoPulse 2.2s ease-in-out infinite;border:0!important}
+html .btn.xl.ov-go::before{content:"";position:absolute;inset:2px;border-radius:20px;z-index:-1;
+  background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,0) 45%),repeating-linear-gradient(90deg,rgba(255,255,255,.06) 0 1px,transparent 1px 14px)}
+html .btn.xl.ov-go::after{content:"";position:absolute;top:0;bottom:0;left:0;width:30%;z-index:-1;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:ovGoReflet 3.2s ease-in-out infinite}
+html .btn.xl.ov-go:active{transform:scale(.97)}
+html[data-skin="neon"] .btn.xl.ov-go{background:linear-gradient(100deg,#22e3ff,#7b5cff,#ff2bd6,#22e3ff)!important;background-size:200% 100%!important;color:#fff!important;text-shadow:0 0 10px rgba(34,227,255,.9),0 0 22px rgba(255,43,214,.6)}
+@media (prefers-reduced-motion:reduce){html .btn.xl.ov-go,html .btn.xl.ov-go::after{animation:none}}

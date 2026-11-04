@@ -656,7 +656,7 @@ body.ecran-on .repos{display:none!important}
 </style>
 <link rel="stylesheet" href="plus.css?v=2026-11-03o1">
 <link rel="stylesheet" href="ia.css?v=2026-11-03o1">
-<link rel="stylesheet" href="orvea.css?v=2026-11-04f1">
+<link rel="stylesheet" href="orvea.css?v=2026-11-04f2">
 </head>
 <body>
 
@@ -1781,7 +1781,7 @@ function etapes(s){ const out = [];
   return out; }
 function goBtn(sid, s){ const st = etapes(s); if (!st.length) return "";
   const fait = st.filter(x => x.ok).length, fini = fait === st.length;
-  return `<button class="btn xl ${fini ? "light" : ""}" data-a="go" data-v="${sid}">${fini ? "↺ Revoir la séance" : fait ? "▶ Reprendre la séance" : "▶ Commencer la séance"}</button>`; }
+  return `<button class="btn xl ${fini ? "light" : "ov-go"}" data-a="go" data-v="${sid}">${fini ? "↺ Revoir la séance" : fait ? "▶ Reprendre la séance" : "▶ Commencer la séance"}</button>`; }
 const mmss = sec => `${Math.floor(sec / 60)}:${pad(sec % 60)}`;
 function renderGo(){
   const el = $("go"), g = S.go, s = g && S.cur.seances?.[g.sid];
@@ -2628,7 +2628,7 @@ function startData(isCoach, cid){
 
 </script>
 <script src="plus.js?v=2026-11-04disc"></script>
-<script src="ia.js?v=2026-11-04f1"></script>
+<script src="ia.js?v=2026-11-04f2"></script>
 <script src="orvea.js?v=2026-11-04disc"></script>
 <script src="finisher.js?v=2026-11-04o1"></script>
 <script src="eveil.js?v=2026-11-03o9"></script>
