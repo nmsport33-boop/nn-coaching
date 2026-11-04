@@ -26,6 +26,7 @@
   document.querySelector('link[rel=manifest]').href = "data:application/manifest+json," + encodeURIComponent(JSON.stringify(m));
 } catch (e) {} })();
 </script>
+<script src="zoom.js?v=2026-11-04zoom" data-k="nn-zoom"></script>
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -693,7 +694,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-04disc";
+const BUILD = "2026-11-04zoom";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD ?= ?"([^"]+)"/)?.[1];
