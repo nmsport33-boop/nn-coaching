@@ -1,4 +1,4 @@
-/* © 2026 Orvéa (Nathanael Neuville). Tous droits réservés. Version commerciale autonome, dérivée de l'appli NN Coaching.
+/* © 2026 Fitzora (Nathanael Neuville). Tous droits réservés. Version commerciale autonome, dérivée de l'appli NN Coaching.
    « Plus » (02/11/2026) : intro pas à pas au premier lancement, accueil « Aujourd'hui », Nutrition,
    Corps (bonhomme musclé, forme du jour, mensurations, photos), question au coach.
    Chargé après le script principal de index.html : il remplace view(), renderTabs(), act(), fiche() en les enveloppant.
@@ -827,7 +827,7 @@ const silhouette = sexe => bodySVG("face", {}, {cls: "px-sx", sexe, label: sexe 
 function etapesObjectifs(){
   const niv = Object.entries(BQ.niv).map(([f, [q, os]]) => ({id: "niv_" + f, k: "single", q, sub: "Ton niveau : réponds au plus juste, c'est ce qui règle tes charges.", opts: os}));
   return [
-    {id: "hello", k: "info", emo: "👋", q: "Bienvenue sur Orvéa", sub: "Quelques questions, une par écran, pour écrire ton programme sur mesure. Compte 3 minutes. Tu peux revenir en arrière à tout moment."},
+    {id: "hello", k: "info", emo: "👋", q: "Bienvenue sur Fitzora", sub: "Quelques questions, une par écran, pour écrire ton programme sur mesure. Compte 3 minutes. Tu peux revenir en arrière à tout moment."},
     {id: "prenom", k: "texte", q: "Comment tu t'appelles ?", ph: "Ton prénom"},
     {id: "sexe", k: "sexe", q: "Tu es…"},
     {id: "naissance", k: "date", q: "Ta date de naissance ?"},

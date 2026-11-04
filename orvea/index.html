@@ -1,21 +1,21 @@
 <!doctype html>
-<!-- © 2026 Orvéa (Nathanael Neuville). Tous droits réservés. Copie, reproduction ou réutilisation interdites sans autorisation écrite (voir LICENSE). -->
+<!-- © 2026 Fitzora (Nathanael Neuville). Tous droits réservés. Copie, reproduction ou réutilisation interdites sans autorisation écrite (voir LICENSE). -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
 <meta http-equiv="Cache-Control" content="no-cache">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Orvéa · entraînement et nutrition</title>
+<title>Fitzora · entraînement et nutrition</title>
 <meta name="robots" content="noindex,nofollow,noarchive">
-<meta name="copyright" content="© 2026 Orvéa. Tous droits réservés.">
-<meta name="description" content="Orvéa : ton programme d'entraînement, ta nutrition et ton coach IA, au même endroit.">
+<meta name="copyright" content="© 2026 Fitzora. Tous droits réservés.">
+<meta name="description" content="Fitzora : ton programme d'entraînement, ta nutrition et ton coach IA, au même endroit.">
 <meta name="theme-color" content="#05060d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Orvéa">
+<meta name="apple-mobile-web-app-title" content="Fitzora">
 <link rel="manifest" href="manifest.webmanifest">
-<script>/* thème Orvéa : Néon futuriste par défaut ; « auto » suit le téléphone (clair / sombre) ; sinon le thème choisi (palette 🎨) */
+<script>/* thème Fitzora : Néon futuriste par défaut ; « auto » suit le téléphone (clair / sombre) ; sinon le thème choisi (palette 🎨) */
 window.OV_FONDS={light:"#f6f7f9",dark:"#0b0d12",neon:"#05060d",classique:"#f2f2f0",graphite:"#0e0e12",ocean:"#061626",energie:"#0a0a0a",rose:"#fbf1f4",sable:"#f5f0e6"};
 window.OV_THEME=function(){var h=document.documentElement,t="";try{t=localStorage.getItem("orvea-theme")||""}catch(e){}
   if(t==="auto")t="";else if(!OV_FONDS[t])t="neon";var k=t||(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
@@ -647,13 +647,13 @@ body.ecran-on .repos{display:none!important}
 </style>
 <link rel="stylesheet" href="plus.css?v=2026-11-03o1">
 <link rel="stylesheet" href="ia.css?v=2026-11-03o1">
-<link rel="stylesheet" href="orvea.css?v=2026-11-03o8">
+<link rel="stylesheet" href="orvea.css?v=2026-11-04f1">
 </head>
 <body>
 
 <header class="top"><div class="top-in">
   <div class="logo ov-logo" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="16" cy="16" r="11" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="16" cy="16" r="3.2" fill="currentColor"/></svg></div>
-  <div><h1>Orvéa</h1><div class="sub">Entraînement · nutrition · coach IA</div></div>
+  <div><h1>Fitzora</h1><div class="sub">Entraînement · nutrition · coach IA</div></div>
   <span class="role" id="role"></span>
   <button class="skinbtn" aria-label="Changer de thème" title="Thème" data-a="ov-themes">🎨</button>
   <button class="skinbtn" id="skinbtn" aria-label="Mon compte" title="Mon compte" data-a="tab" data-v="compte"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.2-4 4.3-6 8-6s6.8 2 8 6"/></svg></button>
@@ -673,7 +673,7 @@ body.ecran-on .repos{display:none!important}
 <script src="config.js?v=2026-11-03o1"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-03o8";
+const BUILD = "2026-11-04f1";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD ?= ?"([^"]+)"/)?.[1];
@@ -731,7 +731,7 @@ function skinPicker(){
     setSkin(b.dataset.k); w.querySelectorAll(".sk").forEach(x => x.classList.toggle("on", x === b)); });
   document.body.appendChild(w);
 }
-/* Orvéa : pas de choix de thème ici (clair / sombre dans « Mon compte ») ; le bouton du haut ouvre le compte */
+/* Fitzora : pas de choix de thème ici (clair / sombre dans « Mon compte ») ; le bouton du haut ouvre le compte */
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pad = n => String(n).padStart(2,"0");
 const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
@@ -1185,14 +1185,14 @@ async function saveAvant(sid){
 }
 /* objectifs : demandés au début de chaque cycle (clé = members.objectifsCle, sinon le nom du cycle) */
 const objCle = m => String(m?.objectifsCle || m?.cycle?.nom || "cycle-1");
-/* Orvéa : le questionnaire de départ sert pour tous les cycles (les suivants partent des retours de séance) */
+/* Fitzora : le questionnaire de départ sert pour tous les cycles (les suivants partent des retours de séance) */
 const objNote = () => S.cur.notes.filter(n => n.type === "objectifs").pop() || null;
 function objectifsCard(){
   /* seulement pour un nouvel adhérent ou un nouveau cycle (members.objectifsRequis) : on ne redemande rien à ceux qui ont déjà commencé */
   const m = S.cur.member; if (!m || S.owner || m.objectifsRequis !== true || objNote()) return "";
   const k = "obj.", buts = d(k + "buts", []);
   if (!S.drafts[k + "open"]) return `<section class="sec"><button class="card tap" data-a="obj-open" style="border:2px solid var(--a1)">
-    <span class="eyebrow">Nouveau cycle · 2 minutes</span><b>Quels sont tes objectifs ?</b><span class="small">Perdre du poids, prendre des fessiers, du muscle… Orvéa construit tes séances à partir de tes réponses.</span>${motSuivi()}
+    <span class="eyebrow">Nouveau cycle · 2 minutes</span><b>Quels sont tes objectifs ?</b><span class="small">Perdre du poids, prendre des fessiers, du muscle… Fitzora construit tes séances à partir de tes réponses.</span>${motSuivi()}
     <span class="small" style="color:var(--mag);font-weight:700">Répondre ›</span></button></section>`;
   return `<section class="sec" id="objectifs"><h2>Tes objectifs pour ce cycle</h2><div class="card">
     <span class="eyebrow">Toi</span>
@@ -2519,9 +2519,9 @@ function startData(isCoach, cid){
 })();
 
 </script>
-<script src="plus.js?v=2026-11-03o8"></script>
-<script src="ia.js?v=2026-11-03o8"></script>
-<script src="orvea.js?v=2026-11-03o8"></script>
+<script src="plus.js?v=2026-11-04f1"></script>
+<script src="ia.js?v=2026-11-04f1"></script>
+<script src="orvea.js?v=2026-11-04f1"></script>
 <script src="finisher.js?v=2026-11-03o11"></script>
 <script src="eveil.js?v=2026-11-03o9"></script>
 </body>

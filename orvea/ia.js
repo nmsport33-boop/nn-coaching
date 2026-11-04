@@ -1,5 +1,5 @@
-/* © 2026 Orvéa (Nathanael Neuville). Tous droits réservés.
-   Coach IA de l'appli Orvéa (autonome, sans coach humain). Il répond à partir du programme et des retours de l'utilisateur,
+/* © 2026 Fitzora (Nathanael Neuville). Tous droits réservés.
+   Coach IA de l'appli Fitzora (autonome, sans coach humain). Il répond à partir du programme et des retours de l'utilisateur,
    et peut adapter lui-même une séance à venir ou écrire le plan de repas (fonction serveur « coach », dossier functions-orvea).
    Données : notes/ia-<horodatage> {type:"ia", auteur:"adherent", q}  →  notes/<id>-r {type:"ia-r", r, adaptee, planRepas, alerte}. */
 (function(){

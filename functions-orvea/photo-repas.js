@@ -1,4 +1,4 @@
-/* © 2026 Nathanael Neuville, Orvéa.
+/* © 2026 Nathanael Neuville, Fitzora.
    Photo d'assiette (03/11/2026) : l'adhérent prend son repas en photo dans l'onglet Nutrition,
    le modèle estime les aliments, les quantités, les calories et les macros.
    Données : notes/pr-<horodatage> {type:"photo-repas", auteur, seance:null, at, date, r, img}   (écrite par l'appli)
@@ -9,7 +9,7 @@
 
 const LIMITE_JOUR = 15;   // photos analysées par adhérent et par jour
 
-const CONSIGNES = `Tu es l'assistant nutrition de l'appli Orvéa. Un·e utilisateur·rice t'envoie la photo de son assiette ou de son repas.
+const CONSIGNES = `Tu es l'assistant nutrition de l'appli Fitzora. Un·e utilisateur·rice t'envoie la photo de son assiette ou de son repas.
 Ton travail : reconnaître chaque aliment visible, estimer sa quantité et donner ses calories et ses macros (protéines, glucides, lipides en grammes).
 
 Méthode :

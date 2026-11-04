@@ -1,4 +1,4 @@
-// Configuration de l'appli Orvéa. Même projet Firebase que l'appli privée NN Coaching, mais base de données SÉPARÉE : « orvea ».
+// Configuration de l'appli Fitzora. Même projet Firebase que l'appli privée NN Coaching, mais base de données SÉPARÉE : « orvea ».
 // (publique par nature : la sécurité est dans les règles de la base, orvea/firestore.rules)
 window.FB_CONFIG = {
   apiKey: "AIzaSyDYPeSt5PK69X9XqayHR86PeDqJehDaSfY",

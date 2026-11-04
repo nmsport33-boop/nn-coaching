@@ -10,7 +10,7 @@ const OUT = "_site";
 // Compactage désactivé (03/11) : le site compacté restait bloqué sur « Chargement… » sur iPhone. On publie les fichiers web tels quels, sans le code serveur.
 const COMPACTER = process.env.COMPACTER === "1";
 const EXCLU = [/^\./, /^_site/, /^node_modules/, /^functions/, /^agenda\//, /firestore\.rules$/, /^regles\.txt$/, /^firebase\.json$/, /^README\.md$/, /^LICENSE$/, /\/node_modules\//];
-const entete = f => `/*! © 2026 ${f.startsWith("orvea/") ? "Orvéa" : "NN Coaching"}. Tous droits réservés. Reproduction interdite. */`;
+const entete = f => `/*! © 2026 ${f.startsWith("orvea/") ? "Fitzora" : "NN Coaching"}. Tous droits réservés. Reproduction interdite. */`;
 const opts = f => ({compress: {passes: 2}, mangle: true, toplevel: false, format: {comments: /^!/, preamble: entete(f)}});
 
 const tous = (d = ".") => readdirSync(d).flatMap(n => { const p = d === "." ? n : `${d}/${n}`; return statSync(p).isDirectory() ? tous(p) : [p]; });
