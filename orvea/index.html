@@ -682,7 +682,7 @@ body.ecran-on .repos{display:none!important}
 <script src="config.js?v=2026-11-03o1"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-04f1";
+const BUILD = "2026-11-04disc";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD ?= ?"([^"]+)"/)?.[1];
@@ -1253,6 +1253,90 @@ async function saveObjectifs(){
   const texte = `Profil : ${r.age} ans${r.taille ? `, ${r.taille} cm` : ""}, ${r.poids} kg${r.quotidien ? `, ${lab("quotidien", r.quotidien)}` : ""} · santé : ${r.sante.map(v => lab("sante", v)).join(", ")}${r.santeDetail ? ` (${r.santeDetail})` : ""} · médecin : ${lab("medecin", r.medecin)} · sport : ${lab("sport", r.sport)}${r.sports ? ` (${r.sports})` : ""}\nNiveau : ${({"debutant": "débutant", "debutant+": "débutant avancé", "intermediaire": "intermédiaire", "confirme": "confirmé"})[r.niveau]} (${r.niveauScore}/24) · ${Object.entries(r.niveauTests).map(([f, v]) => `${BQ.niv[f][0]} : ${BQ.niv[f][1].find(x => x[0] === v)[1]}`).join(" · ")}${r.charges ? ` · charges : ${r.charges}` : ""}\nObjectifs (${objCle(m)}) : ${r.buts.join(", ")}${r.principal ? ` · priorité : ${r.principal}` : ""}${r.cibles.length ? ` · zones : ${r.cibles.join(", ")}` : ""} · ${r.rythme} séance(s)/semaine · lieu : ${(BQ.lieux.find(x => x[0] === r.lieu) || [, r.lieu])[1]}${r.materiel ? ` (matériel : ${r.materiel})` : ""}${r.jours.length ? ` · jours : ${r.jours.join(", ")}` : ""} · douleur : ${r.douleurs}${r.autre ? ` · ${r.autre}` : ""}`;
   if (await run(S.db.collection(`members/${memberId()}/notes`).add({seance: null, auteur: S.owner ? "coach" : "adherent", type: "objectifs", cycle: objCle(m), reponses: r, texte: texte.slice(0, 4000), at: Date.now(), suivante: false}), "Merci ! Tes objectifs sont envoyés 💪")) clearDrafts(k);
 }
+/* ---------- disciplines en plus (04/11/2026) : Animal Flow, Pilates, pliométrie, pour qui le souhaite,
+   seulement si la place, le sol et la santé le permettent (note {type:"disciplines", reponses:{disciplines, espace, sol}}) ---------- */
+const DISC = {
+  liste: [["animalflow","🐾 Animal Flow","Des mouvements au sol inspirés des animaux : gainage, mobilité, coordination. Sans matériel."],
+    ["pilates","🧘 Pilates","Au tapis : le centre du corps, la posture, la respiration et le contrôle du mouvement."],
+    ["plyo","⚡ Pliométrie","Des sauts et des rebonds : explosivité, cardio, et des os et tendons plus solides."]],
+  espace: [["petit","Moins de 2 m × 2 m"],["moyen","Environ 2 m × 2 m dégagés"],["grand","Plus grand (pièce, salle, jardin)"]],
+  sol: [["tapis","Tapis de sol ou parquet"],["salle","Sol de salle de sport"],["herbe","Herbe ou terrain souple"],["dur","Carrelage ou béton"]]
+};
+const discNote = () => (S.cur?.notes || []).filter(n => n.type === "disciplines").sort((a, b) => (a.at || 0) - (b.at || 0)).pop() || null;
+/* le verdict : ce qui est possible pour lui, d'après la place, le sol, son questionnaire santé et ses derniers bilans */
+function discVerdict(ch, obj0){
+  const obj = obj0 || (S.cur?.notes || []).filter(n => n.type === "objectifs").pop()?.reponses || {}, sante = obj.sante || [];
+  const rien = /^\s*(rien|non|aucune?|ras|r\.a\.s\.?|pas de douleur|0)\s*\.?\s*$/i;
+  const mb = S.cur?.member || {};
+  const txt = [obj.douleurs, obj.santeDetail, mb.objectif, mb.douleurs].filter(x => typeof x === "string").filter(x => x && !rien.test(x)).join(" ").toLowerCase();
+  const recent = Date.now() - 30 * 864e5;
+  const zones = Object.values(S.cur?.seances || {}).flatMap(s => [s.bilan, s.avant]).filter(b => b && b.douleur === "oui" && (b.at || 0) > recent).flatMap(b => b.zones || []).join(" ").toLowerCase();
+  const z = txt + " " + zones, a = re => re.test(z);
+  const jambes = a(/genou|cheville|pied|hanche|ménisque|menisque|ligament|croisé|croise|tendin|achille|rotule|entorse/), dos = a(/dos|lomb|hernie|sciati|nuque/) || sante.includes("dos");
+  const hautCorps = a(/poignet|épaule|epaule|coude|main/), enceinte = sante.includes("grossesse"), coeur = sante.some(x => ["coeur","tension","malaise","souffle"].includes(x)) || obj.medecin === "reserve";
+  const opere = sante.includes("operation"), debutant = !obj.niveau || obj.niveau === "debutant", age = Number(obj.age) || 0;
+  const r = {};
+  for (const [k] of DISC.liste) { if (!(ch.disciplines || []).includes(k)) continue;
+    let ok = "oui", pq = [];
+    if (k === "pilates") {
+      if (enceinte) { ok = "adapte"; pq.push("avec l'accord de ton médecin, et plus rien d'allongé sur le dos après 3 mois de grossesse"); }
+      if (dos) { ok = "adapte"; pq.push("version douce pour ton dos : pas d'enroulé complet, on garde le bas du dos posé"); }
+      if (ch.sol === "dur") { ok = "adapte"; pq.push("pose un tapis ou une serviette épaisse sur le carrelage"); }
+    }
+    if (k === "animalflow") {
+      if (ch.espace === "petit") { ok = "non"; pq.push("il faut environ 2 m × 2 m dégagés pour te déplacer au sol"); }
+      else if (enceinte) { ok = "non"; pq.push("pas pendant la grossesse : on garde le Pilates doux"); }
+      else { if (hautCorps) { ok = "adapte"; pq.push("appuis sur les poings ou mains sur un banc, et pas d'appui long sur le côté qui te gêne"); }
+        if (coeur || opere) { ok = "adapte"; pq.push("rythme lent, tu restes capable de parler"); }
+        if (ch.sol === "dur") { ok = "adapte"; pq.push("un tapis sous les mains et les genoux"); } }
+    }
+    if (k === "plyo") {
+      if (enceinte) { ok = "non"; pq.push("pas de sauts pendant la grossesse ni l'année qui suit l'accouchement"); }
+      else if (coeur) { ok = "non"; pq.push("pas d'efforts explosifs avec ce que tu as signalé côté santé"); }
+      else if (opere) { ok = "non"; pq.push("pas de sauts moins d'un an après une opération ou une fracture"); }
+      else if (jambes) { ok = "non"; pq.push("tes genoux, chevilles ou hanches sont à ménager : on renforce d'abord, les sauts viendront après"); }
+      else if (dos) { ok = "non"; pq.push("ton dos est à ménager : pas de réceptions de sauts pour l'instant"); }
+      else if (ch.sol === "dur") { ok = "non"; pq.push("pas de sauts sur carrelage ou béton : trop dur pour les articulations (herbe, tapis épais ou sol de salle)"); }
+      else if (ch.espace === "petit") { ok = "non"; pq.push("il faut un peu de place autour de toi pour sauter sans risque"); }
+      else if (debutant || age >= 55) { ok = "adapte"; pq.push("on commence par apprendre à atterrir : petits sauts sur place, réception souple et silencieuse"); }
+    }
+    r[k] = {ok, pq}; }
+  return r;
+}
+function disciplinesCard(qui){
+  const m = S.cur?.member; if (!m || S.owner || (typeof isCoachUI === "function" && isCoachUI())) return "";
+  const k = "disc.", n = discNote(), ouvert = S.drafts[k + "open"];
+  if (n && !ouvert) { const v = discVerdict(n.reponses || {}), ch = (n.reponses?.disciplines || []);
+    if (!ch.length) return "";
+    return `<section class="sec"><div class="card"><span class="eyebrow">En plus de tes séances</span>
+      ${ch.map(x => { const L = DISC.liste.find(y => y[0] === x) || [x, x], e = v[x] || {ok: "oui", pq: []};
+        return `<span class="small"><b>${esc(L[1])}</b> · ${e.ok === "non" ? "pas pour l'instant" : e.ok === "adapte" ? "adapté pour toi" : "c'est bon"}${e.pq.length ? ` <span class="muted">(${esc(e.pq.join(" ; "))})</span>` : ""}</span>`; }).join("")}
+      <span class="small muted">${n.integre ? `Intégré dans tes séances à venir.` : esc(qui.attente)}</span>
+      <button class="btn sm ghost" data-a="disc-open" style="align-self:flex-start">Modifier</button></div></section>`; }
+  if (!ouvert) return `<section class="sec"><button class="card tap" data-a="disc-open"><span class="eyebrow">Nouveau</span><b>Animal Flow, Pilates, pliométrie ?</b>
+    <span class="small">Envie d'en ajouter dans tes séances ? Dis-le, et ${esc(qui.qui)} les intègre si ta place, ton sol et ta santé le permettent.</span>
+    <span class="small" style="color:var(--mag);font-weight:700">Choisir ›</span></button></section>`;
+  if (!S.drafts[k + "init"] && n) { S.drafts[k + "init"] = true; for (const f of ["disciplines","espace","sol"]) if (n.reponses?.[f] !== undefined) S.drafts[k + f] = Array.isArray(n.reponses[f]) ? [...n.reponses[f]] : n.reponses[f]; }
+  const ch = {disciplines: d(k + "disciplines", []), espace: d(k + "espace", ""), sol: d(k + "sol", "")}, v = ch.espace && ch.sol ? discVerdict(ch) : {};
+  return `<section class="sec" id="disciplines"><h2>Animal Flow, Pilates, pliométrie</h2><div class="card">
+    ${DISC.liste.map(([x, l, t]) => `<span class="small"><b>${esc(l)}</b> : ${esc(t)}</span>`).join("")}
+    <label class="f">Ce que tu veux ajouter (plusieurs possibles)</label><div class="opts">${DISC.liste.map(([x, l]) => opt(k, "disciplines", x, l, true)).join("")}</div>
+    <label class="f">La place dont tu disposes là où tu t'entraînes</label><div class="opts">${DISC.espace.map(([x, l]) => opt(k, "espace", x, l)).join("")}</div>
+    <label class="f">Ton sol</label><div class="opts">${DISC.sol.map(([x, l]) => opt(k, "sol", x, l)).join("")}</div>
+    ${Object.keys(v).length ? `<div class="banner" style="flex-direction:column;align-items:flex-start">${Object.entries(v).map(([x, e]) => `<span class="small"><b>${esc(DISC.liste.find(y => y[0] === x)[1])}</b> · ${e.ok === "non" ? "⛔ pas pour l'instant" : e.ok === "adapte" ? "✓ oui, adapté" : "✓ oui"}${e.pq.length ? ` : ${esc(e.pq.join(" ; "))}` : ""}</span>`).join("")}<span class="small muted">${esc(qui.verif)}</span></div>` : ""}
+    <div class="row" style="gap:8px"><button class="btn solid" data-a="disc-save" ${S.writeBlocked ? "disabled" : ""}>Envoyer</button>${n ? `<button class="btn ghost" data-a="disc-close">Annuler</button>` : `<button class="btn ghost" data-a="disc-non">Non merci</button>`}</div></div></section>`;
+}
+async function saveDisciplines(non, obj0){
+  const k = "disc.", g = f => S.drafts[k + f];
+  const r = non ? {disciplines: [], espace: "", sol: ""} : {disciplines: [...(g("disciplines") || [])], espace: g("espace") || "", sol: g("sol") || ""};
+  if (!non && !r.disciplines.length) return toast("Choisis au moins une discipline, ou « Non merci ».");
+  if (!non && (!r.espace || !r.sol)) return toast("Dis-nous la place et le sol : c'est ce qui dit si c'est possible sans risque.");
+  const v = non ? {} : discVerdict(r, obj0); r.verdict = Object.fromEntries(Object.entries(v).map(([x, e]) => [x, e.ok]));
+  const lab = (L, x) => (DISC[L].find(y => y[0] === x) || [, x])[1];
+  const texte = non ? "Disciplines en plus : non merci." : `Disciplines en plus souhaitées : ${r.disciplines.map(x => lab("liste", x).replace(/^\S+\s/, "") + " (" + ({oui: "possible", adapte: "possible, adapté", non: "pas possible"})[v[x]?.ok || "oui"] + (v[x]?.pq?.length ? " : " + v[x].pq.join(" ; ") : "") + ")").join(", ")} · place : ${lab("espace", r.espace)} · sol : ${lab("sol", r.sol)}`;
+  if (await run(S.db.collection(`members/${memberId()}/notes`).add({seance: null, auteur: S.owner ? "coach" : "adherent", type: "disciplines", reponses: r, texte: texte.slice(0, 1000), at: Date.now(), suivante: true}), non ? "C'est noté 👍" : "Envoyé 💪")) clearDrafts(k);
+}
+const DISC_QUI = {qui: "Fitzora", attente: "Ce sera dans ton prochain cycle. Pour l'avoir tout de suite, demande au coach IA d'adapter ta prochaine séance.", verif: "Ton programme suit ces règles de sécurité."};
 function phaseOf(cycle, num){ return (cycle?.phases || []).findIndex(p => num >= p.de && num <= p.a); }
 
 function watch(mid){
@@ -1312,7 +1396,7 @@ function view(){
   const abo = `<section class="sec">${aboCard(S.cur.member, false)}</section>`;
   const fo = formuleCard(S.cur.member);
   if (S.tab === "reserver") return pre + objectifsCard() + rappelBilan() + heroAdh() + abo + fo + mesRdv() + planning(false);
-  if (S.tab === "seances") return pre + objectifsCard() + rappelBilan() + heroAdh() + abo + (optionOf(S.cur.member, S.cur.seances) === "coache" ? fo + seancesView() : seancesView() + fo);
+  if (S.tab === "seances") return pre + objectifsCard() + rappelBilan() + heroAdh() + abo + (optionOf(S.cur.member, S.cur.seances) === "coache" ? fo + seancesView() + disciplinesCard(DISC_QUI) : seancesView() + disciplinesCard(DISC_QUI) + fo);
   if (S.tab === "cycle") return pre + cycleView(S.cur.member, true);
   if (S.tab === "offres") return pre + offresView(S.cur.member);
   return pre;
@@ -2037,6 +2121,10 @@ async function act(a, ds){
     case "save-avant": return saveAvant(v);
     case "obj-open": S.drafts["obj.open"] = true; return;
     case "save-obj": return saveObjectifs();
+    case "disc-open": S.drafts["disc.open"] = true; return;
+    case "disc-close": clearDrafts("disc."); return;
+    case "disc-save": return saveDisciplines(false);
+    case "disc-non": return saveDisciplines(true);
     case "go-close": if (S.chrono?.own && !S.ecran) stopChrono(); S.go = null; return;
     case "chrono-go": startChrono(v, k); return;
     case "chrono-stop": stopChrono(); return;
@@ -2539,9 +2627,9 @@ function startData(isCoach, cid){
 })();
 
 </script>
-<script src="plus.js?v=2026-11-04f1"></script>
+<script src="plus.js?v=2026-11-04disc"></script>
 <script src="ia.js?v=2026-11-04f1"></script>
-<script src="orvea.js?v=2026-11-04f1"></script>
+<script src="orvea.js?v=2026-11-04disc"></script>
 <script src="finisher.js?v=2026-11-04o1"></script>
 <script src="eveil.js?v=2026-11-03o9"></script>
 </body>

@@ -851,6 +851,9 @@ function etapesObjectifs(){
     {id: "jours", k: "multi", q: "Les jours où tu peux t'entraîner ?", opts: BQ.jours.map(j => [j, j]), row: true},
     {id: "lieu", k: "single", q: "Où tu vas faire tes séances ?", opts: BQ.lieux},
     {id: "materiel", k: "texte", q: "Ton matériel à la maison ?", show: d => ["maison", "mixte"].includes(d.lieu), ph: "Ex. rien, un tapis, 2 haltères de 5 kg, des élastiques…", opt: true, long: true},
+    {id: "disciplines", k: "multi", q: "Envie d'ajouter Animal Flow, Pilates ou pliométrie ?", sub: "Facultatif. Animal Flow : mouvements au sol façon animaux. Pilates : centre du corps et posture. Pliométrie : sauts et rebonds. On les ajoute seulement si ta place, ton sol et ta santé le permettent.", opts: DISC.liste.map(([v, l]) => [v, l]), opt: true},
+    {id: "espace", k: "single", q: "La place dont tu disposes pour t'entraîner ?", show: d => (d.disciplines || []).length > 0, opts: DISC.espace},
+    {id: "sol", k: "single", q: "Ton sol ?", show: d => (d.disciplines || []).length > 0, opts: DISC.sol},
     {id: "autre", k: "texte", q: "Autre chose à savoir ?", sub: "Facultatif.", ph: "Ex. un mariage en juin, je déteste les burpees…", opt: true, long: true},
     {id: "fin", k: "fin"}];
 }
@@ -947,6 +950,11 @@ async function wzFin(){
   for (const [f, v] of Object.entries(map)) if (v !== undefined) S.drafts[k + f] = Array.isArray(v) ? [...v] : v;
   await saveProfil({sexe: d.sexe, naissance: d.naissance, taille: num(d.taille), poids: num(d.poids), quotidien: d.quotidien, poidsVise: d.poidsVise ? num(d.poidsVise) : null, rythmePoids: d.rythmePoids || "modere"});
   await saveObjectifs();
+  /* disciplines en plus (Animal Flow, Pilates, pliométrie) : une note à part, seulement si la note objectifs est bien partie */
+  if ((d.disciplines || []).length && Object.keys(S.drafts).every(x => !x.startsWith("obj."))) {
+    S.drafts["disc.disciplines"] = [...d.disciplines]; S.drafts["disc.espace"] = d.espace || ""; S.drafts["disc.sol"] = d.sol || "";
+    const sc = Object.entries(BQ.niv).reduce((t, [f, [, os]]) => t + Math.max(0, os.findIndex(x => x[0] === d["niv_" + f])), 0);
+    await saveDisciplines(false, {sante: d.sante || [], santeDetail: d.santeDetail, douleurs: d.douleurs, medecin: d.medecin, age: profilAge(d.naissance), niveau: sc <= 6 ? "debutant" : sc <= 12 ? "debutant+" : sc <= 18 ? "intermediaire" : "confirme"}); }
   /* saveObjectifs affiche ses propres messages et vide le brouillon quand la note est partie */
   if (Object.keys(S.drafts).every(x => !x.startsWith("obj."))) { P.wz = null; P.introLater = true; }
 }

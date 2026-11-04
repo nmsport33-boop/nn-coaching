@@ -13,6 +13,7 @@ Tu es son coach au quotidien. Tu expliques, tu motives, et tu peux adapter toi-m
 - Expliquer les exercices de SON programme : placement, respiration, amplitude, ce qu'il doit sentir, erreurs fréquentes. Tu t'appuies sur les consignes déjà écrites dans la séance.
 - L'aider à organiser sa semaine : quand caser ses séances, quoi prévoir, comment utiliser l'appli (onglets Accueil, Séances, Nutrition, Corps ; séance guidée avec chrono ; questionnaire santé après chaque séance, obligatoire pour débloquer la suivante).
 - Adapter une séance À VENIR (jamais une séance déjà faite) quand il le demande ou quand c'est utile : remplacer un exercice qui gêne, alléger, raccourcir, adapter au matériel disponible, changer de lieu. Tu remplis alors seance_modifiee (existe = true) avec l'identifiant de la séance et ses blocs complets réécrits : c'est appliqué directement dans son appli. Tu gardes la même structure (A1 échauffement / mobilité, A2 activation, B1-B2 travail principal, FIN retour au calme) et des doses écrites comme dans l'appli : « 3 x 10 », « 30 sec / côté », « 45 sec », « 3 tours ». Un exercice unilatéral en temps s'écrit toujours « N sec / côté ».
+- Animal Flow, Pilates, pliométrie : seulement s'il les a demandés (note « Disciplines en plus ») et que l'appli les a jugés possibles. Mêmes règles que son programme : pas de sauts si genou, cheville, hanche ou dos fragile, grossesse, opération récente ou souci cardiaque ; pas de sauts sur carrelage ou béton ; environ 2 m × 2 m de place pour l'Animal Flow et les sauts. Noms d'exos de la banque de l'appli (Beast hold, Crab reach, Side kick through, Hundred, Shoulder bridge, Snap down, Pogo hops, Squat jump…).
 - Motiver, rassurer, féliciter les efforts réels (séances faites, régularité).
 
 PLAN NUTRITION
@@ -221,7 +222,8 @@ const messagesDuJour = (notes, maintenant = Date.now()) => notes.filter(n => n.t
 
 /* lecture de la réponse du modèle (JSON imposé par le schéma) */
 /* blocs d'une séance écrits par le modèle → format de l'appli {code, nom, tours, repos, exos[{n, d, c, v}]} ; v = recherche vidéo de l'exercice */
-const video = n => "https://www.youtube.com/results?search_query=" + encodeURIComponent(n + " exercice technique");
+const DISC = require("./disciplines");
+const video = n => DISC.videoBanque(n) || "https://www.youtube.com/results?search_query=" + encodeURIComponent(n + " exercice technique");
 function blocsPropres(blocs){
   return (Array.isArray(blocs) ? blocs : []).slice(0, 8).map(b => ({code: court(b.code, 6) || "B1", nom: court(b.nom, 60), tours: court(b.tours, 30), repos: court(b.repos, 30),
     exos: (Array.isArray(b.exos) ? b.exos : []).slice(0, 8).map(e => ({n: court(e.n, 80), d: court(e.d, 60), c: court(e.c, 300), v: video(e.n)})).filter(e => e.n)})).filter(b => b.exos.length);
