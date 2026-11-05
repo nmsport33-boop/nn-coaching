@@ -682,7 +682,7 @@ body.ecran-on .repos{display:none!important}
 <script src="config.js?v=2026-11-03o1"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-04disc";
+const BUILD = "2026-11-05morpho";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD ?= ?"([^"]+)"/)?.[1];
@@ -1236,7 +1236,8 @@ async function saveObjectifs(){
     age: Number(g("age")) || null, taille: Number(g("taille")) || null, poids: Number(g("poids")) || null, quotidien: g("quotidien") || "",
     charges: String(g("charges") || "").trim().slice(0, 200),
     niveauTests: Object.fromEntries(Object.keys(BQ.niv).map(f => [f, g("niv_" + f) || ""])),
-    sante: [...(g("sante") || [])], santeDetail: String(g("santeDetail") || "").trim().slice(0, 400), medecin: g("medecin") || "", sport: g("sport") || "", sports: String(g("sports") || "").trim().slice(0, 200), autre: String(g("autre") || "").trim().slice(0, 500)};
+    sante: [...(g("sante") || [])], santeDetail: String(g("santeDetail") || "").trim().slice(0, 400), medecin: g("medecin") || "", sport: g("sport") || "", sports: String(g("sports") || "").trim().slice(0, 200), autre: String(g("autre") || "").trim().slice(0, 500),
+    ressentiDur: [...(g("ressentiDur") || [])].filter(x => x !== "aucun"), morpho: g("morpho") || ""};
   if (!r.age || !r.poids) return toast("Indique ton âge et ton poids.");
   if (!r.sante.length) return toast("Santé : coche ce qui te concerne, ou « Rien de tout ça ».");
   if (!r.medecin) return toast("Dis si ton médecin est d'accord pour le sport.");
@@ -1250,11 +1251,16 @@ async function saveObjectifs(){
   if (!r.lieu) return toast("Dis où tu vas faire tes séances (salle ou maison).");
   if (!r.douleurs) return toast("Question 4 : écris « rien » si tu n'as pas de douleur.");
   const lab = (L, v) => (BQ[L].find(x => x[0] === v) || [, v])[1];
-  const texte = `Profil : ${r.age} ans${r.taille ? `, ${r.taille} cm` : ""}, ${r.poids} kg${r.quotidien ? `, ${lab("quotidien", r.quotidien)}` : ""} · santé : ${r.sante.map(v => lab("sante", v)).join(", ")}${r.santeDetail ? ` (${r.santeDetail})` : ""} · médecin : ${lab("medecin", r.medecin)} · sport : ${lab("sport", r.sport)}${r.sports ? ` (${r.sports})` : ""}\nNiveau : ${({"debutant": "débutant", "debutant+": "débutant avancé", "intermediaire": "intermédiaire", "confirme": "confirmé"})[r.niveau]} (${r.niveauScore}/24) · ${Object.entries(r.niveauTests).map(([f, v]) => `${BQ.niv[f][0]} : ${BQ.niv[f][1].find(x => x[0] === v)[1]}`).join(" · ")}${r.charges ? ` · charges : ${r.charges}` : ""}\nObjectifs (${objCle(m)}) : ${r.buts.join(", ")}${r.principal ? ` · priorité : ${r.principal}` : ""}${r.cibles.length ? ` · zones : ${r.cibles.join(", ")}` : ""} · ${r.rythme} séance(s)/semaine · lieu : ${(BQ.lieux.find(x => x[0] === r.lieu) || [, r.lieu])[1]}${r.materiel ? ` (matériel : ${r.materiel})` : ""}${r.jours.length ? ` · jours : ${r.jours.join(", ")}` : ""} · douleur : ${r.douleurs}${r.autre ? ` · ${r.autre}` : ""}`;
+  const texte = `Profil : ${r.age} ans${r.taille ? `, ${r.taille} cm` : ""}, ${r.poids} kg${r.quotidien ? `, ${lab("quotidien", r.quotidien)}` : ""} · santé : ${r.sante.map(v => lab("sante", v)).join(", ")}${r.santeDetail ? ` (${r.santeDetail})` : ""} · médecin : ${lab("medecin", r.medecin)} · sport : ${lab("sport", r.sport)}${r.sports ? ` (${r.sports})` : ""}\nNiveau : ${({"debutant": "débutant", "debutant+": "débutant avancé", "intermediaire": "intermédiaire", "confirme": "confirmé"})[r.niveau]} (${r.niveauScore}/24) · ${Object.entries(r.niveauTests).map(([f, v]) => `${BQ.niv[f][0]} : ${BQ.niv[f][1].find(x => x[0] === v)[1]}`).join(" · ")}${r.charges ? ` · charges : ${r.charges}` : ""}\nObjectifs (${objCle(m)}) : ${r.buts.join(", ")}${r.principal ? ` · priorité : ${r.principal}` : ""}${r.cibles.length ? ` · zones : ${r.cibles.join(", ")}` : ""} · ${r.rythme} séance(s)/semaine · lieu : ${(BQ.lieux.find(x => x[0] === r.lieu) || [, r.lieu])[1]}${r.materiel ? ` (matériel : ${r.materiel})` : ""}${r.jours.length ? ` · jours : ${r.jours.join(", ")}` : ""} · douleur : ${r.douleurs}${r.autre ? ` · ${r.autre}` : ""}${r.ressentiDur.length ? `\nDu mal à sentir : ${r.ressentiDur.map(x => (MORPHO.muscles.find(m => m[0] === x) || [, x])[1]).join(", ")}` : ""}${r.morpho ? ` · analyse morpho : ${({oui: "oui", "plus-tard": "plus tard", non: "non"})[r.morpho] || r.morpho}` : ""}`;
   if (await run(S.db.collection(`members/${memberId()}/notes`).add({seance: null, auteur: S.owner ? "coach" : "adherent", type: "objectifs", cycle: objCle(m), reponses: r, texte: texte.slice(0, 4000), at: Date.now(), suivante: false}), "Merci ! Tes objectifs sont envoyés 💪")) clearDrafts(k);
 }
 /* ---------- disciplines en plus (04/11/2026) : Animal Flow, Pilates, pliométrie, pour qui le souhaite,
    seulement si la place, le sol et la santé le permettent (note {type:"disciplines", reponses:{disciplines, espace, sol}}) ---------- */
+/* ---------- analyse morphologique (05/11/2026, Base § 2.7) : muscles difficiles à sentir + envie d'une analyse ---------- */
+const MORPHO = {
+  muscles: [["pecs","Pectoraux"],["dos","Dos"],["epaules","Épaules"],["bras","Bras"],["fessiers","Fessiers"],["cuisses","Cuisses"],["mollets","Mollets"],["abdos","Abdos"],["aucun","Je les sens tous bien"]],
+  choix: [["oui","✅ Oui, ça m'intéresse"],["plus-tard","⏳ Plus tard"],["non","Non merci"]]
+};
 const DISC = {
   liste: [["animalflow","🐾 Animal Flow","Des mouvements au sol inspirés des animaux : gainage, mobilité, coordination. Sans matériel."],
     ["pilates","🧘 Pilates","Au tapis : le centre du corps, la posture, la respiration et le contrôle du mouvement."],
@@ -2627,9 +2633,10 @@ function startData(isCoach, cid){
 })();
 
 </script>
-<script src="plus.js?v=2026-11-04disc"></script>
+<script src="plus.js?v=2026-11-05morpho"></script>
 <script src="ia.js?v=2026-11-04f2"></script>
 <script src="orvea.js?v=2026-11-04disc"></script>
+<script src="morpho.js?v=2026-11-05morpho"></script>
 <script src="finisher.js?v=2026-11-05o1"></script>
 <script src="eveil.js?v=2026-11-03o9"></script>
 </body>

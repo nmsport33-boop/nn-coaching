@@ -24,7 +24,7 @@ service cloud.firestore {
         allow read: if moi(uid);
         allow create, update: if moi(uid) && !nid.matches('.*-r$')
           && request.resource.data.auteur == 'adherent'
-          && !(request.resource.data.type in ['ia-r', 'photo-repas-r'])
+          && !(request.resource.data.type in ['ia-r', 'photo-repas-r', 'morpho-r'])
           && (!('texte' in request.resource.data) || request.resource.data.texte.size() <= 4000)
           && (!('q' in request.resource.data) || request.resource.data.q.size() <= 1500);
         allow delete: if moi(uid);
