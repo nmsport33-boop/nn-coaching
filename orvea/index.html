@@ -682,7 +682,7 @@ body.ecran-on .repos{display:none!important}
 <script src="config.js?v=2026-11-03o1"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-04disc";
+const BUILD = "2026-11-05af";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD ?= ?"([^"]+)"/)?.[1];
@@ -1336,6 +1336,7 @@ async function saveDisciplines(non, obj0){
   const texte = non ? "Disciplines en plus : non merci." : `Disciplines en plus souhaitées : ${r.disciplines.map(x => lab("liste", x).replace(/^\S+\s/, "") + " (" + ({oui: "possible", adapte: "possible, adapté", non: "pas possible"})[v[x]?.ok || "oui"] + (v[x]?.pq?.length ? " : " + v[x].pq.join(" ; ") : "") + ")").join(", ")} · place : ${lab("espace", r.espace)} · sol : ${lab("sol", r.sol)}`;
   if (await run(S.db.collection(`members/${memberId()}/notes`).add({seance: null, auteur: S.owner ? "coach" : "adherent", type: "disciplines", reponses: r, texte: texte.slice(0, 1000), at: Date.now(), suivante: true}), non ? "C'est noté 👍" : "Envoyé 💪")) clearDrafts(k);
 }
+const fichMv = n => (typeof window.ficheMouvement === "function" ? window.ficheMouvement(n) : "");
 const DISC_QUI = {qui: "Fitzora", attente: "Ce sera dans ton prochain cycle. Pour l'avoir tout de suite, demande au coach IA d'adapter ta prochaine séance.", verif: "Ton programme suit ces règles de sécurité."};
 function phaseOf(cycle, num){ return (cycle?.phases || []).findIndex(p => num >= p.de && num <= p.a); }
 
@@ -1744,7 +1745,7 @@ function seanceBody(sid, s){
       ${tot ? `<p class="small muted" style="margin:0">« Projeter » affiche la séance en grand, fond noir, pour un écran ou une télé pendant que tu la fais.</p>` : ""}
       ${!coach && tot ? `<p class="small muted" style="margin:0">Quand un bloc a plusieurs exos, tu les enchaînes dans l'ordre : exo 1, puis exo 2 (sans repos entre les deux), puis repos, et tu recommences pour le tour suivant. Coche le rond de chaque exo au fur et à mesure : le repos démarre tout seul à la fin du tour.</p>` : ""}
       ${(s.blocs||[]).map((b,bi) => `<div class="bloc"><div class="bloc-h"><b>${esc(b.code)}${b.nom ? " · " + esc(b.nom) : ""}</b><span>${esc(b.tours||"")}</span></div>${tourBar(s, sid, b, bi)}
-        ${(b.exos||[]).length ? b.exos.map((e,ei) => `<div class="ex ${exoFait(s,bi,ei,b)?"done":""} ${nbTours(b.tours)>=2?"multi":""}">${nbTours(b.tours)>=2 ? "" : `<button class="tick ${co[bi+"-"+ei]?"on":""}" data-a="coche" data-v="${sid}" data-k="${bi}-${ei}" aria-label="Cocher ${esc(e.n)}" aria-pressed="${co[bi+"-"+ei]?"true":"false"}">✓</button>`}<span class="n">${esc(e.n)}</span><span class="d">${esc(e.d||"")}</span>${/^https:\/\//.test(e.v||"") ? `<a class="vid" href="${esc(e.v)}" target="_blank" rel="noopener">VIDÉO</a>` : ""}${nbTours(b.tours)>=2 ? rondsExo(s, sid, b, bi, ei) : ""}</div>${chargeRow(s, sid, bi, ei, e)}<div class="exbas">${e.c ? `<details class="how"><summary>Comment faire</summary><p>${esc(e.c)}</p></details>` : ""}${remarqueRow(s, sid, bi, ei)}</div>`).join("") : `<div class="ex"><span class="n muted">À compléter</span></div>`}</div>`).join("")}</section>`;
+        ${(b.exos||[]).length ? b.exos.map((e,ei) => `<div class="ex ${exoFait(s,bi,ei,b)?"done":""} ${nbTours(b.tours)>=2?"multi":""}">${nbTours(b.tours)>=2 ? "" : `<button class="tick ${co[bi+"-"+ei]?"on":""}" data-a="coche" data-v="${sid}" data-k="${bi}-${ei}" aria-label="Cocher ${esc(e.n)}" aria-pressed="${co[bi+"-"+ei]?"true":"false"}">✓</button>`}<span class="n">${esc(e.n)}</span><span class="d">${esc(e.d||"")}</span>${/^https:\/\//.test(e.v||"") ? `<a class="vid" href="${esc(e.v)}" target="_blank" rel="noopener">VIDÉO</a>` : ""}${nbTours(b.tours)>=2 ? rondsExo(s, sid, b, bi, ei) : ""}</div>${chargeRow(s, sid, bi, ei, e)}<div class="exbas">${(e.c || fichMv(e.n)) ? `<details class="how"><summary>Comment faire</summary>${e.c ? `<p>${esc(e.c)}</p>` : ""}${fichMv(e.n)}</details>` : ""}${remarqueRow(s, sid, bi, ei)}</div>`).join("") : `<div class="ex"><span class="n muted">À compléter</span></div>`}</div>`).join("")}</section>`;
   }
   out += bilanSection(sid, s);
   // ressenti
@@ -1824,7 +1825,7 @@ function renderGo(){
       ${ytId(e.v) ? (g.vid === x.k ? `<div class="vbox"><iframe src="${esc(ytEmbed(ytId(e.v), true))}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="Vidéo ${esc(e.n)}"></iframe></div>` : "")
         + `<div class="vrow">${g.vid === x.k ? `<button data-a="go-vid" data-v="">Masquer la vidéo</button>` : `<button class="vid" data-a="go-vid" data-v="${x.k}">▶ Vidéo ici</button>`}<a href="${esc(e.v)}" target="_blank" rel="noopener">YouTube ↗</a></div>`
         : /^https:\/\//.test(e.v || "") ? `<a class="vid" href="${esc(e.v)}" target="_blank" rel="noopener">▶ Voir la vidéo</a>` : ""}
-      ${e.c ? `<details><summary>Comment faire ›</summary><p>${esc(e.c)}</p></details>` : ""}
+      ${(e.c || fichMv(e.n)) ? `<details><summary>Comment faire ›</summary>${e.c ? `<p>${esc(e.c)}</p>` : ""}${fichMv(e.n)}</details>` : ""}
       ${chargeRow(s, g.sid, x.bi, x.ei, e)}${remarqueRow(s, g.sid, x.bi, x.ei)}</div>
     ${suiv ? `<div class="go-next">Ensuite : <b>${esc(suiv.e.n)}</b>${suiv.n >= 2 && suiv.t !== x.t ? ` · tour ${suiv.t}` : ""}</div>` : ""}
     <div class="go-bas"><button class="go-nav" data-a="go-nav" data-v="-1" ${g.i <= 0 ? "disabled" : ""} aria-label="Exo précédent">‹</button>
@@ -2627,6 +2628,7 @@ function startData(isCoach, cid){
 })();
 
 </script>
+<script src="fiches-mouvements.js?v=2026-11-05af"></script>
 <script src="plus.js?v=2026-11-04disc"></script>
 <script src="ia.js?v=2026-11-04f2"></script>
 <script src="orvea.js?v=2026-11-04disc"></script>
