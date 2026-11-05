@@ -4,6 +4,7 @@
 "use strict";
 const A = require("./assistant");
 const DISC = require("./disciplines");
+const MO = require("./morpho");
 
 const CONSIGNES = `Tu es le préparateur physique de l'appli Fitzora (appli d'entraînement 100 % autonome, sans coach humain). Tu écris le programme d'un·e utilisateur·rice à partir de son questionnaire.
 
@@ -26,6 +27,8 @@ BANQUE « CONFIRMÉ · UNE KETTLEBELL » (à utiliser pour un niveau confirmé q
 - Charge : 12 à 16 kg pour une femme, 16 à 24 kg pour un homme. Genou sensible : le passage au-dessus de l'épaule se fait debout ; dos ou épaule sensible : pas de halo ni de passage au-dessus de l'épaule, remplace par un swing à deux mains léger ou une planche.
 
 ${DISC.CONSIGNES}
+
+${MO.PROG}
 
 SÉCURITÉ (priorité absolue)
 - Douleur, blessure ou zone sensible déclarée : aucun exercice qui charge ou provoque cette zone ; des exercices doux et sans douleur autour, et une consigne « arrête si ça fait mal ».
@@ -68,6 +71,8 @@ function demande({member: m, notes, seances, suite}){
   if (obj && obj.reponses) { const r = obj.reponses;
     L.push(`Séances par semaine : ${r.rythme || "2"} · lieu : ${r.lieu || "?"}${r.materiel ? " · matériel : " + A.court(r.materiel, 300) : ""} · niveau : ${r.niveau || "?"} · jours : ${(r.jours || []).join(", ") || "?"}`); }
   const dl = DISC.ligne(notes); if (dl) L.push(dl);
+  if (obj && obj.reponses && (obj.reponses.ressentiDur || []).length) L.push("Muscles qu'il a du mal à sentir : " + obj.reponses.ressentiDur.join(", "));
+  const ml = MO.ligne(notes); if (ml) L.push(ml);
   if (suite) {
     const faites = seances.filter(s => s.statut === "faite" || (s.bilan && s.bilan.at)).sort((a, b) => (a.num || 0) - (b.num || 0)).slice(-8);
     L.push(`\nCYCLE PRÉCÉDENT : ${m.cycle ? m.cycle.nom : "?"}\nSÉANCES FAITES ET RETOURS :\n${faites.map(s => A.seanceTxt(s) + (s.charges ? "\n  Charges notées : " + Object.values(s.charges).filter(Boolean).map(x => A.court(x, 40)).join(", ") : "")).join("\n") || "aucune"}`);

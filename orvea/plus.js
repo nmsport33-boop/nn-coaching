@@ -824,6 +824,8 @@ const INFO = {
   "Me remettre en forme": ["On reprend en douceur", "Les premières semaines posent les bases : bons gestes, régularité, plaisir. Ensuite on augmente petit à petit."],
   "Préparer un sport ou une épreuve": ["Une préparation sur mesure", "On part de ta date et de ton sport, et on construit les qualités dont tu as besoin : force, explosivité, endurance, prévention des blessures."]};
 const silhouette = sexe => bodySVG("face", {}, {cls: "px-sx", sexe, label: sexe === "F" ? "Silhouette féminine" : "Silhouette masculine"});
+/* objectif « physique » : muscle, fessiers, tonifier, force → questions morpho (Base § 2.7, 05/11/2026) */
+const physique = d => (d.buts || []).some(b => /muscle|fessiers|tonifier|force/i.test(b));
 function etapesObjectifs(){
   const niv = Object.entries(BQ.niv).map(([f, [q, os]]) => ({id: "niv_" + f, k: "single", q, sub: "Ton niveau : réponds au plus juste, c'est ce qui règle tes charges.", opts: os}));
   return [
@@ -838,6 +840,8 @@ function etapesObjectifs(){
     {id: "poidsVise", k: "traj", q: "Vise ta trajectoire", show: d => (d.buts || []).some(b => /poids|muscle|fessiers|tonifier/i.test(b))},
     {id: "rythmePoids", k: "rythmeP", q: "À quel rythme ?", show: d => d.poidsVise && Math.abs(d.poidsVise - d.poids) >= .5},
     {id: "cibles", k: "multi", q: "Les zones à travailler en priorité ?", opts: BQ.ciblesObj.map(c => [c, c])},
+    {id: "ressentiDur", k: "multi", q: "Des muscles que tu as du mal à sentir travailler ?", sub: "Facultatif. On ajoutera de quoi bien les réveiller avant les gros exercices.", show: physique, opts: MORPHO.muscles, excl: "aucun", opt: true},
+    {id: "morpho", k: "single", q: "On adapte tes exercices à ta morphologie ?", sub: "Tes proportions (épaules, bras, bassin, jambes) changent l'angle idéal de chaque exercice. Si tu dis oui, tu fais l'analyse avec 3 photos dans l'onglet Séances : elles sont effacées juste après.", show: d => physique(d) && !((profilAge(d.naissance) || 99) < 18), opts: MORPHO.choix},
     {id: "quotidien", k: "single", q: "Ton quotidien, c'est plutôt…", opts: BQ.quotidien},
     {id: "sport", k: "single", q: "Ta dernière activité sportive régulière ?", opts: BQ.sport},
     {id: "sports", k: "texte", q: "Quels sports tu as pratiqués ?", sub: "Facultatif.", ph: "Ex. foot 5 ans, muscu un peu, rien…", opt: true},
@@ -945,7 +949,7 @@ async function wzFin(){
   const k = "obj.";
   if (d.prenom && d.prenom !== S.cur.member?.prenom) await run(S.db.doc("members/" + memberId()).update({prenom: String(d.prenom).trim().slice(0, 40)}));
   const map = {age: profilAge(d.naissance), taille: d.taille, poids: d.poids, quotidien: d.quotidien, sante: d.sante, santeDetail: d.santeDetail, medecin: d.medecin, sport: d.sport, sports: d.sports,
-    charges: d.charges, buts: d.buts, principal: (d.buts || [])[0], cibles: d.cibles, rythme: d.rythme, lieu: d.lieu, materiel: d.materiel, jours: d.jours, douleurs: d.douleurs, autre: d.autre};
+    charges: d.charges, buts: d.buts, principal: (d.buts || [])[0], cibles: d.cibles, rythme: d.rythme, lieu: d.lieu, materiel: d.materiel, jours: d.jours, douleurs: d.douleurs, autre: d.autre, ressentiDur: physique(d) ? d.ressentiDur : [], morpho: physique(d) ? d.morpho : ""};
   for (const f of Object.keys(BQ.niv)) map["niv_" + f] = d["niv_" + f];
   for (const [f, v] of Object.entries(map)) if (v !== undefined) S.drafts[k + f] = Array.isArray(v) ? [...v] : v;
   await saveProfil({sexe: d.sexe, naissance: d.naissance, taille: num(d.taille), poids: num(d.poids), quotidien: d.quotidien, poidsVise: d.poidsVise ? num(d.poidsVise) : null, rythmePoids: d.rythmePoids || "modere"});

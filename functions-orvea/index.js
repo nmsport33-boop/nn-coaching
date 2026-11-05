@@ -4,6 +4,7 @@
    - coach      : réponse du coach IA (note {type:"ia", q}) ; il peut adapter une séance à venir et écrire le plan de repas.
    - programme  : écrit le cycle d'entraînement (note {type:"objectifs"} au départ, {type:"suite"} pour le cycle suivant).
    - photoRepas : photo d'assiette → aliments, calories, macros.
+   - morpho : analyse morphologique par 3 photos → conseils par groupe musculaire, affichés pendant les exercices.
    - promosEnseigne / promosHebdo : promos de la semaine par enseigne (recherche web), partagées entre utilisateurs.
    - nouveauCompte : essai gratuit de 21 jours à la création du compte.
    - invitation : lien ?invite=CODE, accès complet offert (ex. 30 jours pour une testeuse).
@@ -19,6 +20,7 @@ const Anthropic = require("@anthropic-ai/sdk");
 const A = require("./assistant");
 const PG = require("./programme");
 const PR = require("./photo-repas");
+const MO = require("./morpho");
 
 const DB = "orvea";
 initializeApp();
@@ -184,6 +186,38 @@ exports.photoRepas = onDocumentCreated(opts({document: "members/{mid}/notes/{nid
     logger.error("photo-repas", {mid, nid, quoi: quoi(e)});
     return ecrire({erreur: "Je n'arrive pas à analyser la photo pour le moment. Note ton repas à la main."});
   } finally { await effacerPhoto(); }
+});
+
+/* ---------- analyse morphologique (3 photos → conseils par groupe musculaire) ; les photos sont effacées après ---------- */
+exports.morpho = onDocumentCreated(opts({document: "members/{mid}/notes/{nid}", timeoutSeconds: 180}), async event => {
+  const q = event.data?.data(); const {mid, nid} = event.params;
+  if (!q || q.type !== "morpho" || nid.endsWith("-r")) return;
+  const base = db.doc(`members/${mid}`), cible = base.collection("notes").doc(nid + "-r");
+  const ecrire = r => cible.create({type: "morpho-r", auteur: "assistant", seance: null, pour: nid, at: Date.now(), utilisable: false, groupes: [], ...r}).catch(e => { if (e.code !== 6) throw e; });
+  const effacer = () => event.data.ref.update({imgs: FieldValue.delete(), analysee: Date.now()}).catch(() => {});
+  try {
+    const imgs = (Array.isArray(q.imgs) ? q.imgs : []).slice(0, 3);
+    if (imgs.length < 3 || imgs.some(x => !MO.image(x))) return ecrire({erreur: "Il manque une photo ou elle est illisible. Reprends les 3 photos."});
+    const [msnap, notes] = await Promise.all([base.get(), lister(base.collection("notes"))]);
+    if (!msnap.exists) return;
+    if (!A.acces(msnap.data()).entrainement) return ecrire({erreur: "L'analyse morphologique fait partie des formules Training et Premium."});
+    if (MO.mineur(notes)) return ecrire({erreur: "L'analyse morphologique est réservée aux plus de 18 ans."});
+    if (!(Number(msnap.data().illimiteFin) > Date.now()) && MO.analysesDuMois(notes) > MO.LIMITE_MOIS) return ecrire({erreur: "Tu as déjà fait plusieurs analyses ce mois-ci. Ta morphologie ne change pas si vite : réessaie le mois prochain."});
+    const client = new Anthropic({apiKey: CLE.value()});
+    const rep = await client.beta.messages.create({
+      model: MODELE, max_tokens: 8000, ...FALLBACK,
+      output_config: {effort: "medium", format: {type: "json_schema", schema: MO.SCHEMA}},
+      system: MO.CONSIGNES,
+      messages: [{role: "user", content: MO.message(q, notes)}]
+    });
+    if (rep.stop_reason === "refusal" || rep.stop_reason === "max_tokens" || !texte(rep)) throw new Error("réponse incomplète (" + rep.stop_reason + ")");
+    const r = MO.lireReponse(texte(rep));
+    logger.info("morpho", {mid, nid, groupes: r.groupes.length, confiance: r.confiance});
+    return ecrire(r);
+  } catch (e) {
+    logger.error("morpho", {mid, nid, quoi: quoi(e)});
+    return ecrire({erreur: "Je n'arrive pas à analyser tes photos pour le moment. Réessaie un peu plus tard."});
+  } finally { await effacer(); }
 });
 
 /* ---------- promos de la semaine, par enseigne (partagées entre utilisateurs) ---------- */
