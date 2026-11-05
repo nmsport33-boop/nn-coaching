@@ -12,7 +12,16 @@ const BANQUE = {
     {n: "Side kick through", v: "https://youtu.be/W2O96qH7cgU", d: "x6 / côté", c: "Depuis la bête, une jambe passe sous le corps, l'autre main se lève, puis on revient."},
     {n: "Underswitch", v: "https://youtu.be/4trbWiJJ3IE", d: "x6 / côté", c: "Passage de la bête au crabe en pivotant sur un pied et une main, sans à-coup."},
     {n: "Scorpion reach", v: "https://youtu.be/GjyjSeRs2N4", d: "x5 / côté", c: "Depuis la bête, une jambe passe en arrière et en diagonale par-dessus l'autre, hanche ouverte."},
-    {n: "Traveling ape", v: "https://youtu.be/_rDJDMQscPU", d: "4 allers-retours", c: "Accroupi, mains au sol sur le côté, on transfère le poids et les pieds suivent. 2 m de place."}
+    {n: "Traveling ape", v: "https://youtu.be/_rDJDMQscPU", d: "4 allers-retours", c: "Accroupi, mains au sol sur le côté, on transfère le poids et les pieds suivent. 2 m de place."},
+    {n: "Crab hold (le crabe)", v: "https://youtu.be/cwwmexzJE28", d: "20 à 30 sec", c: "Assis, mains derrière, doigts vers l'extérieur, fesses 2 cm au-dessus du sol, épaules basses."},
+    {n: "Slow beast crawl", v: "https://youtu.be/yC6FLtKWuQI", d: "4 allers-retours", c: "Quatre pattes rasant le sol, main et pied opposés avancent ensemble, lentement, dos immobile."},
+    {n: "Crab walk", v: "https://youtu.be/Dnxyr6moxbI", d: "4 allers-retours", c: "En crabe, main et pied opposés avancent, hanches hautes."},
+    {n: "Lateral ape", v: "https://youtu.be/iWyQACRxATU", d: "4 allers-retours", c: "Accroupi profond, mains posées sur le côté, on saute les pieds à côté des mains. Niveau intermédiaire."},
+    {n: "Forward ape et reverse ape", v: "https://youtu.be/4-yuPz8VlOU", d: "4 allers-retours", c: "Mains devant, petit saut des pieds vers les mains, puis en marche arrière. Niveau intermédiaire.", niv: "confirme"},
+    {n: "Wave unload", v: "https://youtu.be/8JVfOiNoWfQ", d: "x6", c: "Depuis la loaded beast, la poitrine glisse vers l'avant en vague jusqu'en appui, puis on recule. Niveau confirmé.", niv: "confirme"},
+    {n: "Front kick through", v: "https://youtu.be/gRN2-NP4Y80", d: "x6 / côté", c: "Depuis la bête, une jambe passe en avant sous le corps et se tend, le bras opposé se lève. Niveau confirmé.", niv: "confirme"},
+    {n: "Full scorpion", v: "https://youtu.be/PV2PbFYVXZo", d: "x4 / côté", c: "Scorpion reach complet : la jambe passe loin par-dessus, le pied se pose de l'autre côté, poitrine ouverte. Niveau confirmé, très souple.", niv: "confirme"},
+    {n: "Flow side kick through + crab reach", v: "https://youtu.be/Y9qwIZBGxp0", d: "1 à 2 min", c: "Enchaînement continu : bête, side kick through, crab reach, retour, de l'autre côté. Fluide, respiration régulière.", niv: "confirme"}
   ],
   pilates: [
     {n: "Hundred (le cent)", v: "https://youtu.be/cXxQB5ed4Xw", d: "1 min", c: "Allongé, tête et épaules levées, bras qui battent : 5 temps d'inspiration, 5 d'expiration. Pieds au sol ou genoux pliés pour débuter."},
@@ -53,6 +62,8 @@ const CONSIGNES = `DISCIPLINES EN PLUS : ANIMAL FLOW, PILATES, PLIOMÉTRIE (seul
 - Dose : 1 à 2 fois par semaine, 8 à 15 min, jamais deux séances pliométriques à moins de 48 h. Animal Flow : en A1 (mobilité) ou en circuit B court, 20 à 40 sec par mouvement. Pilates : en A2 (activation du centre) ou en FIN, lent, contrôlé, respiration. Pliométrie : TOUJOURS en début de séance après l'échauffement (bloc B1, avant la fatigue), 40 à 80 appuis au total pour un débutant, repos 60 à 90 sec, qualité avant quantité : on arrête dès que la réception devient bruyante ou que les genoux rentrent.
 - Progression de la pliométrie : snap down et pogo hops d'abord (semaines 1-2), puis squat jump, skater, broad jump, box jump bas (semaines 3-4), jump lunge et pompe pliométrique seulement pour un niveau confirmé.
 - Sécurité : aucun saut si douleur ou fragilité au genou, à la cheville, à la hanche ou au dos, grossesse ou accouchement de moins d'un an, opération de moins d'un an, problème cardiaque, tension ou malaise. Poignet ou épaule sensible : Animal Flow sur les poings ou mains surélevées, pas de pompe pliométrique. Dos sensible : Pilates sans enroulé complet (pas de roll up).
+- Profil arts martiaux, capoeira, judo, lutte, gym, danse, yoga ou bonne souplesse (questionnaire : sports pratiqués, autre) ET Animal Flow choisi : l'Animal Flow devient un fil rouge du cycle : dans presque chaque séance en A1 (5 min), plus un bloc « Flow » de 8 à 10 min 2 fois par semaine (B3 ou FIN). Semaine 1 : formes de base (bête, crabe, singe) et traveling forms ; dès la semaine 2 : mouvements notés « niveau confirmé » et enchaînements (flow side kick through + crab reach), en gardant la qualité. Le mot du cycle le dit.
+- Profil arts martiaux, capoeira, gym, danse ou yoga SANS Animal Flow choisi : n'en mets pas, mais le mot du cycle peut lui suggérer d'essayer (carte « Animal Flow, Pilates, pliométrie ? » dans Séances).
 - Utilise les noms EXACTS de la banque ci-dessous (ils ont une vidéo vérifiée) ; dose et consigne adaptées à son niveau :
 ${Object.entries(BANQUE).map(([k, L]) => `  ${NOMS[k]} : ${L.map(e => `« ${e.n} » (${e.d})`).join(", ")}`).join("\n")}`;
 
