@@ -693,7 +693,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-05af";
+const BUILD = "2026-11-05cle";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD ?= ?"([^"]+)"/)?.[1];
@@ -1403,10 +1403,12 @@ function view(){
   if (S.cur.member === null) return pre + (S.owner ? onboarding() : `<div class="empty">Ton espace n'a pas pu s'ouvrir avec ce lien${S.err ? ` (${esc(String(S.err))})` : ""}.<br>Ferme l'appli et rouvre le lien reçu par texto. Si ça recommence, envoie à Nathanael une capture de cet écran.<br><span class="small muted">Lien ${esc(String((new URL(location.href).searchParams.get("c") || (()=>{try{return localStorage.getItem("nn.code")}catch(e){return ""}})() || "?")).slice(0,4))}… · fiche ${esc(String(S.uid || "?"))}</span></div>`);
   const abo = `<section class="sec">${aboCard(S.cur.member, false)}</section>`;
   const fo = formuleCard(S.cur.member);
-  if (S.tab === "reserver") return pre + objectifsCard() + rappelBilan() + heroAdh() + abo + fo + mesRdv() + planning(false);
-  if (S.tab === "seances") return pre + objectifsCard() + rappelBilan() + heroAdh() + abo + (optionOf(S.cur.member, S.cur.seances) === "coache" ? fo + seancesView() + disciplinesCard(DISC_QUI) : seancesView() + disciplinesCard(DISC_QUI) + fo);
+  /* épuré (05/11) : l'abonnement ne s'affiche ici que s'il se termine bientôt ; la formule est dans « Offres » */
+  const aboAlerte = (() => { const e = aboEtat(S.cur.member); return e.fin && (e.expire || e.jours <= 7) ? abo : ""; })();
+  if (S.tab === "reserver") return pre + aboAlerte + mesRdv() + planning(false);
+  if (S.tab === "seances") return pre + objectifsCard() + rappelBilan() + aboAlerte + heroAdh() + seancesView() + disciplinesCard(DISC_QUI);
   if (S.tab === "cycle") return pre + cycleView(S.cur.member, true);
-  if (S.tab === "offres") return pre + offresView(S.cur.member);
+  if (S.tab === "offres") return pre + abo + fo + offresView(S.cur.member);
   return pre;
 }
 
@@ -1596,7 +1598,7 @@ function seancesView(){
   if (!list.length && waiting) return `<section class="sec"><h2>Mes séances</h2>${waiting}</section>`;
   if (!list.length) return `<section class="sec"><h2>Mes séances</h2><div class="empty">Nathanael prépare ton programme. Tes séances apparaîtront ici.</div></section>`;
   return `<section class="sec"><h2>Mes séances</h2>${waiting}
-    ${nx && !waiting ? `<button class="card tap" data-a="open-seance" data-v="${nx.id}" style="border:2px solid var(--gold)">
+    ${nx && !waiting && !etapes(nx).length ? `<button class="card tap" data-a="open-seance" data-v="${nx.id}" style="border:2px solid var(--gold)">
       <span class="eyebrow">Prochaine séance</span><div class="h"><b style="font-family:var(--display);font-size:24px">S${nx.num} · ${esc(nx.titre||"")}</b></div>
       <span class="small muted">${esc(lieuLbl(nx))}${nx.date ? " · " + esc(fmtDay(parseIso(nx.date)) + heureLbl(nx.heure)) : ` · semaine ${nx.semaine||""}`}</span>
       <span class="small" style="color:var(--mag);font-weight:700">Voir le programme et ajouter une note ›</span></button>` : ""}
@@ -2688,5 +2690,6 @@ function startData(isCoach, cid){
 <script src="ia.js?v=2026-11-03c"></script>
 <script src="finisher.js?v=2026-11-05a"></script>
 <script src="eveil.js?v=2026-11-03d"></script>
+<script src="cle.js?v=2026-11-05a"></script>
 </body>
 </html>
