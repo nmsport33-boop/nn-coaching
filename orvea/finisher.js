@@ -58,7 +58,8 @@
   window.planFin = planFin;
 
   /* --- son : sur iPhone, jouer même en mode silencieux (Safari 17+) --- */
-  try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+  /* « ambient » : nos bips se mélangent à la musique (Bluetooth, Spotify…) sans la couper. « playback » coupait la musique. */
+  try { if (navigator.audioSession) navigator.audioSession.type = "ambient"; } catch (e) {}
   /* bip de secours en <audio> (fichier WAV fabriqué ici) si le moteur Web Audio est endormi, fréquent sur iPhone au 1er tour */
   function wav(freq, ms) { const sr = 22050, n = Math.round(sr * ms / 1000), buf = new DataView(new ArrayBuffer(44 + n * 2)), w = (o, t) => [...t].forEach((c, i) => buf.setUint8(o + i, c.charCodeAt(0)));
     w(0, "RIFF"); buf.setUint32(4, 36 + n * 2, true); w(8, "WAVEfmt "); buf.setUint32(16, 16, true); buf.setUint16(20, 1, true); buf.setUint16(22, 1, true);
