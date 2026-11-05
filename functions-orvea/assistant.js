@@ -223,7 +223,8 @@ const messagesDuJour = (notes, maintenant = Date.now()) => notes.filter(n => n.t
 /* lecture de la réponse du modèle (JSON imposé par le schéma) */
 /* blocs d'une séance écrits par le modèle → format de l'appli {code, nom, tours, repos, exos[{n, d, c, v}]} ; v = recherche vidéo de l'exercice */
 const DISC = require("./disciplines");
-const video = n => DISC.videoBanque(n) || "https://www.youtube.com/results?search_query=" + encodeURIComponent(n + " exercice technique");
+const MOB = require("./mobilite");
+const video = n => DISC.videoBanque(n) || MOB.videoBanque(n) || "https://www.youtube.com/results?search_query=" + encodeURIComponent(n + " exercice technique");
 function blocsPropres(blocs){
   return (Array.isArray(blocs) ? blocs : []).slice(0, 8).map(b => ({code: court(b.code, 6) || "B1", nom: court(b.nom, 60), tours: court(b.tours, 30), repos: court(b.repos, 30),
     exos: (Array.isArray(b.exos) ? b.exos : []).slice(0, 8).map(e => ({n: court(e.n, 80), d: court(e.d, 60), c: court(e.c, 300), v: video(e.n)})).filter(e => e.n)})).filter(b => b.exos.length);
