@@ -694,7 +694,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-05tabs";
+const BUILD = "2026-11-06q";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD ?= ?"([^"]+)"/)?.[1];
@@ -1126,6 +1126,13 @@ const MOT_SUIVI = "Ta séance s'active seulement quand tu as rempli ces infos. C
 const motSuivi = () => `<span class="small" style="font-style:italic">« ${esc(MOT_SUIVI)} »</span>`;
 const lblOf = (arr, v) => (arr.find(x => x[0] === v) || [, v])[1];
 const bilanFait = s => !!s?.bilan?.at;
+/* signes d'alerte adaptés à la personne (06/11) : ses zones fragiles + les zones où elle vient de dire avoir mal ; rien pour qui n'a aucun souci */
+function alertesPour(extra){ const t = [...zonesSuivi(), ...(extra || [])].join(" ").toLowerCase(), v = new Set();
+  if (/genou/.test(t)) { v.add("gonfle"); v.add("derobe"); }
+  if (/épaule|hanche|cheville|poignet|coude/.test(t)) { v.add("bloque"); v.add("gonfle"); }
+  if (/dos|nuque/.test(t)) v.add("fourmis");
+  if (t.trim()) v.add("nuit");
+  return BQ.alertes.filter(([x]) => v.has(x)); }
 const alertesOf = b => (b?.alertes || []).filter(x => x !== "aucune");
 const bilanAlerte = s => { const b = s?.bilan, a = s?.avant; return !!(alertesOf(b).length || (b?.douleur === "oui" && (b.intensite ?? 0) > 3) || alertesOf(a).length || (a?.douleur === "oui" && (a.intensite ?? 0) > 3)); };
 /* séance « commencée ou finie » : on peut répondre au questionnaire */
@@ -1154,17 +1161,18 @@ function bilanSection(sid, s){
     <button class="btn sm ghost" data-a="bq-edit" data-v="${sid}">Modifier</button></div></section>`;
   if (coach && !b) return `<section class="sec" id="bilan"><div class="banner"><span>Questionnaire santé pas encore rempli : la séance suivante reste bloquée.</span></div></section>`;
   bqInit(k, b);
-  const dl = d(k + "douleur");
+  const dl = d(k + "douleur"), al = alertesPour(dl === "oui" ? d(k + "zones", []) : []), zs = zonesSuivi();
+  const zl = [...zs.map(z => { const z0 = z.toLowerCase(), st = z0.split(" ")[0].replace(/[sx]$/, ""); return BQ.zones.find(x => x.toLowerCase() === z0) || BQ.zones.find(x => x.toLowerCase().includes(st)) || ""; }).filter(Boolean), ...BQ.zones].filter((z, i, a) => a.indexOf(z) === i);
   return `<section class="sec" id="bilan"><h2>Questionnaire santé</h2><div class="card">
-    <span class="small muted">Obligatoire, 30 secondes. Sans lui, ta séance suivante ne peut pas être débloquée.</span>${motSuivi()}
-    <label class="f">1. Pendant ou après la séance, une douleur anormale ?</label>
-    <span class="small muted">Pas les courbatures, ni la brûlure du muscle qui travaille, ni ta douleur de fond habituelle.</span>
+    <span class="small muted">Obligatoire, 30 secondes : 3 questions${al.length ? " et une case à cocher" : ""}. C'est ce qui débloque ta séance suivante.</span>${motSuivi()}
+    <label class="f">1. Une douleur inhabituelle pendant ou après la séance ?</label>
+    <span class="small muted">Les courbatures et la brûlure du muscle qui travaille, c'est normal${zs.length ? `, ta douleur habituelle (${esc(zs.join(", "))}) aussi` : ""} : réponds « Non ».</span>
     <div class="opts">${opt(k, "douleur", "non", "Non")}${opt(k, "douleur", "oui", "Oui", false, true)}</div>
-    ${dl === "oui" ? `<label class="f">Où ?</label><div class="opts">${BQ.zones.map(z => opt(k, "zones", z, z, true)).join("")}</div>
+    ${dl === "oui" ? `<label class="f">Où ?</label><div class="opts">${zl.map(z => opt(k, "zones", z, z, true)).join("")}</div>
       <label class="f">Combien sur 10 ?</label>${scale10(k, "intensite", true)}` : ""}
     <label class="f">2. Comment tu t'es senti·e ?</label><div class="opts">${BQ.sensation.map(([v, l]) => opt(k, "sensation", v, l)).join("")}</div>
     <label class="f">3. Ta fatigue maintenant ?</label><div class="opts">${BQ.fatigue.map(([v, l]) => opt(k, "fatigue", v, l)).join("")}</div>
-    <label class="f">4. Un de ces signes ?</label><div class="opts">${BQ.alertes.map(([v, l]) => opt(k, "alertes", v, l, true, true)).join("")}${opt(k, "alertes", "aucune", "Aucun", true)}</div>
+    ${al.length ? `<label class="f">4. Un de ces signes ?</label><div class="opts">${al.map(([v, l]) => opt(k, "alertes", v, l, true, true)).join("")}${opt(k, "alertes", "aucune", "Aucun", true)}</div>` : ""}
     <label class="f">Un mot pour Nathanael ? (facultatif)<textarea rows="2" maxlength="300" data-d="${k}comm" placeholder="Ex. le squat m'a gêné au genou, trop facile, trop long…">${esc(d(k + "comm", ""))}</textarea></label>
     <button class="btn solid" data-a="save-bilan" data-v="${sid}" ${S.writeBlocked ? "disabled" : ""}>Envoyer mes réponses</button></div></section>`;
 }
@@ -1175,7 +1183,7 @@ async function saveBilan(sid){
   if (b.douleur === "oui") { b.zones = [...(g("zones") || [])]; b.intensite = g("intensite");
     if (!b.zones.length) return toast("Indique où tu as eu mal."); if (b.intensite === undefined) return toast("Indique ta douleur sur 10."); }
   if (!b.sensation) return toast("Réponds à la question 2."); if (!b.fatigue) return toast("Réponds à la question 3.");
-  if (!b.alertes.length) return toast("Question 4 : coche « Aucun » si tu n'as aucun de ces signes.");
+  if (!b.alertes.length) { if (alertesPour(b.zones).length) return toast("Question 4 : coche « Aucun » si tu n'as aucun de ces signes."); b.alertes = ["aucune"]; }
   b.at = Date.now(); b.par = S.owner ? "coach" : "adherent";
   const maj = {bilan: b}; if (s.statut !== "faite") maj.statut = "faite";
   if (await run(S.db.doc(`members/${memberId()}/seances/${sid}`).update(maj), bilanAlerte({bilan: b}) ? "Réponses envoyées. Nathanael est prévenu." : "Merci ! Réponses envoyées 👍")) clearDrafts(k);
@@ -1187,7 +1195,7 @@ function avantCheck(g, s){
     <label class="f">Depuis ta dernière séance, une douleur anormale ?</label>
     <div class="opts">${opt(k, "douleur", "non", "Non, ça va")}${opt(k, "douleur", "oui", "Oui", false, true)}</div>
     ${dl === "oui" ? `<label class="f">Où ?</label><div class="opts">${BQ.zones.map(z => opt(k, "zones", z, z, true)).join("")}</div><label class="f">Combien sur 10 ?</label>${scale10(k, "intensite", true)}` : ""}
-    <label class="f">Un de ces signes ?</label><div class="opts">${BQ.alertes.map(([v, l]) => opt(k, "alertes", v, l, true, true)).join("")}${opt(k, "alertes", "aucune", "Aucun", true)}</div>
+    ${(al => al.length ? `<label class="f">Un de ces signes ?</label><div class="opts">${al.map(([v, l]) => opt(k, "alertes", v, l, true, true)).join("")}${opt(k, "alertes", "aucune", "Aucun", true)}</div>` : "")(alertesPour(dl === "oui" ? d(k + "zones", []) : []))}
     <button class="btn xl gold" data-a="save-avant" data-v="${g.sid}">C'est parti</button><button class="btn link" data-a="go-close" style="color:var(--muted)">Plus tard</button></div>`;
 }
 async function saveAvant(sid){
@@ -1195,7 +1203,7 @@ async function saveAvant(sid){
   const a = {douleur: g("douleur"), alertes: [...(g("alertes") || [])]};
   if (!a.douleur) return toast("Dis-nous si tu as une douleur.");
   if (a.douleur === "oui") { a.zones = [...(g("zones") || [])]; a.intensite = g("intensite"); if (!a.zones.length || a.intensite === undefined) return toast("Indique où et combien sur 10."); }
-  if (!a.alertes.length) return toast("Coche « Aucun » si tu n'as aucun de ces signes.");
+  if (!a.alertes.length) { if (alertesPour(a.zones).length) return toast("Coche « Aucun » si tu n'as aucun de ces signes."); a.alertes = ["aucune"]; }
   a.at = Date.now();
   if (!(await run(S.db.doc(`members/${memberId()}/seances/${sid}`).update({avant: a})))) return;
   clearDrafts(k);
@@ -1761,20 +1769,15 @@ function seanceBody(sid, s){
   // ressenti
   const r = s.ressenti || {}, k = "rs." + sid + "."; const zs = zonesSuivi();
   const sc = (f, hot) => `<div class="scale">${Array.from({length:11},(_,i) => `<button class="${d(k+f, r[f])===i?"on":""} ${hot&&i>(hot===true?3:hot)?"hot":""}" data-a="scale" data-f="${k+f}" data-v="${i}">${i}</button>`).join("")}</div>`;
-  out += `<section class="sec" id="ressenti">${coach ? "<h2>Ressenti</h2>" : `<details ${s.ressenti?.at ? "open" : ""}><summary class="small"><b>Ressenti détaillé (facultatif)</b> : forme, effort${zs.length ? ", " + esc(zs.join(", ")) : ""}</summary>`}<div class="card">
+  out += `<section class="sec" id="ressenti">${coach ? "<h2>Ressenti</h2>" : `<details ${s.ressenti?.at ? "open" : ""}><summary class="small"><b>Ressenti détaillé (facultatif)</b> : forme, effort${zs.length ? ", douleur habituelle" : ""}</summary>`}<div class="card">
     <label class="f">Forme en début de séance (0 = épuisé, 10 = au top)</label>${sc("formeDebut")}
     <label class="f">Effort ressenti (0 = rien, 10 = maximal)</label>${sc("rpe")}
     <label class="f">Forme en fin d'entraînement (0 = vidé, 10 = au top)</label>${sc("formeFin")}
-    ${zs.length ? `<p class="small muted" style="margin:4px 0 0"><b>Douleur de fond</b> : celle que tu as déjà avant de commencer (${esc(zs.join(", "))}), qui ne bouge pas ou peu pendant la séance. Note-la ici, ce n'est pas une alerte.</p>
-    <label class="f">Douleur de fond au départ /10</label>${sc("fondDebut")}
-    <label class="f">Douleur de fond pendant la séance /10</label>${sc("fondPendant", 4)}
-    <p class="small muted" style="margin:4px 0 0"><b>Douleur anormale</b> : une douleur nouvelle ou qui augmente pendant l'effort (articulation qui pique, qui lance, qui ne ressemble pas à l'effort). Pas les courbatures, ni la brûlure du muscle qui travaille, ni ta douleur de fond habituelle. Si tu n'en as pas : 0.</p>
-    <label class="f">Douleur anormale pendant la séance /10</label>${sc("pendant", true)}
-    <label class="f">Douleur anormale le lendemain matin /10</label>${sc("lendemain", true)}
-    <label class="f">Où ? (si douleur anormale)<input id="ou-${sid}" data-d="${k}ou" maxlength="120" placeholder="Ex. ${esc(zs[0])}, en descente" value="${esc(d(k+"ou", r.ou || ""))}"></label>
-    <label class="check"><input type="checkbox" id="gf-${sid}" data-d="${k}gonfle" ${d(k+"gonfle", !!r.gonfle)?"checked":""}> ${esc(signeZones(zs))}</label>
-    <p class="small muted" style="margin:0">Règle : 3/10 maximum pendant l'effort, et pas plus mal le lendemain. Si ça gonfle, se bloque, fourmille ou te réveille la nuit : avis médical.</p>`
-    : coach ? `<p class="small muted" style="margin:4px 0 0">Pas de zone fragile notée pour ${esc(S.cur.member?.prenom || "cet adhérent")} : pas de suivi de douleur ici, le questionnaire santé de fin de séance suffit.</p>` : ""}
+    ${zs.length ? `<p class="small muted" style="margin:4px 0 0"><b>Ta douleur habituelle</b> (${esc(zs.join(", "))}) : celle que tu as déjà avant de commencer. Ce n'est pas une alerte, ça aide juste à suivre son évolution.</p>
+    <label class="f">Au début de la séance /10</label>${sc("fondDebut")}
+    <label class="f">Pendant la séance /10</label>${sc("fondPendant", 4)}
+    <p class="small muted" style="margin:0">Une douleur inhabituelle, un gonflement, quelque chose qui se bloque : dis-le dans le questionnaire santé ci-dessus.</p>`
+    : coach ? `<p class="small muted" style="margin:4px 0 0">Pas de zone fragile notée pour ${esc(S.cur.member?.prenom || "cet adhérent")} : pas de suivi de douleur ici, le questionnaire santé de fin de séance suffit (sans les signes genou, épaule ou dos).</p>` : ""}
     <div class="row"><button class="btn solid" data-a="save-ressenti" data-v="${sid}" ${S.writeBlocked?"disabled":""}>Enregistrer le ressenti</button>
     ${coach ? `<button class="btn ${s.statut==="faite"?"ghost":"ink"}" data-a="toggle-faite" data-v="${sid}">${s.statut==="faite" ? "Remettre en prévue" : "Marquer comme faite"}</button>`
       : ""}</div></div>${coach ? "" : "</details>"}</section>`;
