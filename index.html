@@ -694,7 +694,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-06q";
+const BUILD = "2026-11-06mus";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD ?= ?"([^"]+)"/)?.[1];
@@ -1997,7 +1997,9 @@ function renderEcran(){
     <button class="e-nav" data-a="ecran-nav" data-v="1" ${i >= st.length - 1 ? "disabled" : ""} aria-label="Suivant">›</button>`;
   const id = ytId(e.v);
   if (id !== E.vid) { E.vid = id;   /* on ne recharge la vidéo que si l'exo change */
-    q(".e-side").innerHTML = id ? `<div class="vbox"><iframe src="${esc(ytEmbed(id, true))}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="Vidéo"></iframe></div><a class="e-yt" href="${esc(e.v)}" target="_blank" rel="noopener">Ouvrir sur YouTube ↗</a>`
+    /* iPhone/iPad en recopie AirPlay : une vidéo qui démarre seule passe en « vidéo AirPlay » et coupe la musique (06/11) ; on montre l'image, la vidéo démarre au toucher */
+    if (id && estApple() && E.local) q(".e-side").innerHTML = `<button class="vbox e-vthumb" data-a="ecran-vid" data-v="${esc(id)}" style="border:0;padding:0;cursor:pointer;background:#000 url('https://i.ytimg.com/vi/${esc(id)}/hqdefault.jpg') center/cover;position:relative"><span style="position:absolute;inset:auto 0 0 0;padding:10px;font-weight:800;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.75))">▶ Voir la vidéo</span></button><a class="e-yt" href="${esc(e.v)}" target="_blank" rel="noopener">Ouvrir sur YouTube ↗</a>`;
+    else q(".e-side").innerHTML = id ? `<div class="vbox"><iframe src="${esc(ytEmbed(id, true))}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen title="Vidéo"></iframe></div><a class="e-yt" href="${esc(e.v)}" target="_blank" rel="noopener">Ouvrir sur YouTube ↗</a>`
       : `<div class="e-novid">PAS DE VIDÉO</div>`; }
   E.suiv = x.ok ? (suiv?.e.n || "") : e.n; E.suivD = x.ok ? (suiv?.e.d || "") : e.d || ""; ecranTick();
 }
@@ -2167,6 +2169,7 @@ async function act(a, ds){
     case "go-cast2": { if (S.go) S.go.panel = false; try { S.castCx = await new PresentationRequest([lienEcran(v)]).start(); toast("Séance projetée sur la télé"); } catch (e) { if (S.go && e?.name !== "NotAllowedError" && e?.name !== "AbortError") { S.go.panel = true; toast("Aucune télé trouvée sur le wifi"); } } return; }
     case "go-panel-x": if (S.go) S.go.panel = false; return;
     case "go-vid": if (S.go) S.go.vid = v || null; return;
+    case "ecran-vid": { const box = document.querySelector("#ecran .e-vthumb"); if (box) box.outerHTML = `<div class="vbox"><iframe src="${esc(ytEmbed(v, true))}" allow="autoplay; encrypted-media; fullscreen" allowfullscreen title="Vidéo"></iframe></div>`; return; }
     case "go-proj-ici": { if (S.go) S.go.panel = false; S.ecran = {sid: v, local: true};   /* plein écran ici, avec les mêmes boutons */
       try { document.documentElement.requestFullscreen?.().catch(() => {}); } catch (e) {} return; }
     case "go-lien": try { if (navigator.share) await navigator.share({title: "Écran NN Coaching", url: v}); else { await navigator.clipboard.writeText(v); toast("Lien copié"); } } catch (e) {} return;
