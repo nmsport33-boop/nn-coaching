@@ -213,19 +213,28 @@ function planRepasCard(m, coach){
     ${tabs}${body}
     ${coach ? `<button class="btn sm ghost" data-a="px-plandel" style="align-self:flex-start">Effacer ce plan</button>` : `<div class="row">${gen}${ia ? `<button class="btn sm ghost" data-a="ia-open-q" data-v="Je voudrais changer mon plan de repas : ">Changer un repas</button>` : ""}${edit}</div>`}</div>`;
 }
-/* cibles du jour : calcul (Mifflin-St Jeor) sauf si Nathanael a réglé les chiffres dans la fiche */
-const FQ = {assis: 1.3, debout: 1.45, physique: 1.6};
+/* cibles du jour : méthode de Nathanael (07/11, Base § 2.9), sauf s'il a réglé les chiffres dans la fiche
+   repos = Mifflin-St Jeor (9,99 × poids + 6,25 × taille − 4,92 × âge, + 5 homme / − 161 femme)
+   dépense = repos × coefficient d'activité (séances par semaine, relevé par le travail debout ou physique) */
+const NIV = [["Sédentaire", 1.2], ["Légèrement actif", 1.375], ["Actif", 1.55], ["Très actif", 1.725], ["Extrêmement actif", 1.9]];
 const ADJ = {perte: {modere: -.18, leger: -.1}, prise: {modere: .1, leger: .05}, recompo: {modere: -.07, leger: -.04}, maintien: {modere: 0, leger: 0}};
+function niveauActivite(p){
+  const s = Number(p.seances) || 0;
+  let i = s >= 6 ? 3 : s >= 3 ? 2 : s >= 1 ? 1 : 0;
+  if (p.quotidien === "debout") i = Math.max(i, 2);       /* « Actif : 3 à 5 séances/sem., ou travail debout » */
+  if (p.quotidien === "physique") i = Math.min(4, Math.max(i + 1, 3));
+  return {nom: NIV[i][0], coef: NIV[i][1]};
+}
 function depense(p){
-  const bmr = 10 * p.poids + 6.25 * p.taille - 5 * p.age + (p.sexe === "F" ? -161 : 5);
-  return {bmr, quot: bmr * ((FQ[p.quotidien] || 1.35) - 1), seance: 5 * p.poids * 1.0};   /* une séance d'1 h de renfo ≈ 5 MET */
+  const bmr = 9.99 * p.poids + 6.25 * p.taille - 4.92 * p.age + (p.sexe === "F" ? -161 : 5), n = niveauActivite(p);
+  return {bmr, niveau: n.nom, coef: n.coef, act: bmr * (n.coef - 1), tdee: bmr * n.coef};
 }
 function cibles(p, m){
   m = m || S.cur.member || {};
   const c = m.nutrition;
   if (c && Number(c.kcal) > 0) return {kcal: Number(c.kcal), p: Number(c.p) || 0, g: Number(c.g) || 0, l: Number(c.l) || 0, coach: true, mot: c.mot || ""};
   if (!profilOk(p)) return null;
-  const e = depense(p), tdee = e.bmr + e.quot + e.seance * p.seances / 7;
+  const e = depense(p), tdee = e.tdee;
   let adj = (ADJ[p.but] || ADJ.maintien)[p.rythmePoids === "leger" ? "leger" : "modere"];
   const mineur = p.age < 18; if (mineur) adj = Math.max(0, Math.min(adj, .05));
   let kcal = r10(tdee * (1 + adj)); kcal = Math.max(kcal, r10(e.bmr * 1.05), p.sexe === "F" ? 1300 : 1600);
@@ -233,7 +242,8 @@ function cibles(p, m){
   const prot = r0(pRef * ({perte: 2, recompo: 2, prise: 1.8}[p.but] || 1.6));
   const lip = r0(Math.max(pRef * .9, kcal * .25 / 9));
   const glu = Math.max(0, r0((kcal - prot * 4 - lip * 9) / 4));
-  return {kcal, p: prot, g: glu, l: lip, coach: false, mineur, bmr: r10(e.bmr), tdee: r10(tdee)};
+  return {kcal, p: prot, g: glu, l: lip, coach: false, mineur, bmr: r10(e.bmr), tdee: r10(tdee), niveau: e.niveau, coef: e.coef,
+    pMin: r0(p.poids * 1.6), pMax: r0(p.poids * 2.2)};
 }
 const totJour = j => (j?.repas || []).reduce((t, x) => ({kcal: t.kcal + num(x.kcal), p: t.p + num(x.p), g: t.g + num(x.g), l: t.l + num(x.l)}), {kcal: 0, p: 0, g: 0, l: 0});
 async function saveJour(date, patch){
@@ -595,8 +605,8 @@ function nutrition(){
   const L = lundi(parseIso(day));
   const days = Array.from({length: 7}, (_, i) => { const d = addD(L, i), k = iso(d), t = totJour(jourDoc(k));
     return `<button class="px-nd ${k === day ? "on" : ""}" data-a="px-nday" data-v="${k}"><span>${JOURS[i][0]}</span>${ring(t.kcal, c.kcal, 40, 4, t.kcal > c.kcal * 1.1 ? "var(--warn)" : "var(--a1)", `<text x="20" y="24" text-anchor="middle" class="px-ndn">${d.getDate()}</text>`)}</button>`; }).join("");
-  const e = profilOk(p) ? depense(p) : null, sport = allSeances().some(s => s.date === day) ? e?.seance || 0 : 0;
-  const dep = e ? r10(e.bmr + e.quot + sport) : null;
+  const e = profilOk(p) ? depense(p) : null;
+  const dep = e ? r10(e.tdee) : null;
   return `<section class="sec"><div class="sec-h"><h2>Nutrition</h2><button class="btn link sm" data-a="px-wz" data-v="nutrition">Mes infos</button></div>
     ${nutOffertChip(m)}
     ${!goutsDoc() ? planRepasCard(m) : ""}
@@ -616,12 +626,12 @@ function nutrition(){
       return `<div class="card px-repas"><div class="h"><b>${l}</b><span class="small muted">${t ? fr(t) + " kcal" : ""}</span><button class="btn link sm" data-a="px-add" data-v="${k}">+ Ajouter</button></div>
         ${xs.map(x => `<div class="px-item"><span><b>${x.photo ? "📸 " : ""}${esc(x.n)}</b><span class="small muted">${fr(x.kcal)} kcal${x.p || x.g || x.l ? ` · P ${fr(x.p)} · G ${fr(x.g)} · L ${fr(x.l)}` : ""}</span></span><button class="px-del" data-a="px-del" data-v="${esc(x.id)}" aria-label="Retirer">✕</button></div>`).join("")}</div>`; }).join("")}
     <div class="card px-eau"><div class="h"><b>Eau</b><span class="small muted">${(j?.eau || 0) * .25} L</span></div><div class="px-verres">${Array.from({length: 10}, (_, i) => `<button class="${i < (j?.eau || 0) ? "on" : ""}" data-a="px-eau" data-v="${i + 1}" aria-label="${i + 1} verres">💧</button>`).join("")}</div></div></section>
-  ${e ? `<section class="sec"><h2>Ton équilibre</h2><div class="card px-bilan"><b>Dépense prévue sur la journée</b>
-    <div class="px-dep"><div><span><i class="px-dot" style="background:#ff4d6d"></i>Repos</span><b>${fr(r10(e.bmr))} kcal</b></div><div><span><i class="px-dot" style="background:#ffc83d"></i>Quotidien</span><b>${fr(r10(e.quot))} kcal</b></div><div><span><i class="px-dot" style="background:var(--a4)"></i>Séance</span><b>${fr(r10(sport))} kcal</b></div></div>
-    <div class="px-stack"><i style="flex:${e.bmr};background:#ff4d6d"></i><i style="flex:${e.quot};background:#ffc83d"></i><i style="flex:${Math.max(sport, 1)};background:var(--a4)"></i></div>
+  ${e ? `<section class="sec"><h2>Ton équilibre</h2><div class="card px-bilan"><b>Dépense moyenne sur la journée</b>
+    <div class="px-dep"><div><span><i class="px-dot" style="background:#ff4d6d"></i>Repos</span><b>${fr(r10(e.bmr))} kcal</b></div><div><span><i class="px-dot" style="background:#ffc83d"></i>Activité · ${esc(e.niveau)} × ${fr(e.coef, 3)}</span><b>${fr(r10(e.act))} kcal</b></div></div>
+    <div class="px-stack"><i style="flex:${e.bmr};background:#ff4d6d"></i><i style="flex:${e.act};background:#ffc83d"></i></div>
     <div class="h"><span class="small muted">Total</span><b class="px-big" style="font-size:26px">${fr(dep)} kcal</b></div>
     ${tot.kcal ? `<span class="small">${tot.kcal < dep ? `Bilan du jour : <b>−${fr(dep - tot.kcal)} kcal</b> (tu manges moins que tu ne dépenses)` : `Bilan du jour : <b>+${fr(tot.kcal - dep)} kcal</b> (tu manges plus que tu ne dépenses)`}</span>` : `<span class="small muted">Ajoute tes repas pour voir ton bilan.</span>`}
-    <details class="px-why"><summary>D'où viennent ces chiffres ?</summary><p>Repos : la formule de Mifflin-St Jeor (poids, taille, âge, sexe). Quotidien : ce que tu bouges hors sport, selon ton métier. Séance : environ 5 kcal par kilo et par heure de renfo. Ta cible part de ta dépense moyenne, puis s'ajuste à ton objectif. Ce sont des estimations : on ajuste ensemble selon l'évolution de ton poids.</p></details></div></section>` : ""}
+    <details class="px-why"><summary>D'où viennent ces chiffres ?</summary><p>Repos : la formule de Mifflin-St Jeor (poids, taille, âge, sexe). C'est la plus grosse part de ta dépense. Activité : ton repos × un coefficient selon ton nombre de séances par semaine et ton quotidien (sédentaire × 1,2 · légèrement actif × 1,375 · actif × 1,55 · très actif × 1,725 · extrêmement actif × 1,9). Ta cible part de cette dépense, puis s'ajuste à ton objectif (prise de muscle : + 10 %). Protéines : 1,6 à 2,2 g par kilo${c.pMin ? `, soit ${fr(c.pMin)} à ${fr(c.pMax)} g pour toi` : ""}. Ce sont des estimations : on ajuste ensemble selon l'évolution de ton poids (en prise de muscle, + 0,25 à 0,5 kg par semaine).</p></details></div></section>` : ""}
   ${askBar()}`;
 }
 function addSheet(){
@@ -995,7 +1005,7 @@ function ficheCorps(){
     ${np ? planRepasCard(m, true) : ""}
     <dl class="kv"><dt>Profil</dt><dd>${profilOk(p) ? `${p.sexe === "F" ? "Femme" : "Homme"}, ${p.age} ans, ${p.taille} cm, ${fr(p.poids, 1)} kg` : "incomplet (l'adhérent n'a pas encore rempli ses infos)"}</dd>
       ${p.poidsVise ? `<dt>Poids visé</dt><dd>${fr(p.poidsVise, 1)} kg (${p.rythmePoids === "leger" ? "léger" : "modéré"})</dd>` : ""}
-      ${calc ? `<dt>Calcul auto</dt><dd>${fr(calc.kcal)} kcal · P ${calc.p} · G ${calc.g} · L ${calc.l} <span class="small muted">(repos ${fr(calc.bmr)}, dépense ${fr(calc.tdee)})</span></dd>` : ""}
+      ${calc ? `<dt>Calcul auto</dt><dd>${fr(calc.kcal)} kcal · P ${calc.p} · G ${calc.g} · L ${calc.l} <span class="small muted">(repos ${fr(calc.bmr)} × ${fr(calc.coef, 3)} ${esc(calc.niveau)} = dépense ${fr(calc.tdee)} · protéines conseillées ${calc.pMin} à ${calc.pMax} g)</span></dd>` : ""}
       ${fo ? `<dt>Forme</dt><dd>${fo.forme.score}/100 le ${esc(fmtDay(parseIso(fo.date)))}</dd>` : ""}
       ${ms.length ? `<dt>Mesures</dt><dd>${esc(fmtDay(parseIso(ms[ms.length - 1].date)))}${ms[ms.length - 1].poids ? " · " + fr(ms[ms.length - 1].poids, 1) + " kg" : ""}</dd>` : ""}
       ${zs.length ? `<dt>À ménager</dt><dd>${esc(zs.join(", "))}</dd>` : ""}
