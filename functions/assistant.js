@@ -126,7 +126,14 @@ const jourIso = (t = Date.now()) => new Intl.DateTimeFormat("fr-CA", {timeZone: 
 const quand = t => new Intl.DateTimeFormat("fr-FR", {timeZone: TZ, weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit"}).format(new Date(t));
 const court = (s, n = 400) => { s = String(s ?? "").replace(/\s+/g, " ").trim(); return s.length > n ? s.slice(0, n - 1) + "…" : s; };
 /* mêmes cibles que l'onglet Nutrition de l'appli (plus.js : profil() et cibles()), pour que l'assistant voie les chiffres affichés */
-const FQ = {assis: 1.3, debout: 1.45, physique: 1.6};
+const NIV = [1.2, 1.375, 1.55, 1.725, 1.9];   /* sédentaire, légèrement actif, actif, très actif, extrêmement actif (Base § 2.9) */
+function coefActivite(p){
+  const s = Number(p.seances) || 0;
+  let i = s >= 6 ? 3 : s >= 3 ? 2 : s >= 1 ? 1 : 0;
+  if (p.quotidien === "debout") i = Math.max(i, 2);
+  if (p.quotidien === "physique") i = Math.min(4, Math.max(i + 1, 3));
+  return NIV[i];
+}
 const ADJ = {perte: {modere: -.18, leger: -.1}, prise: {modere: .1, leger: .05}, recompo: {modere: -.07, leger: -.04}, maintien: {modere: 0, leger: 0}};
 function ciblesAuto(m, notes){
   const obj = notes.filter(n => n.type === "objectifs").sort((a, b) => (a.at || 0) - (b.at || 0)).pop()?.reponses || {}, pr = notes.find(n => n.id === "profil") || {};
@@ -138,13 +145,13 @@ function ciblesAuto(m, notes){
     seances: Number(obj.rythme) || Number(String(m.cycle?.rythme || "").match(/\d/)?.[0]) || 2};
   if (!(p.sexe && p.age && p.taille && p.poids)) return null;
   const r10 = x => Math.round(x / 10) * 10, r0 = Math.round;
-  const bmr = 10 * p.poids + 6.25 * p.taille - 5 * p.age + (p.sexe === "F" ? -161 : 5);
-  const tdee = bmr * (FQ[p.quotidien] || 1.35) + 5 * p.poids * p.seances / 7;
+  const bmr = 9.99 * p.poids + 6.25 * p.taille - 4.92 * p.age + (p.sexe === "F" ? -161 : 5);
+  const tdee = bmr * coefActivite(p);
   let adj = (ADJ[p.but] || ADJ.maintien)[p.rythme]; if (p.age < 18) adj = Math.max(0, Math.min(adj, .05));
   const kcal = Math.max(r10(tdee * (1 + adj)), r10(bmr * 1.05), p.sexe === "F" ? 1300 : 1600);
   const h = p.taille / 100, pRef = Math.min(p.poids, 27 * h * h);
   const prot = r0(pRef * ({perte: 2, recompo: 2, prise: 1.8}[p.but] || 1.6)), lip = r0(Math.max(pRef * .9, kcal * .25 / 9));
-  return {kcal, p: prot, g: Math.max(0, r0((kcal - prot * 4 - lip * 9) / 4)), l: lip};
+  return {kcal, p: prot, g: Math.max(0, r0((kcal - prot * 4 - lip * 9) / 4)), l: lip, pMin: r0(p.poids * 1.6), pMax: r0(p.poids * 2.2)};
 }
 const age = naissance => { if (!naissance) return null; const b = new Date(naissance + "T12:00:00"), n = new Date(); return n.getFullYear() - b.getFullYear() - ((n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) ? 1 : 0); };
 /* même règle que l'appli (hiddenFor) : séance en autonomie visible seulement si « visible », séance en salle sauf si visible === false */
@@ -172,7 +179,7 @@ function contexte({member: m, seances, notes, maintenant = Date.now()}){
   const mes = notes.filter(n => n.type === "mesure" && n.poids).sort((x, y) => (x.date || "").localeCompare(y.date || "")).slice(-3);
   const ecrits = notes.filter(n => n.texte && n.type !== "objectifs").sort((x, y) => (x.at || 0) - (y.at || 0)).slice(-10);
   const props = notes.filter(n => n.type === "ia-r" && n.prop).sort((x, y) => (x.at || 0) - (y.at || 0)).slice(-6);
-  const nut = m.nutrition && Number(m.nutrition.kcal) > 0 ? `${m.nutrition.kcal} kcal, protéines ${m.nutrition.p} g, glucides ${m.nutrition.g} g, lipides ${m.nutrition.l} g (réglées par Nathanael)${m.nutrition.mot ? ", son mot : « " + court(m.nutrition.mot, 300) + " »" : ""}` : (c => c ? `${c.kcal} kcal, protéines ${c.p} g, glucides ${c.g} g, lipides ${c.l} g (calcul automatique de l'appli, affiché dans son onglet Nutrition)` : "pas encore calculées : il doit remplir ses infos (taille, poids, âge) dans l'onglet Nutrition")(ciblesAuto(m, notes));
+  const nut = m.nutrition && Number(m.nutrition.kcal) > 0 ? `${m.nutrition.kcal} kcal, protéines ${m.nutrition.p} g, glucides ${m.nutrition.g} g, lipides ${m.nutrition.l} g (réglées par Nathanael)${m.nutrition.mot ? ", son mot : « " + court(m.nutrition.mot, 300) + " »" : ""}` : (c => c ? `${c.kcal} kcal, protéines ${c.p} g, glucides ${c.g} g, lipides ${c.l} g (calcul automatique de l'appli, affiché dans son onglet Nutrition ; fourchette de protéines conseillée par Nathanael : ${c.pMin} à ${c.pMax} g/jour)` : "pas encore calculées : il doit remplir ses infos (taille, poids, âge) dans l'onglet Nutrition")(ciblesAuto(m, notes));
   const L = [];
   L.push(`Adhérent·e : ${m.prenom || "?"}${a ? ", " + a + " ans" + (a < 18 ? " (MINEUR)" : "") : ""}${pr.sexe || rep.sexe ? ", " + ((pr.sexe || rep.sexe) === "F" ? "femme" : "homme") : ""}.`);
   if (m.objectif) L.push(`Objectif noté par Nathanael : ${court(m.objectif, 300)}`);

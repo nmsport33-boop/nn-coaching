@@ -694,7 +694,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-06mus";
+const BUILD = "2026-11-07kcal";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD ?= ?"([^"]+)"/)?.[1];
@@ -2693,7 +2693,7 @@ function startData(isCoach, cid){
 
 </script>
 <script src="fiches-mouvements.js?v=2026-11-05af"></script>
-<script src="plus.js?v=2026-11-04disc"></script>
+<script src="plus.js?v=2026-11-07kcal"></script>
 <script src="ia.js?v=2026-11-03c"></script>
 <script src="finisher.js?v=2026-11-05a"></script>
 <script src="eveil.js?v=2026-11-03d"></script>
