@@ -36,7 +36,9 @@ jobs:
           credentials_json: ${{ secrets.FIREBASE_SA }}
       - name: Mise en ligne
         if: env.PRET == 'true'
-        working-directory: .github/hebergement
         run: |
+          H="$RUNNER_TEMP/hebergement"; mkdir -p "$H"
+          mv _site "$H/public"; cp .github/hebergement/firebase.json "$H/firebase.json"
+          cd "$H"
           npx -y firebase-tools@15 deploy --only hosting --project "$PROJET" --non-interactive --force \
             || (sleep 60 && npx -y firebase-tools@15 deploy --only hosting --project "$PROJET" --non-interactive --force)
