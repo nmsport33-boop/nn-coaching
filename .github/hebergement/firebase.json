@@ -1,0 +1,10 @@
+{
+  "hosting": {
+    "public": "../../_site",
+    "cleanUrls": false,
+    "headers": [
+      {"source": "**/*.@(html|json|webmanifest)", "headers": [{"key": "Cache-Control", "value": "no-cache"}]},
+      {"source": "**", "headers": [{"key": "X-Robots-Tag", "value": "noindex"}]}
+    ]
+  }
+}

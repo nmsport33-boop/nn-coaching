@@ -1,0 +1,42 @@
+# Publie le site (appli NN Coaching + Fitzora sous /orvea/) sur Firebase Hosting :
+# https://nn-coaching-bd311.web.app/  (Firebase autorise l'usage commercial, contrairement à GitHub Pages).
+# Mêmes fichiers que site.yml (build.mjs). Utilise le secret FIREBASE_SA déjà en place pour l'assistant.
+name: Hébergement Firebase
+on:
+  push:
+    branches: [gh-pages]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency: hebergement
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      PROJET: nn-coaching-bd311
+      PRET: ${{ secrets.FIREBASE_SA != '' }}
+    steps:
+      - name: Secret présent ?
+        if: env.PRET != 'true'
+        run: echo "::notice::Secret FIREBASE_SA absent, rien à mettre en ligne."
+      - uses: actions/checkout@v4
+        if: env.PRET == 'true'
+      - uses: actions/setup-node@v4
+        if: env.PRET == 'true'
+        with:
+          node-version: 22
+      - name: Préparer les fichiers web
+        if: env.PRET == 'true'
+        run: |
+          npm ci --prefix .github/site --no-audit --no-fund
+          node .github/site/build.mjs
+      - uses: google-github-actions/auth@v2
+        if: env.PRET == 'true'
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SA }}
+      - name: Mise en ligne
+        if: env.PRET == 'true'
+        working-directory: .github/hebergement
+        run: |
+          npx -y firebase-tools@15 deploy --only hosting --project "$PROJET" --non-interactive --force \
+            || (sleep 60 && npx -y firebase-tools@15 deploy --only hosting --project "$PROJET" --non-interactive --force)
