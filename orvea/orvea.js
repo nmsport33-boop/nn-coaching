@@ -99,8 +99,58 @@ function carteSuite(){
   if (!acces(m).entrainement) return `<div class="card ov-prog"><b>${reste ? "Plus qu'une séance" : "Bravo, séances terminées 🎉"}</b><span class="small muted">La suite de ton programme, écrite à partir de tes retours, fait partie des formules Training et Premium.</span>${paywall("entrainement")}</div>`;
   return `<button class="card tap ov-prog" data-a="ov-suite"><span class="px-emo">🚀</span><b>${reste ? "Plus qu'une séance dans ce cycle" : "Cycle terminé, bravo 🎉"}</b><span class="small muted">Crée le cycle suivant : il tient compte de tes charges, de ton ressenti et de tes questionnaires.</span><span class="ov-go">Créer mon cycle suivant ›</span></button>`;
 }
+/* ================= mon matériel (10/11/2026) : coché par l'utilisateur, modifiable quand il veut ;
+   note {type:"materiel", items, halteres, kb, autre, adapter} → le serveur adapte les séances à venir (réponse notes/<id>-r {type:"materiel-r", nb, liste}) ================= */
+const MAT = [["rien","🙌 Rien (poids du corps)"],["tapis","🧘 Tapis de sol"],["chaise","🪑 Chaise ou banc solide"],["miniband","🟠 Mini-bandes élastiques"],
+  ["elastiques","🎗️ Élastiques longs (poignées)"],["swissball","⚪ Swiss ball"],["halteres","🏋️ Haltères"],["kettlebell","🔔 Kettlebell"],
+  ["barre","➖ Barre et disques"],["banc","🛋️ Banc de musculation"],["trx","🪢 Sangles TRX"],["traction","🚪 Barre de traction"],
+  ["step","🪜 Step ou marche"],["foam","🧻 Rouleau de massage"],["medball","🏐 Medecine ball"],["corde","➰ Corde à sauter"],
+  ["velo","🚲 Vélo d'appartement ou rameur"],["salle","🏢 Accès à une salle de sport"]];
+const matLab = x => ((MAT.find(y => y[0] === x) || [, x])[1]).replace(/^\S+\s/, "");
+const matNote = () => (S.cur?.notes || []).filter(n => n.type === "materiel").sort((a, b) => (a.at || 0) - (b.at || 0)).pop() || null;
+const matTexte = n => { const L = (n.items || []).map(x => matLab(x) + (x === "halteres" && n.halteres ? ` (${n.halteres})` : "") + (x === "kettlebell" && n.kb ? ` (${n.kb})` : ""));
+  if (n.autre) L.push(n.autre); return L.join(", ") || "rien (poids du corps)"; };
+function carteMateriel(){
+  const m = S.cur?.member; if (!m) return "";
+  const k = "mat.", n = matNote(), ouvert = S.drafts[k + "open"];
+  if (!ouvert) {
+    if (!n) return `<section class="sec"><button class="card tap" data-a="ov-mat-open"><span class="eyebrow">Nouveau</span><b>🏋️ Mon matériel</b>
+      <span class="small muted">Élastiques, swiss ball, haltères… Coche ce que tu as : tes séances s'adaptent toutes seules, et tu le changes quand tu veux.</span><span class="ov-go">Mettre à jour ›</span></button></section>`;
+    const r = S.cur.notes.find(x => x.id === n.id + "-r");
+    const etat = !n.adapter ? "" : !r ? `<span class="small"><span class="ov-spin sm" aria-hidden="true"></span> Tes séances à venir s'adaptent à ton matériel… (1 à 2 minutes)</span>`
+      : r.erreur ? `<span class="small" style="color:var(--warn)">L'adaptation n'a pas marché cette fois. Touche « Modifier » puis « Enregistrer » pour réessayer.</span>`
+      : r.limite ? `<span class="small muted">Beaucoup de changements aujourd'hui : tes séances s'adapteront à la prochaine mise à jour, demain.</span>`
+      : r.aucune ? `<span class="small muted">Aucune séance à venir à adapter : ton prochain programme utilisera ce matériel.</span>`
+      : !r.nb ? `<span class="small muted">✓ Tes séances à venir collent déjà à ce matériel, rien à changer.</span>`
+      : `<span class="small">✓ ${r.nb} séance${r.nb > 1 ? "s" : ""} adaptée${r.nb > 1 ? "s" : ""} :</span>${(r.liste || []).slice(0, 6).map(x => `<button class="ia-flag ia-plan" data-a="ia-seance" data-v="${esc(x.id)}" style="text-align:left">Séance ${esc(String(x.num || ""))} · ${esc(x.changement || x.titre || "")} ›</button>`).join("")}`;
+    return `<section class="sec"><div class="card"><span class="eyebrow">🏋️ Mon matériel</span><span class="small">${esc(matTexte(n))}</span>${etat}
+      <button class="btn sm ghost" data-a="ov-mat-open" style="align-self:flex-start">Modifier</button></div></section>`;
+  }
+  if (!S.drafts[k + "init"]) { S.drafts[k + "init"] = true;
+    if (n) { S.drafts[k + "items"] = [...(n.items || [])]; for (const f of ["halteres", "kb", "autre"]) S.drafts[k + f] = n[f] || ""; }
+    else { const q = (S.cur.notes.filter(x => x.type === "objectifs").pop() || {}).reponses || {}; S.drafts[k + "autre"] = String(q.materiel || "").slice(0, 200); } }
+  const it = d(k + "items", []);
+  return `<section class="sec" id="materiel"><h2>Mon matériel</h2><div class="card">
+    <span class="small muted">Coche tout ce que tu as là où tu t'entraînes. Tes séances à venir sont réécrites avec ce matériel, sans toucher à celles déjà faites.</span>
+    <div class="opts">${MAT.map(([x, l]) => opt(k, "items", x, l, true)).join("")}</div>
+    ${it.includes("halteres") ? `<label class="f">Tes haltères : combien de kilos ?<input type="text" maxlength="60" data-d="${k}halteres" value="${esc(d(k + "halteres", ""))}" placeholder="Ex. 2 x 5 kg, ou réglables jusqu'à 10 kg"></label>` : ""}
+    ${it.includes("kettlebell") ? `<label class="f">Ta kettlebell : combien de kilos ?<input type="text" maxlength="60" data-d="${k}kb" value="${esc(d(k + "kb", ""))}" placeholder="Ex. 12 kg"></label>` : ""}
+    <label class="f">Autre chose ? (facultatif)<input type="text" maxlength="200" data-d="${k}autre" value="${esc(d(k + "autre", ""))}" placeholder="Ex. un gilet lesté de 5 kg, un bâton"></label>
+    <div class="row" style="gap:8px"><button class="btn solid" data-a="ov-mat-save">Enregistrer</button><button class="btn ghost" data-a="ov-mat-close">Annuler</button></div></div></section>`;
+}
+async function saveMateriel(){
+  const k = "mat.", g = f => S.drafts[k + f];
+  let items = [...(g("items") || [])].filter(x => MAT.some(y => y[0] === x));
+  const autre = String(g("autre") || "").trim().slice(0, 200);
+  if (!items.length && !autre) return toast("Coche ton matériel, ou « Rien (poids du corps) ».");
+  if (items.length > 1) items = items.filter(x => x !== "rien");
+  const n = {type: "materiel", auteur: "adherent", seance: null, items, autre, at: Date.now(), adapter: true,
+    halteres: items.includes("halteres") ? String(g("halteres") || "").trim().slice(0, 60) : "", kb: items.includes("kettlebell") ? String(g("kb") || "").trim().slice(0, 60) : ""};
+  n.texte = ("Mon matériel : " + matTexte(n)).slice(0, 600);
+  if (await run(S.db.collection(`members/${memberId()}/notes`).add(n), "Matériel enregistré : tes séances s'adaptent 💪")) clearDrafts(k);
+}
 function vueSeances(_view){
-  return rappelBilan() + heroAdh() + seancesView() + disciplinesCard(DISC_QUI) + `<section class="sec">${carteSuite()}<button class="btn sm ghost" data-a="tab" data-v="cycle" style="align-self:flex-start">Voir mon cycle ›</button></section>`;
+  return rappelBilan() + heroAdh() + seancesView() + carteMateriel() + disciplinesCard(DISC_QUI) + `<section class="sec">${carteSuite()}<button class="btn sm ghost" data-a="tab" data-v="cycle" style="align-self:flex-start">Voir mon cycle ›</button></section>`;
 }
 
 /* ================= coaching privé (lien vers l'appli NN Coaching) ================= */
@@ -163,6 +213,7 @@ function compte(){
       : `<b>Sécurise ton compte</b><span class="small muted">Relie-le à Google pour ne rien perdre si tu changes de téléphone.</span><button class="btn sm solid" data-a="ov-lier" style="align-self:flex-start">Relier à Google</button>`}</div>
     <div class="card" id="ov-themes"><span class="eyebrow">🎨 Thème de l'appli</span><span class="small muted">Touche un thème : l'appli change de couleurs tout de suite.</span>
       <div class="ov-themes">${THEMES.map(t => `<button class="ov-th ${th === t.k ? "on" : ""}" data-a="ov-theme" data-v="${t.k}" style="background:${t.c[0]};color:${t.clair ? "#16161d" : "#f2f2f2"}"><span class="sw">${t.c.slice(1).map(c => `<i style="background:${c}"></i>`).join("")}</span>${esc(t.n)}<small>${esc(t.d)}</small></button>`).join("")}</div></div>
+    <div class="card"><span class="eyebrow">🏋️ Mon matériel</span><span class="small muted">${(n => n ? esc(matTexte(n)) : "Pas encore renseigné. Coche ce que tu as : tes séances s'adaptent.")(matNote())}</span><button class="btn sm ghost" data-a="ov-mat-open" style="align-self:flex-start">Mettre à jour ›</button></div>
     ${carteCoachPrive()}
     <div class="card"><span class="eyebrow">Mes données</span><span class="small muted">Seul·e toi y as accès. Les photos d'assiette sont effacées juste après l'analyse. Pour trouver tes magasins, ta position est envoyée une fois à OpenStreetMap, sans ton nom.</span>
       <button class="btn sm ghost" data-a="ov-suppr" style="align-self:flex-start;color:var(--warn)">Supprimer mon compte et mes données</button></div>
@@ -317,6 +368,9 @@ window.act = act = async function(a, ds){
     case "ov-prenom": { const p = String(S.drafts["ov.prenom"] ?? "").trim().slice(0, 40); if (!p) return toast("Écris ton prénom.");
       if (await run(S.db.doc("members/" + mid()).update({prenom: p}), "Prénom enregistré")) delete S.drafts["ov.prenom"]; return; }
     case "ov-themes": S.tab = "compte"; render(); setTimeout(() => { const e = document.getElementById("ov-themes"); if (e) e.scrollIntoView({behavior: "smooth", block: "center"}); }, 60); return;
+    case "ov-mat-open": S.drafts["mat.open"] = true; if (S.tab !== "seances") { S.tab = "seances"; render(); setTimeout(() => { const e = document.getElementById("materiel"); if (e) e.scrollIntoView({behavior: "smooth", block: "start"}); }, 60); } return render();
+    case "ov-mat-close": clearDrafts("mat."); return render();
+    case "ov-mat-save": await saveMateriel(); return render();
     case "ov-drive": O.driveOn = !O.driveOn; return render();
     case "ov-drive-e": LS.set("orvea-drive", v); return render();
     case "ov-drive-copie": { const l = (PX.coursesVue && PX.coursesVue.all || []).map(c => `- ${c.article}${c.quantite ? " (" + c.quantite + ")" : ""}`).join("\n");

@@ -34,7 +34,7 @@ SANTÉ ET SÉCURITÉ (priorité absolue)
 - Douleur dans la poitrine, malaise à l'effort, gêne pour respirer, vertige : il arrête tout de suite et appelle le 15 (ou le 112). alerte_sante = true.
 - Jamais de diagnostic, jamais de médicament, jamais de conseil qui remplace un médecin ou un kiné. Pas de complément alimentaire.
 - Utilisateur mineur : jamais de restriction alimentaire ni de perte de poids, jamais de complément.
-- Tu respectes le matériel qu'il a déclaré.
+- Tu respectes le matériel qu'il a déclaré (la ligne « MATÉRIEL DÉCLARÉ » du dossier, si elle existe, est la plus récente). S'il veut changer son matériel, dis-lui de le mettre à jour dans Séances > Mon matériel : ses séances à venir s'adaptent toutes seules.
 
 COMMENT TU ÉCRIS
 - En français, tu tutoies, chaleureux et simple, phrases courtes, sans jargon. Le texte s'affiche dans une bulle de discussion sur téléphone : 2 à 6 phrases en général, une courte liste avec des tirets si c'est vraiment plus clair, pas de titres, pas de gras.
@@ -178,13 +178,14 @@ function contexte({member: m, seances, notes, promos = {}, maintenant = Date.now
   const aVenir = ss.filter(s => !faites.includes(s));
   const jours = notes.filter(n => n.type === "jour").sort((x, y) => (x.date || "").localeCompare(y.date || "")).slice(-7);
   const mes = notes.filter(n => n.type === "mesure" && n.poids).sort((x, y) => (x.date || "").localeCompare(y.date || "")).slice(-3);
-  const ecrits = notes.filter(n => n.texte && n.type !== "objectifs").sort((x, y) => (x.at || 0) - (y.at || 0)).slice(-10);
+  const ecrits = notes.filter(n => n.texte && !["objectifs", "materiel"].includes(n.type)).sort((x, y) => (x.at || 0) - (y.at || 0)).slice(-10);
   const c = ciblesAuto(m, notes);
   const nut = c ? `${c.kcal} kcal, protéines ${c.p} g, glucides ${c.g} g, lipides ${c.l} g (calcul automatique, affiché dans son onglet Nutrition)` : "pas encore calculées : il doit remplir ses infos (taille, poids, âge) dans l'onglet Nutrition";
   const L = [];
   L.push(`Utilisateur·rice : ${m.prenom || "?"}${a ? ", " + a + " ans" + (a < 18 ? " (MINEUR)" : "") : ""}${pr.sexe || rep.sexe ? ", " + ((pr.sexe || rep.sexe) === "F" ? "femme" : "homme") : ""}.`);
   if (m.cycle) L.push(`Cycle : ${m.cycle.nom || ""}${m.cycle.rythme ? " · " + m.cycle.rythme : ""}${(m.cycle.phases || []).length ? " · phases : " + m.cycle.phases.map(p => `${p.nom} (S${p.de}-S${p.a}${p.focus ? ", " + p.focus : ""})`).join(", ") : ""}`);
   if (obj?.texte) L.push(`Questionnaire de départ (santé, niveau, objectifs) :\n${court(obj.texte, 2500)}`);
+  { const ml = require("./materiel").ligne(notes); if (ml) L.push(ml); }
   L.push(`Cibles nutrition : ${nut}.`);
   L.push(`Nutrition : ${ac.nutrition ? "OUI" + (ac.essai ? " (essai gratuit)" : "") : "NON (formule sans nutrition)"}.`);
   const go = notes.find(n => n.id === "gouts");
