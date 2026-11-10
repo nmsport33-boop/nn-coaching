@@ -59,7 +59,7 @@ function nutVerrou(){
       <span class="small muted">Tes calories et tes protéines calculées pour toi, ton journal de repas, et des repères ajustés par Nathanael selon tes séances et ton objectif.</span>
       <ul class="off-feat"><li>Cibles du jour (calories, protéines, glucides, lipides)</li><li>Journal des repas en quelques secondes</li><li>Cibles et conseils réglés par Nathanael</li><li>Sans engagement, au mois</li></ul>
       ${asked ? `<div class="off-done">✓ Demande envoyée à Nathanael</div>` : `<button class="btn solid" data-a="want-offre" data-v="nutrition" ${S.owner || S.writeBlocked ? "disabled" : ""}>Ça m'intéresse</button>`}
-      <span class="small muted">Paiement directement auprès de Nathanael.</span></div></section>${askBar()}`;
+      <span class="small muted">Application en version test.</span></div></section>${askBar()}`;
 }
 const nutOffertChip = m => m?.nutritionPlan?.offert ? `<span class="off-alt px-noff">✦ Plan nutrition offert pendant la période test (ensuite ${NUT_PRIX} €/mois)</span>` : "";
 /* goûts alimentaires (notes/gouts), demandés au premier accès au Plan nutrition (Nathanael, 02/11/2026) */
