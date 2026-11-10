@@ -669,6 +669,7 @@ body.ecran-on .repos{display:none!important}
 </style>
 <link rel="stylesheet" href="plus.css?v=2026-11-03c">
 <link rel="stylesheet" href="ia.css?v=2026-11-03c">
+<style>.off-price,.off-card .off-alt,.off-carte .p{filter:blur(6px);user-select:none;pointer-events:none}.off-testnote{font-size:11px;opacity:.6;margin:2px 0 6px;font-style:italic}</style>
 </head>
 <body>
 
@@ -694,7 +695,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-06mus";
+const BUILD = "2026-11-10flou";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD ?= ?"([^"]+)"/)?.[1];
@@ -880,7 +881,7 @@ function offresView(m){
     ["Je peux changer de formule ?","Oui, à tout moment. Il suffit de le dire à Nathanael ou de choisir une autre formule ici."]];
   return `<section class="sec">
     ${coach ? `<div class="banner">Aperçu : c'est la page « Offres » que voient tes adhérents. Les prix se changent dans OFFRES (index.html).</div>` : ""}
-    <div class="off-hero"><div class="off-k">NN Coaching · Formules</div>
+    <div class="off-hero"><div class="off-k">NN Coaching · Formules</div><p class="off-testnote">Version test : tarifs indicatifs, en cours de définition. Rien n'est vendu dans l'appli.</p>
       <h2>Ton coaching, à ton rythme</h2>
       <p>Des séances construites pour toi, ajustées après chaque retour, et ta santé suivie à chaque étape.</p>
       <div class="off-stats"><div><b>100 %</b><span>sur mesure</span></div><div><b>1 vidéo</b><span>par exercice</span></div><div><b>0</b><span>engagement</span></div></div></div>
