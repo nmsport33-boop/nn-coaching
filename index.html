@@ -695,7 +695,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-10flou";
+const BUILD = "2026-11-10test";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD ?= ?"([^"]+)"/)?.[1];
@@ -829,13 +829,13 @@ function aboCard(m, coach){
   const e = aboEtat(m), who = coach ? (m.prenom || "L'adhérent") : null;
   const prix = e.prix ? `${e.prix} €/mois${e.offert ? " · offert pour l'instant" : ""}` : "";
   let cls = "", txt;
-  if (!e.fin) txt = e.prix ? `<b>${e.prix} € par mois</b><span>${e.offert ? "Offert pour l'instant." : "Réglé au mois auprès de Nathanael."}</span>` : `<b>Accès illimité</b>`;
+  if (!e.fin) txt = e.prix ? `<b>${e.prix} € par mois</b><span>${e.offert ? "Offert pour l'instant." : "Application en version test."}</span>` : `<b>Accès illimité</b>`;
   else if (e.expire) { cls = "mag"; txt = coach ? `<b>Abonnement terminé depuis le ${esc(finAbo(e.fin))}</b><span>${esc(who)} doit renouveler pour continuer.</span>`
-      : `<b>Ton mois de coaching est terminé (le ${esc(finAbo(e.fin))})</b><span>Pour continuer, règle le mois suivant auprès de Nathanael. Tes séances et tes notes restent là.</span>`; }
+      : `<b>Ton mois de coaching est terminé (le ${esc(finAbo(e.fin))})</b><span>Application en version test : parles-en à Nathanael pour continuer. Tes séances et tes notes restent là.</span>`; }
   else { if (e.jours <= 7) cls = "warn";
     txt = coach ? `<b>Payé jusqu'au ${esc(finAbo(e.fin))}</b><span>Encore ${e.jours} jour${e.jours>1?"s":""}.${prix ? " " + esc(prix) : ""}</span>`
       : e.jours <= 7 ? `<b>Plus que ${e.jours} jour${e.jours>1?"s":""} de coaching (jusqu'au ${esc(finAbo(e.fin))})</b><span>Pense à recharger tes séances si tu veux qu'on continue ensemble 💪 Vois ça avec Nathanael.</span>`
-      : `<b>Coaching réglé jusqu'au ${esc(finAbo(e.fin))}</b><span>Encore ${e.jours} jour${e.jours>1?"s":""}. Pour continuer après, il faudra régler le mois suivant auprès de Nathanael.</span>`; }
+      : `<b>Accès jusqu'au ${esc(finAbo(e.fin))}</b><span>Encore ${e.jours} jour${e.jours>1?"s":""}. Application en version test.</span>`; }
   return `<div class="banner ${cls}" style="flex-direction:column;align-items:flex-start;gap:4px">
     <span class="eyebrow" style="color:inherit;opacity:.7">${coach ? "Abonnement" : "Ton abonnement"}${m.forfait ? " · " + esc(m.forfait) : ""}</span>${txt}
     ${!coach && premiumOffert(m) ? `<span class="off-alt">✦ Accès Premium offert pendant la phase de test (valeur 59 €/mois)</span>` : ""}
@@ -874,7 +874,7 @@ function offresView(m){
   </article>`;
   const Y = `<span class="y">✓</span>`, N = `<span class="n">—</span>`;
   const rows = [["Programme sur mesure",Y,Y,Y],["Vidéos + séance guidée",Y,Y,Y],["Ajusté à chaque retour",N,Y,Y],["Questionnaire santé suivi",N,Y,Y],["Questions au coach",N,Y,Y],["Séance coachée en salle",N,N,"1 / mois"]];
-  const faq = [["Comment je paie ?","Directement auprès de Nathanael, au mois. Il n'y a aucun paiement dans l'appli."],
+  const faq = [["C'est une version test ?","Oui. L'application est en version test : rien n'est vendu ni payé dans l'appli."],
     ["Je peux arrêter quand je veux ?","Oui. Les formules au mois sont sans engagement. Seule l'offre 3 mois est réglée en une fois."],
     ["J'ai une douleur ou une blessure, c'est possible ?","Oui. Le questionnaire santé est obligatoire après chaque séance. En cas de douleur ou d'alerte, la séance suivante reste bloquée tant que le programme n'a pas été adapté."],
     ["Quel matériel faut-il ?","Peu de matériel : le programme s'adapte à ce que tu as, chez toi ou en salle."],
@@ -894,7 +894,7 @@ function offresView(m){
       <tbody>${rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td class="hl">${r[2]}</td><td>${r[3]}</td></tr>`).join("")}</tbody></table>
     <div class="off-sec-t">Questions fréquentes</div>
     <div class="off-faq">${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}</div>
-    <p class="off-foot">Paiement directement auprès de Nathanael · NN Coaching</p></section>`;
+    <p class="off-foot">Application en version test · NN Coaching</p></section>`;
 }
 /* Premium offert : tous les adhérents pendant la phase de test, sauf ceux qui paient déjà la formule à distance (Nathanael, 01/11/2026) */
 function premiumOffert(m){ if (!m) return false; const e = aboEtat(m); return !(m.option === "distance" && e.prix && !e.offert); }
@@ -2694,7 +2694,7 @@ function startData(isCoach, cid){
 
 </script>
 <script src="fiches-mouvements.js?v=2026-11-05af"></script>
-<script src="plus.js?v=2026-11-04disc"></script>
+<script src="plus.js?v=2026-11-10test"></script>
 <script src="ia.js?v=2026-11-03c"></script>
 <script src="finisher.js?v=2026-11-05a"></script>
 <script src="eveil.js?v=2026-11-03d"></script>
