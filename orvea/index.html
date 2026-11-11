@@ -683,7 +683,7 @@ body.ecran-on .repos{display:none!important}
 <script src="config.js?v=2026-11-03o1"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-06mus";
+const BUILD = "2026-11-11ord";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD ?= ?"([^"]+)"/)?.[1];
@@ -991,7 +991,11 @@ document.addEventListener("change", e => { const t = e.target; if (!t.dataset?.c
   const v = t.value.trim().slice(0, 40), sid = t.dataset.charge;
   run(S.db.doc(`members/${memberId()}/seances/${sid}`).update(new firebase.firestore.FieldPath("charges", t.dataset.k), v || firebase.firestore.FieldValue.delete()), v ? "Charge notée" : ""); });
 function allSeances(){ return Object.entries(S.cur.seances).map(([id,v]) => ({id, ...v})).sort((a,b) => a.num - b.num); }
-function seancesSorted(){ return allSeances().filter(s => isCoachUI() || !hiddenFor(s)); }
+/* ordre d'affichage (11/11, demande de Nathanael) : d'abord les séances faites, dans l'ordre des dates ; puis celles à faire, par date, et celles sans date à la suite, dans l'ordre du cycle */
+const faiteSeance = s => s.statut === "faite";
+const dateSeance = s => s.date || (faiteSeance(s) && (s.bilan?.at || s.ressenti?.at) ? iso(new Date(s.bilan?.at || s.ressenti?.at)) : "");
+function seancesSorted(){ return allSeances().filter(s => isCoachUI() || !hiddenFor(s))
+  .sort((a, b) => (faiteSeance(b) - faiteSeance(a)) || ((dateSeance(a) || "9999") < (dateSeance(b) || "9999") ? -1 : (dateSeance(a) || "9999") > (dateSeance(b) || "9999") ? 1 : 0) || (a.num - b.num)); }
 function nextSeance(list){ return list.find(s => s.statut !== "faite") || null; }
 /* ---------- rythme : la bonne séance au bon jour ---------- */
 /* renfo et stretching s'enchaînent dans l'ordre du cycle (num) ; jamais deux renfos à moins de 48 h */
@@ -1604,7 +1608,7 @@ function seancesView(){
       <span class="eyebrow">Prochaine séance</span><div class="h"><b style="font-family:var(--display);font-size:24px">S${nx.num} · ${esc(nx.titre||"")}</b></div>
       <span class="small muted">${esc(lieuLbl(nx))}${nx.date ? " · " + esc(fmtDay(parseIso(nx.date)) + heureLbl(nx.heure)) : ` · semaine ${nx.semaine||""}`}</span>
       <span class="small" style="color:var(--mag);font-weight:700">Voir le programme et ajouter une note ›</span></button>` : ""}
-    <div class="list">${list.map(s => sline(s, nx, m)).join("")}</div></section>`;
+    <div class="list">${list.map((s, i) => (i === 0 && faiteSeance(s) ? `<span class="eyebrow">Faites</span>` : "") + (!faiteSeance(s) && (i === 0 || faiteSeance(list[i - 1])) ? `<span class="eyebrow" style="margin-top:8px">À faire</span>` : "") + sline(s, nx, m)).join("")}</div></section>`;
 }
 
 /* séance suivante pas encore débloquée : ce qu'il manque */
@@ -1628,7 +1632,7 @@ function sline(s, nx, m){
   const pi = phaseOf(m?.cycle, s.num);
   return `<button class="sline ${s.statut==="faite"?"done":""} ${nx&&nx.id===s.id?"next":""}" data-a="open-seance" data-v="${s.id}">
     <span class="snum">${Number.isInteger(s.num) ? s.num : "+"}</span><span class="m"><b>${esc(s.titre || "Séance " + s.num)}</b>
-    <span>${esc(lieuLbl(s))}${s.date ? " · " + esc(fmtDay(parseIso(s.date)) + heureLbl(s.heure)) : s.semaine ? " · sem. " + s.semaine : ""}${pi>=0 ? " · " + esc(m.cycle.phases[pi].nom) : ""}</span></span>
+    <span>${esc(lieuLbl(s))}${s.date ? " · " + esc(fmtDay(parseIso(s.date)) + heureLbl(s.heure)) : dateSeance(s) ? " · faite le " + esc(fmtDay(parseIso(dateSeance(s)))) : s.semaine ? " · sem. " + s.semaine : " · date à venir"}${pi>=0 ? " · " + esc(m.cycle.phases[pi].nom) : ""}</span></span>
     ${hasAlert(s) ? `<span class="chip warn">À adapter</span>` : s.statut==="faite" ? `<span class="chip ok">Faite</span>` : isCoachUI() && (isAuto(s) || s.visible === false) ? (!hiddenFor(s) ? `<span class="chip mag">Débloquée</span>` : `<span class="chip">Cachée</span>`) : ""}</button>`;
 }
 
@@ -1717,7 +1721,7 @@ function renderSheet(){
 
 function seanceBody(sid, s){
   const m = S.cur.member || {}, coach = S.owner, list = seancesSorted();
-  const prev = list.filter(x => x.num < s.num).pop();
+  const prev = list.filter(x => x.num < s.num).sort((a, b) => a.num - b.num).pop();
   const prevNotes = prev ? S.cur.notes.filter(n => n.seance === prev.id && n.suivante) : [];
   const pi = phaseOf(m.cycle, s.num);
   let out = `<section class="sec"><span class="eyebrow">${esc(m.prenom || "")}${pi>=0 ? " · " + esc(m.cycle.phases[pi].nom) : ""}</span>
@@ -2503,7 +2507,7 @@ async function applyMajs(){
   }
 }
 async function newSeance(){
-  const list = seancesSorted(), last = list[list.length-1], num = (last?.num || 0) + 1, id = "s" + pad(num);
+  const list = seancesSorted(), last = list.reduce((m, x) => !m || (x.num || 0) > (m.num || 0) ? x : m, null), num = (last?.num || 0) + 1, id = "s" + pad(num);
   const nb = nextBooking(memberId());
   const auto = !!last && !isAuto(last);
   const doc = {num, titre: auto ? "Séance en autonomie" : `Séance ${num}`, lieu: auto ? "En autonomie" : "Salle", visible: !auto, semaine: null,
