@@ -4,6 +4,7 @@
 "use strict";
 const A = require("./assistant");
 const DISC = require("./disciplines");
+const MT = require("./materiel");
 
 const CONSIGNES = `Tu es le préparateur physique de l'appli Fitzora (appli d'entraînement 100 % autonome, sans coach humain). Tu écris le programme d'un·e utilisateur·rice à partir de son questionnaire.
 
@@ -15,7 +16,7 @@ MÉTHODE (toujours)
 - Doses écrites pour le chrono de l'appli : « 3 x 10 », « 3 x 8 / jambe », « 30 sec », « 30 sec / côté » (toujours « / côté » ou « / jambe » pour un exo unilatéral en temps), « 1 min ». Le champ tours dit le nombre de tours du bloc (« 3 tours », « 4 séries », « 1 tour »). Le champ repos : « 60 sec », « 90 sec ».
 - Dans un bloc à plusieurs exercices, on enchaîne exo 1 puis exo 2 sans pause, puis repos, puis tour suivant : construis les blocs en conséquence (superset logique, pas deux gros exos qui fatiguent la même zone).
 - Consigne courte par exercice (c) : placement, tempo, ce qu'il doit sentir, et la charge conseillée selon son niveau (« charge où les 2 dernières répétitions sont dures », « 2 haltères de 4 à 6 kg »).
-- Lieu et matériel : tu n'utilises QUE le matériel qu'il a (maison sans matériel = poids du corps, chaise, sac à dos, bouteilles d'eau ; salle de sport = machines, barres, haltères, poulies). Si « un peu des deux », alterne séances en salle et à la maison et dis-le dans le titre.
+- Lieu et matériel : tu n'utilises QUE le matériel qu'il a (maison sans matériel = poids du corps, chaise, sac à dos, bouteilles d'eau ; salle de sport = machines, barres, haltères, poulies). Si « un peu des deux », alterne séances en salle et à la maison et dis-le dans le titre. Une ligne « MATÉRIEL DÉCLARÉ » (mis à jour par lui dans l'appli) remplace le matériel du questionnaire ; les charges ne dépassent jamais celles qu'il a (« haltères 2 x 5 kg » = 5 kg max par main).
 - Niveau : débutant = exercices simples, beaucoup de technique, volume modéré ; confirmé = plus de volume, d'intensité et de variantes.
 - Objectifs : le plus important d'abord. Perte de poids = circuits, densité, cardio en fin de séance. Muscle / fessiers = séries de 8 à 15, progression de charge. Force = séries courtes, repos longs. Mobilité / moins mal = beaucoup de A1-A2, renforcement progressif sans douleur.
 - Titre de séance court et motivant, ex. « Bas du corps · fessiers », « Full body · circuit ».
@@ -67,6 +68,7 @@ function demande({member: m, notes, seances, suite}){
   if (obj && obj.texte) L.push("QUESTIONNAIRE :\n" + A.court(obj.texte, 4000));
   if (obj && obj.reponses) { const r = obj.reponses;
     L.push(`Séances par semaine : ${r.rythme || "2"} · lieu : ${r.lieu || "?"}${r.materiel ? " · matériel : " + A.court(r.materiel, 300) : ""} · niveau : ${r.niveau || "?"} · jours : ${(r.jours || []).join(", ") || "?"}`); }
+  const ml = MT.ligne(notes); if (ml) L.push(ml);
   const dl = DISC.ligne(notes); if (dl) L.push(dl);
   if (suite) {
     const faites = seances.filter(s => s.statut === "faite" || (s.bilan && s.bilan.at)).sort((a, b) => (a.num || 0) - (b.num || 0)).slice(-8);

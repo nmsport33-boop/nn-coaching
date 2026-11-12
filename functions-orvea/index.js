@@ -3,6 +3,7 @@
    Base de données Firestore séparée de l'appli privée NN Coaching : base nommée « orvea » (DB ci-dessous).
    - coach      : réponse du coach IA (note {type:"ia", q}) ; il peut adapter une séance à venir et écrire le plan de repas.
    - programme  : écrit le cycle d'entraînement (note {type:"objectifs"} au départ, {type:"suite"} pour le cycle suivant).
+   - materiel   : matériel mis à jour par l'utilisateur (note {type:"materiel", adapter}) → séances à venir réécrites pour ce matériel.
    - photoRepas : photo d'assiette → aliments, calories, macros.
    - promosEnseigne / promosHebdo : promos de la semaine par enseigne (recherche web), partagées entre utilisateurs.
    - nouveauCompte : essai gratuit de 21 jours à la création du compte.
@@ -19,6 +20,7 @@ const Anthropic = require("@anthropic-ai/sdk");
 const A = require("./assistant");
 const PG = require("./programme");
 const PR = require("./photo-repas");
+const MT = require("./materiel");
 
 const DB = "orvea";
 initializeApp();
@@ -152,6 +154,40 @@ exports.programme = onDocumentCreated(opts({document: "members/{mid}/notes/{nid}
   } catch (e) {
     logger.error("programme", {mid, nid, quoi: quoi(e)});
     await etat({statut: "erreur", quoi: quoi(e)});
+  }
+});
+
+/* ---------- mon matériel (10/11/2026) : séances à venir adaptées au matériel déclaré ---------- */
+exports.materiel = onDocumentCreated(opts({document: "members/{mid}/notes/{nid}", timeoutSeconds: 300, memory: "1GiB"}), async event => {
+  const q = event.data?.data(); const {mid, nid} = event.params;
+  if (!q || q.type !== "materiel" || nid.endsWith("-r")) return;
+  const base = db.doc(`members/${mid}`), cible = base.collection("notes").doc(nid + "-r");
+  const ecrire = r => cible.create({type: "materiel-r", auteur: "assistant", seance: null, pour: nid, at: Date.now(), ...r}).catch(e => { if (e.code !== 6) throw e; });
+  if (!q.adapter) return ecrire({nb: 0, liste: [], seul: true});
+  const [msnap, seances, notes] = await Promise.all([base.get(), lister(base.collection("seances")), lister(base.collection("notes"))]);
+  if (!msnap.exists) return;
+  const jour = A.jourIso();
+  if (notes.filter(n => n.type === "materiel" && n.adapter && A.jourIso(n.at || 0) === jour).length > 5) return ecrire({nb: 0, liste: [], limite: true});
+  const ss = MT.aAdapter(seances);
+  if (!ss.length) return ecrire({nb: 0, liste: [], aucune: true});
+  const client = new Anthropic({apiKey: CLE.value()});
+  try {
+    const rep = await client.beta.messages.stream({
+      model: MODELE, max_tokens: 64000, ...FALLBACK,
+      output_config: {effort: "medium", format: {type: "json_schema", schema: MT.SCHEMA}},
+      system: MT.CONSIGNES,
+      messages: [{role: "user", content: MT.demande({member: msnap.data(), notes, seances: ss})}]
+    }).finalMessage();
+    if (rep.stop_reason === "refusal" || rep.stop_reason === "max_tokens" || !texte(rep)) throw new Error("réponse incomplète (" + rep.stop_reason + ")");
+    const l = MT.lire(texte(rep), ss), b = db.batch();
+    for (const s of l) { const s0 = ss.find(x => x.id === s.id);
+      b.update(base.collection("seances").doc(s.id), {blocs: s.blocs, titre: s.titre || s0.titre, adaptee: {at: Date.now(), pourquoi: s.changement, nid}}); }
+    if (l.length) await b.commit();
+    logger.info("materiel", {mid, nid, vues: ss.length, nb: l.length, sortie: rep.usage?.output_tokens});
+    return ecrire({nb: l.length, liste: l.map(s => ({id: s.id, num: (ss.find(x => x.id === s.id) || {}).num || null, titre: s.titre, changement: s.changement}))});
+  } catch (e) {
+    logger.error("materiel", {mid, nid, quoi: quoi(e)});
+    return ecrire({nb: 0, liste: [], erreur: true});
   }
 });
 
