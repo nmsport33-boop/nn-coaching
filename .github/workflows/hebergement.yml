@@ -1,5 +1,6 @@
-# Publie le site (appli NN Coaching + Fitzora sous /orvea/) sur Firebase Hosting :
-# https://nn-coaching-bd311.web.app/  (Firebase autorise l'usage commercial, contrairement à GitHub Pages).
+# Publie les deux applis sur Firebase Hosting, chacune à son adresse (Firebase autorise l'usage commercial) :
+#   NN Coaching (appli privée) : https://nn-coaching-bd311.web.app/
+#   Fitzora (appli commerciale) : son propre site Firebase (nom dans le journal : « Fitzora : https://… »)
 # Mêmes fichiers que site.yml (build.mjs). Utilise le secret FIREBASE_SA déjà en place pour l'assistant.
 name: Hébergement Firebase
 on:
@@ -25,20 +26,46 @@ jobs:
         if: env.PRET == 'true'
         with:
           node-version: 22
-      - name: Préparer les fichiers web
+      - name: Préparer les fichiers web (NN d'un côté, Fitzora de l'autre)
         if: env.PRET == 'true'
         run: |
           npm ci --prefix .github/site --no-audit --no-fund
           node .github/site/build.mjs
+          H="$RUNNER_TEMP/h"; mkdir -p "$H/nn" "$H/fitzora"
+          mv _site/orvea "$H/fitzora/public"; mv _site "$H/nn/public"
+          echo "H=$H" >> "$GITHUB_ENV"
       - uses: google-github-actions/auth@v2
         if: env.PRET == 'true'
         with:
           credentials_json: ${{ secrets.FIREBASE_SA }}
+      - name: Site Firebase de Fitzora (créé une seule fois)
+        if: env.PRET == 'true'
+        run: |
+          FB="npx -y firebase-tools@15"
+          LISTE=$($FB hosting:sites:list --project "$PROJET" --json | jq -r '.result.sites[].name | split("/") | last')
+          SITE=""
+          for s in fitzora fitzora-app fitzora-coach fitzora-nn; do echo "$LISTE" | grep -qx "$s" && { SITE=$s; break; }; done
+          if [ -z "$SITE" ]; then
+            for s in fitzora fitzora-app fitzora-coach fitzora-nn; do $FB hosting:sites:create "$s" --project "$PROJET" --non-interactive && { SITE=$s; break; }; done
+          fi
+          [ -n "$SITE" ] || { echo "::error::Impossible de créer le site Fitzora"; exit 1; }
+          echo "SITE=$SITE" >> "$GITHUB_ENV"
+          echo "::notice::Fitzora : https://$SITE.web.app/"
+      - name: Connexion Google autorisée sur l'adresse de Fitzora
+        if: env.PRET == 'true'
+        run: |
+          T=$(gcloud auth print-access-token); U="https://identitytoolkit.googleapis.com/admin/v2/projects/$PROJET/config"
+          D=$(curl -sf -H "Authorization: Bearer $T" -H "x-goog-user-project: $PROJET" "$U" | jq -c '.authorizedDomains // []')
+          N=$(echo "$D" | jq -c --arg a "$SITE.web.app" --arg b "$SITE.firebaseapp.com" '(. + [$a,$b]) | unique')
+          if [ "$D" != "$N" ]; then
+            curl -sf -X PATCH -H "Authorization: Bearer $T" -H "x-goog-user-project: $PROJET" -H "Content-Type: application/json" \
+              "$U?updateMask=authorizedDomains" -d "{\"authorizedDomains\":$N}" > /dev/null && echo "Domaines ajoutés"
+          else echo "Domaines déjà autorisés"; fi
       - name: Mise en ligne
         if: env.PRET == 'true'
         run: |
-          H="$RUNNER_TEMP/hebergement"; mkdir -p "$H"
-          mv _site "$H/public"; cp .github/hebergement/firebase.json "$H/firebase.json"
-          cd "$H"
-          npx -y firebase-tools@15 deploy --only hosting --project "$PROJET" --non-interactive --force \
-            || (sleep 60 && npx -y firebase-tools@15 deploy --only hosting --project "$PROJET" --non-interactive --force)
+          cp .github/hebergement/firebase.json "$H/nn/firebase.json"
+          jq --arg s "$SITE" '.hosting.site = $s' .github/hebergement/firebase.json > "$H/fitzora/firebase.json"
+          FB="npx -y firebase-tools@15"
+          (cd "$H/nn" && ($FB deploy --only hosting --project "$PROJET" --non-interactive --force || (sleep 60 && $FB deploy --only hosting --project "$PROJET" --non-interactive --force)))
+          (cd "$H/fitzora" && ($FB deploy --only hosting --project "$PROJET" --non-interactive --force || (sleep 60 && $FB deploy --only hosting --project "$PROJET" --non-interactive --force)))
