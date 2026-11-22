@@ -203,3 +203,8 @@ html .btn.xl.ov-go::after{content:"";position:absolute;top:0;bottom:0;left:0;wid
 html .btn.xl.ov-go:active{transform:scale(.97)}
 html[data-skin="neon"] .btn.xl.ov-go{background:linear-gradient(100deg,#22e3ff,#7b5cff,#ff2bd6,#22e3ff)!important;background-size:200% 100%!important;color:#fff!important;text-shadow:0 0 10px rgba(34,227,255,.9),0 0 22px rgba(255,43,214,.6)}
 @media (prefers-reduced-motion:reduce){html .btn.xl.ov-go,html .btn.xl.ov-go::after{animation:none}}
+
+/* Protection du contenu (22/11) : textes des séances, fiches et méthode non sélectionnables ; les champs de saisie restent normaux. */
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,select,[contenteditable="true"]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+img,video{-webkit-user-drag:none}

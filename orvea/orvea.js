@@ -32,6 +32,8 @@ const ESSAI_JOURS = 21;
 function acces(m){
   if (m && Number(m.essaiFin) > Date.now()) return {entrainement: true, nutrition: true, ia: true, drive: true, essai: true, formule: "complet"};
   const actif = m && m.abo && Number(m.abo.fin) > Date.now(), f = actif ? m.abo.formule : "decouverte";
+  // « base » : accès d'essai offert par invitation, entraînement seul (ni nutrition, ni coach IA), même règle que le serveur
+  if (f === "base") return {entrainement: true, nutrition: false, ia: false, drive: false, base: true, formule: "base"};
   const d = (FORMULES.find(x => x.id === f) || FORMULES[0]).droits;
   return {...d, drive: !!(actif && d.nutrition && (m.abo.options || []).includes("drive")), formule: f};
 }
@@ -61,6 +63,7 @@ function bienvenue(){
 function bandeau(){
   const m = S.cur.member, a = acces(m), j = joursEssai(m);
   if (a.essai) return `<section class="sec"><button class="ov-band" data-a="tab" data-v="offres"><span><b>${m && m.offert ? "Accès offert" : "Essai gratuit"} · ${j} jour${j > 1 ? "s" : ""}</b> · tout est débloqué</span><span>Voir les formules ›</span></button></section>`;
+  if (a.base) { const jb = Math.max(0, Math.ceil((m.abo.fin - Date.now()) / 864e5)); return `<section class="sec"><button class="ov-band" data-a="tab" data-v="offres"><span><b>Accès d'essai offert · ${jb} jour${jb > 1 ? "s" : ""}</b> · programme et séances guidées</span><span>Voir les formules ›</span></button></section>`; }
   if (a.formule === "decouverte" && m && m.essaiFin) return `<section class="sec"><button class="ov-band off" data-a="tab" data-v="offres"><span><b>Formule Découverte</b> · ton essai est terminé</span><span>Tout débloquer ›</span></button></section>`;
   return "";
 }
@@ -158,7 +161,7 @@ function compte(){
   const google = u && !u.isAnonymous ? (u.email || "Compte Google") : "";
   return `<section class="sec"><h2>Mon compte</h2>
     <div class="card"><label class="f">Prénom<input type="text" maxlength="40" data-d="ov.prenom" value="${esc(d("ov.prenom", m.prenom || ""))}"></label><button class="btn sm solid" data-a="ov-prenom" style="align-self:flex-start">Enregistrer</button></div>
-    <div class="card"><span class="eyebrow">Formule</span><b>${a.essai ? `${m.offert ? "Accès Premium offert" : "Essai gratuit Premium"} · encore ${joursEssai(m)} j` : esc(f.nom)}</b><button class="btn sm ghost" data-a="tab" data-v="offres" style="align-self:flex-start">Changer de formule ›</button></div>
+    <div class="card"><span class="eyebrow">Formule</span><b>${a.essai ? `${m.offert ? "Accès Premium offert" : "Essai gratuit Premium"} · encore ${joursEssai(m)} j` : a.base ? "Accès d'essai offert (entraînement)" : esc(f.nom)}</b><button class="btn sm ghost" data-a="tab" data-v="offres" style="align-self:flex-start">Changer de formule ›</button></div>
     <div class="card"><span class="eyebrow">Sauvegarde</span>${google ? `<b>✓ Relié à ${esc(google)}</b><span class="small muted">Tu retrouves tout sur un autre téléphone en te connectant avec ce compte.</span>`
       : `<b>Sécurise ton compte</b><span class="small muted">Relie-le à Google pour ne rien perdre si tu changes de téléphone.</span><button class="btn sm solid" data-a="ov-lier" style="align-self:flex-start">Relier à Google</button>`}</div>
     <div class="card" id="ov-themes"><span class="eyebrow">🎨 Thème de l'appli</span><span class="small muted">Touche un thème : l'appli change de couleurs tout de suite.</span>
@@ -340,4 +343,14 @@ window.act = act = async function(a, ds){
       } catch (e) { toast("Suppression impossible pour l'instant. Réessaie."); } return; }
   }
 };
+})();
+
+/* ================= protection du contenu (22/11) =================
+   Pas de copier, de clic droit ni de glisser sur les contenus (séances, fiches, programme). Les champs de saisie restent libres.
+   Ce n'est qu'un frein : la méthode et le coach IA restent sur le serveur, jamais dans le téléphone. */
+(() => {
+  const libre = e => { const t = e.target; return t && t.closest && t.closest("input,textarea,select,[contenteditable='true']"); };
+  ["copy", "cut", "contextmenu", "dragstart", "selectstart"].forEach(ev => document.addEventListener(ev, e => { if (!libre(e)) e.preventDefault(); }, true));
+  document.addEventListener("keydown", e => { const k = (e.key || "").toLowerCase();
+    if ((e.ctrlKey || e.metaKey) && ["s", "u", "p"].includes(k) || (e.ctrlKey || e.metaKey) && e.shiftKey && ["i", "j", "c"].includes(k) || k === "f12") e.preventDefault(); }, true);
 })();
