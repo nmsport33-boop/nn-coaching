@@ -12,6 +12,7 @@ MÉTHODE (toujours)
 - 2 ou 3 phases (ex. « Mise en route » S1 à S4, « Progression », « Intensification »). Charge et difficulté progressives ; la dernière semaine peut être un peu plus légère si le cycle est intense.
 - Chaque séance dure 45 à 60 min et suit les blocs :
   A1 « Mobilité » (2 à 4 exos, 5 min), A2 « Activation » (2 à 3 exos lents, contraction 2 à 3 secondes, ciblés sur ses zones prioritaires), B1, B2 (et B3 si besoin) « Travail principal » en séries ou en circuits, FIN « Retour au calme » (étirements doux, respiration).
+- A1 de TOUTES les séances (règle de Nathanael) : le 1er exercice est le « WGS (World's greatest stretch) », dose « 5 / côté » (jusqu'à « 8 / côté » pour un niveau confirmé), consigne : grande fente, main opposée au sol, coude vers la cheville avant, puis bras ouvert vers le plafond en suivant la main des yeux, 2 secondes dans chaque position. S'il ne peut pas le faire (genou, hanche ou cheville sensible, fente douloureuse, prothèse, grossesse avancée, grand débutant raide, épaule qui ne s'ouvre pas sans douleur), remplace-le par « Rotation thoracique en quadrupédie », dose « 8 / côté » (à quatre pattes, coussin sous les genoux, main derrière la tête ou sur le bas du dos si l'épaule est sensible, coude vers le plafond, bassin immobile). Une version intermédiaire est possible pour un genou un peu sensible : « WGS adapté », mains sur un banc ou une chaise, genou arrière sur un coussin, fente courte.
 - Doses écrites pour le chrono de l'appli : « 3 x 10 », « 3 x 8 / jambe », « 30 sec », « 30 sec / côté » (toujours « / côté » ou « / jambe » pour un exo unilatéral en temps), « 1 min ». Le champ tours dit le nombre de tours du bloc (« 3 tours », « 4 séries », « 1 tour »). Le champ repos : « 60 sec », « 90 sec ».
 - Dans un bloc à plusieurs exercices, on enchaîne exo 1 puis exo 2 sans pause, puis repos, puis tour suivant : construis les blocs en conséquence (superset logique, pas deux gros exos qui fatiguent la même zone).
 - Consigne courte par exercice (c) : placement, tempo, ce qu'il doit sentir, et la charge conseillée selon son niveau (« charge où les 2 dernières répétitions sont dures », « 2 haltères de 4 à 6 kg »).
@@ -76,10 +77,20 @@ function demande({member: m, notes, seances, suite}){
   return L.join("\n");
 }
 
+/* filet de sécurité : chaque séance commence par le WGS ou, à défaut, la rotation thoracique en quadrupédie (règle de Nathanael, 23/11) */
+const WGS_RE = /wgs|world'?s greatest|rotation thoracique en quadrup|rot\. thoracique quadrup/i;
+function echauffementWGS(blocs){
+  if (!blocs.length || blocs.some(b => b.exos.some(e => WGS_RE.test(e.n)))) return blocs;
+  const rq = {n: "Rotation thoracique en quadrupédie", d: "8 / côté", c: "À quatre pattes, coussin sous les genoux, une main derrière la tête : coude vers le plafond en le suivant des yeux, bassin immobile.", v: A.video("Rotation thoracique en quadrupédie")};
+  const a1 = blocs.find(b => /^A1/i.test(b.code));
+  if (a1) a1.exos.unshift(rq); else blocs.unshift({code: "A1", nom: "Mobilité", tours: "1 tour", repos: "", exos: [rq]});
+  return blocs;
+}
+
 function lire(texte, debutNum = 1){
   const j = JSON.parse(texte);
   const seances = (Array.isArray(j.seances) ? j.seances : []).slice(0, 24).map((s, i) => ({num: debutNum + i, semaine: Math.max(1, Math.min(6, Number(s.semaine) || 1)), titre: A.court(s.titre, 70) || "Séance " + (debutNum + i),
-    lieu: "En autonomie", ou: A.court(s.lieu, 20), visible: true, statut: "prevue", blocs: A.blocsPropres(s.blocs)})).filter(s => s.blocs.length);
+    lieu: "En autonomie", ou: A.court(s.lieu, 20), visible: true, statut: "prevue", blocs: echauffementWGS(A.blocsPropres(s.blocs))})).filter(s => s.blocs.length);
   const c = j.cycle || {};
   const phases = (Array.isArray(c.phases) ? c.phases : []).slice(0, 4).map(p => ({de: debutNum - 1 + (Number(p.de) || 1), a: debutNum - 1 + (Number(p.a) || 1), nom: A.court(p.nom, 40), focus: A.court(p.focus, 120)}));
   return {cycle: {nom: A.court(c.nom, 60) || "Cycle", rythme: A.court(c.rythme, 40), nb: seances.length, debut: "", phases, mot: A.court(j.mot, 800)}, seances};
