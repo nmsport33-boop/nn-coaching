@@ -16,5 +16,18 @@
   "jours": 3650,
   "max": 1,
   "cree": "2026-11-04"
+ },
+ "b3527b32e9748a2e98e961323ebe93ed9fb80294bf654572585878f6bdc43413": {
+  "nom": "Essai base (connaissance, 22/11)",
+  "jours": 14,
+  "max": 1,
+  "formule": "base",
+  "cree": "2026-11-22"
+ },
+ "98e4654be7c7ae46ceaff091f3a49c904cdffbaf28442087371a9d3348cc065c": {
+  "nom": "Louis Benoit (tout accès)",
+  "jours": 30,
+  "max": 1,
+  "cree": "2026-11-23"
  }
 }

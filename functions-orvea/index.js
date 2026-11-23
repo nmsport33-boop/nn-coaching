@@ -48,6 +48,7 @@ exports.nouveauCompte = onDocumentCreated(opts({document: "members/{mid}", secre
   const m = event.data?.data(); if (!m || m.essaiFin) return;
   const fin = Date.now() + ESSAI_JOURS * 864e5;
   await db.runTransaction(async t => { const cur = (await t.get(event.data.ref)).data() || {};
+    if (cur.inviteEtat === "ok" || cur.abo) return; // une invitation (ex. accès « base ») est déjà passée : on ne la remplace pas par l'essai Premium
     if (!(Number(cur.essaiFin) >= fin)) t.update(event.data.ref, {essaiFin: fin, cree: cur.cree || Date.now()}); });
 });
 
@@ -68,7 +69,9 @@ exports.invitation = onDocumentWritten(opts({document: "members/{mid}", secrets:
     if (!uids.includes(event.params.mid) && uids.length >= (inv.max || 1)) return "deja-utilisee";
     t.set(uref, {uids: [...new Set([...uids, event.params.mid])], nom: inv.nom, at: Date.now()});
     const cur = (await t.get(ref)).data() || {};
-    t.update(ref, {essaiFin: Math.max(Number(cur.essaiFin) || 0, fin), illimiteFin: fin, offert: {par: "invitation", nom: inv.nom, fin}, inviteVue: code, inviteEtat: "ok", cree: cur.cree || Date.now()});
+    if (inv.formule) // accès limité (ex. « base » = entraînement seul) : pas d'essai Premium, une formule offerte jusqu'à « fin »
+      t.update(ref, {essaiFin: Date.now(), abo: {formule: inv.formule, fin, offert: true}, offert: {par: "invitation", nom: inv.nom, fin, formule: inv.formule}, inviteVue: code, inviteEtat: "ok", cree: cur.cree || Date.now()});
+    else t.update(ref, {essaiFin: Math.max(Number(cur.essaiFin) || 0, fin), illimiteFin: fin, offert: {par: "invitation", nom: inv.nom, fin}, inviteVue: code, inviteEtat: "ok", cree: cur.cree || Date.now()});
     return "ok";
   });
   if (etat !== "ok") await ref.update({inviteVue: code, inviteEtat: etat});

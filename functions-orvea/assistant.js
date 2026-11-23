@@ -159,7 +159,8 @@ function seanceTxt(s){
 
 /* droits selon la formule (même règle que l'appli, orvea.js : acces()) */
 const FORMULES = {decouverte: {entrainement: false, nutrition: false, ia: false}, entrainement: {entrainement: true, nutrition: false, ia: true},
-  nutrition: {entrainement: false, nutrition: true, ia: true}, complet: {entrainement: true, nutrition: true, ia: true}, famille: {entrainement: true, nutrition: true, ia: true}};
+  nutrition: {entrainement: false, nutrition: true, ia: true}, complet: {entrainement: true, nutrition: true, ia: true}, famille: {entrainement: true, nutrition: true, ia: true},
+  base: {entrainement: true, nutrition: false, ia: false}}; // « base » = accès d'essai offert par invitation (entraînement seul)
 function acces(m, maintenant = Date.now()){
   if (m && Number(m.essaiFin) > maintenant) return {...FORMULES.complet, essai: true};
   const f = m && m.abo && Number(m.abo.fin) > maintenant ? m.abo.formule : "decouverte";
