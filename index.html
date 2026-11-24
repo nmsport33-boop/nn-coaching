@@ -171,6 +171,10 @@ main{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-lef
 .snum{font-family:var(--display);font-weight:700;font-size:20px;width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--bg);flex:none;font-variant-numeric:tabular-nums}
 .sline.done .snum{background:var(--ink);color:var(--bg)}
 .sline.next{outline:2px solid var(--gold)}
+.sline.ratee{background:rgba(229,57,53,.14)!important;box-shadow:inset 4px 0 0 #e53935!important}
+.sline.ratee .snum{background:#e53935!important;color:#fff!important}
+.sline.ratee .m b,.sline.ratee .m span{color:#e53935!important}
+.chip.ratee{background:#e53935!important;color:#fff!important;border-color:#e53935!important}
 .sline .m{flex:1;min-width:0}
 .sline .m b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sline .m span{font-size:12.5px;color:var(--muted)}
@@ -695,7 +699,7 @@ body.ecran-on .repos{display:none!important}
 <script src="seed-perso.js"></script>
 <script>
 /* ---------- version : un téléphone qui garde une ancienne page se met à jour tout seul ---------- */
-const BUILD = "2026-11-11ord";
+const BUILD = "2026-11-24rouge";
 async function checkBuild(){
   if (location.hostname === "localhost" || Date.now() - (checkBuild.t || 0) < 60000) return; checkBuild.t = Date.now();
   try { const r = await fetch(location.pathname + "?nocache=" + Date.now(), {cache: "no-store"}); const v = (await r.text()).match(/const BUILD ?= ?"([^"]+)"/)?.[1];
@@ -1636,12 +1640,14 @@ function rappelBilan(){
   return `<section class="sec"><button class="card tap" data-a="open-bilan" data-v="${p.id}" style="border:2px solid var(--warn)"><span class="eyebrow">Séance ${Number.isInteger(p.num) ? p.num : ""} · questionnaire santé</span>
     <b>30 secondes pour dire comment ça s'est passé</b><span class="small">Obligatoire pour débloquer ta séance suivante.</span>${motSuivi()}<span class="small" style="color:var(--mag);font-weight:700">Répondre ›</span></button></section>`;
 }
+/* séance datée dans le passé et pas faite (24/11, demande de Nathanael) : en rouge pour la repérer tout de suite */
+const ratee = s => s.statut !== "faite" && !!s.date && s.date < iso(new Date()) && !hiddenFor(s);
 function sline(s, nx, m){
-  const pi = phaseOf(m?.cycle, s.num);
-  return `<button class="sline ${s.statut==="faite"?"done":""} ${nx&&nx.id===s.id?"next":""}" data-a="open-seance" data-v="${s.id}">
+  const pi = phaseOf(m?.cycle, s.num), miss = ratee(s);
+  return `<button class="sline ${s.statut==="faite"?"done":""} ${miss?"ratee":""} ${nx&&nx.id===s.id?"next":""}" data-a="open-seance" data-v="${s.id}">
     <span class="snum">${Number.isInteger(s.num) ? s.num : "+"}</span><span class="m"><b>${esc(s.titre || "Séance " + s.num)}</b>
     <span>${esc(lieuLbl(s))}${s.date ? " · " + esc(fmtDay(parseIso(s.date)) + heureLbl(s.heure)) : dateSeance(s) ? " · faite le " + esc(fmtDay(parseIso(dateSeance(s)))) : s.semaine ? " · sem. " + s.semaine : " · date à venir"}${pi>=0 ? " · " + esc(m.cycle.phases[pi].nom) : ""}</span></span>
-    ${hasAlert(s) ? `<span class="chip warn">À adapter</span>` : s.statut==="faite" ? `<span class="chip ok">Faite</span>` : isCoachUI() && (isAuto(s) || s.visible === false) ? (!hiddenFor(s) ? `<span class="chip mag">Débloquée</span>` : `<span class="chip">Cachée</span>`) : ""}</button>`;
+    ${hasAlert(s) ? `<span class="chip warn">À adapter</span>` : s.statut==="faite" ? `<span class="chip ok">Faite</span>` : miss ? `<span class="chip ratee">Non faite</span>` : isCoachUI() && (isAuto(s) || s.visible === false) ? (!hiddenFor(s) ? `<span class="chip mag">Débloquée</span>` : `<span class="chip">Cachée</span>`) : ""}</button>`;
 }
 
 /* --- macro-cycle --- */
